@@ -8,27 +8,34 @@ namespace BeatmapScanner.Patches
     {
         static void Postfix(IDifficultyBeatmap ____selectedDifficultyBeatmap)
         {
-            if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap)
+            if(Config.Instance.Enabled)
             {
-                if (beatmap.beatmapSaveData.colorNotes.Count > 0)
+                if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap)
                 {
-                    var value = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, ____selectedDifficultyBeatmap.level.beatsPerMinute);
-                    Plugin.difficulty.text = "☆" + value.ToString();
-                    if (value > 10f)
+                    if (beatmap.beatmapSaveData.colorNotes.Count > 0)
                     {
-                        Plugin.difficulty.color = Color.red;
-                    }
-                    else if (value >= 7.5f)
-                    {
-                        Plugin.difficulty.color = Color.green;
-                    }
-                    else if (value >= 5f)
-                    {
-                        Plugin.difficulty.color = Color.yellow;
+                        var value = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, ____selectedDifficultyBeatmap.level.beatsPerMinute);
+                        Plugin.difficulty.text = "☆" + value.ToString();
+                        if (value > 10f)
+                        {
+                            Plugin.difficulty.color = Config.Instance.D;
+                        }
+                        else if (value >= 7.5f)
+                        {
+                            Plugin.difficulty.color = Config.Instance.C;
+                        }
+                        else if (value >= 5f)
+                        {
+                            Plugin.difficulty.color = Config.Instance.B;
+                        }
+                        else
+                        {
+                            Plugin.difficulty.color = Config.Instance.A;
+                        }
                     }
                     else
                     {
-                        Plugin.difficulty.color = Color.white;
+                        Plugin.difficulty.text = "";
                     }
                 }
                 else

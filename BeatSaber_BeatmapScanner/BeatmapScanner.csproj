@@ -121,6 +121,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm\BeatmapScanner.cs" />
+    <Compile Include="Algorithm\ColorConverter.cs" />
+    <Compile Include="Algorithm\FloatConverter.cs" />
+    <Compile Include="Config\Config.cs" />
     <Compile Include="HarmonyPatches\MapDataGetter.cs" />
     <Compile Include="Installers\BeatmapScannerMenuInstaller.cs" />
     <Compile Include="Plugin.cs" />
@@ -136,6 +139,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\settings.bsml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

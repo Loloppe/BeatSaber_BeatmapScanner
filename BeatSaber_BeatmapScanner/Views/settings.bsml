@@ -1,0 +1,10 @@
+﻿<settings-container>
+	<checkbox-setting apply-on-change="true" value="Enabled" text="Enable Plugin"/>
+	<horizontal>
+		<text text='Colors' align='Center'/>
+	</horizontal>
+	<color-setting text='0 - 5' value='A' apply-on-change='true' bind-value='true' />
+	<color-setting text='5 - 7.5' value='B' apply-on-change='true' bind-value='true' />
+	<color-setting text='7.5 - 10' value='C' apply-on-change='true' bind-value='true' />
+	<color-setting text='10+' value='D' apply-on-change='true' bind-value='true' />
+</settings-container>
