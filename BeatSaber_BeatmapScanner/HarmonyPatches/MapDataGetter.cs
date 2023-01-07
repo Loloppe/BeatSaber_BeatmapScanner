@@ -31,6 +31,14 @@ namespace BeatmapScanner.Patches
                         Plugin.difficulty.color = Color.white;
                     }
                 }
+                else
+                {
+                    Plugin.difficulty.text = "";
+                }
+            }
+            else
+            {
+                Plugin.difficulty.text = "";
             }
         }
     }
