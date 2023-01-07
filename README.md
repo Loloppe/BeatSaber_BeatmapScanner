@@ -14,3 +14,7 @@ TODO:
 1. Clean up GetScorePerHand (remove multiplier) and replace GetDistance with CalcSwingCurve data
 2. Fix CalcSwingCurve, right now the data seems to be all over the place for some maps
 3. Better way to represent speed? Or at least rework the NPS
+
+BUG TO FIX:
+
++ Index was out of range get thrown out randomly for some specific maps (in ProcessSwing I think). There's trycatch so the algorithm will still work anyway for now.
