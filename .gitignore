@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/BeatSaber_BeatmapScanner/bin/Release
+/BeatSaber_BeatmapScanner/obj
