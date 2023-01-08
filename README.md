@@ -11,6 +11,5 @@ The algorithm currently use:
 
 TODO:
 
-1. Fix CalcSwingCurve tech factor, right now the data seems to be all over the place for some maps
-2. Better way to represent speed? Or at least rework the NPS
-3. Detect MappingExtension/NoodleExtension maps and ignore them?
+1. Handle map under X notes? Idk
+2. Detect MappingExtension/NoodleExtension maps and ignore them?
