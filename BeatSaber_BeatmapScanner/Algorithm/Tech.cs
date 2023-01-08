@@ -128,6 +128,10 @@ namespace BeatmapScanner.Algorithm
                             for (int j = 1; j < notes.Count; j++)
                             {
                                 var index = i - j;
+                                if (index < 1)
+                                {
+                                    break;
+                                }
                                 if (notes[index].beat < previousBeat)
                                 {
                                     break;

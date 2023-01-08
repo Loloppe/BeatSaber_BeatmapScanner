@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using UnityEngine;
+using System.Linq;
 
 namespace BeatmapScanner.Patches
 {
@@ -12,7 +12,7 @@ namespace BeatmapScanner.Patches
             {
                 if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap)
                 {
-                    if (beatmap.beatmapSaveData.colorNotes.Count > 10)
+                    if (beatmap.beatmapSaveData.colorNotes.Count > 20)
                     {
                         var value = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, ____selectedDifficultyBeatmap.level.beatsPerMinute);
                         if (value <= 0f || value > 999f)

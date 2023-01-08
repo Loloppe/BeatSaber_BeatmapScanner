@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using static BeatmapSaveDataVersion3.BeatmapSaveData;
 using static BeatmapScanner.Algorithm.Data;
 
 // Source of code taken for this project:
 // Tech https://github.com/LackWiz/ppCurve/
 // Bezier https://github.com/shamim-akhtar/bezier-curve
-// GetDistance https://github.com/tmokmss/Osu2Saber
 
 namespace BeatmapScanner.Algorithm
 {
@@ -57,16 +55,35 @@ namespace BeatmapScanner.Algorithm
 
                 FullData = FullData.OrderBy(o => o.Time).ToList();
 
+                float tech = 0f;
+
+                for (int i = FullData.Count() - (int)(FullData.Count() * 0.3); i < FullData.Count(); i++)
+                {
+                    tech += (float)FullData[i].AngleStrain;
+                }
+
+                tech /= FullData.Count() - (int)(FullData.Count() * 0.2);
+
                 // Average of swing length as base with the Bezier curve.
-                for(int i = 0; i < FullData.Count(); i++)
+                for (int i = 0; i < FullData.Count(); i++)
                 {
                     point += (float)FullData[i].Length;
                 }
+                // Add tech
                 point /= FullData.Count();
-                // Multiplied by NPS
                 var nps = (notes.Count() / GetActiveSecond(notes, bpm));
-                point *= nps;
-                // Multiplied by X factor and rounded to two point decimal
+                point += (tech * 10);
+                // Multiplied by NPS
+                if(nps > 1)
+                {
+                    if(nps >= 2)
+                    {
+                        nps -= 1;
+                    }
+                    point *= nps * 0.8f;
+                }
+                
+                // Rounded to two point decimal
                 point = (float)Math.Round(point, 2);
             }
 
@@ -87,7 +104,7 @@ namespace BeatmapScanner.Algorithm
                 }
                 else 
                 {
-                    beat += 0.5f;    
+                    beat += 0.25f;    
                 }
 
                 lastNote = note;
