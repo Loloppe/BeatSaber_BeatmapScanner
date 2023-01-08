@@ -16,8 +16,8 @@ namespace BeatmapScanner.Views
 
         public static readonly Vector2 CanvasSize = new(100, 50);
         public static readonly Vector3 Scale = new(0.01f, 0.01f, 0.01f);
-        public static readonly Vector3 RightPosition = new(0.6f, 0.11f, 4.3f);
-        public static readonly Vector3 RightRotation = new(0, 10, 0);
+        public static readonly Vector3 RightPosition = new(0.8f, 0.11f, 3.5f);
+        public static readonly Vector3 RightRotation = new(0, 5, 0);
 
         [Inject]
         public void Constructor(PlatformLeaderboardViewController platformLeaderboardViewController)
@@ -29,26 +29,27 @@ namespace BeatmapScanner.Views
         {
             try
             {
-                this.rootObject = new GameObject("difficulty", typeof(Canvas), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+                this.rootObject = new GameObject("ui", typeof(Canvas), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
                 var sizeFitter = this.rootObject.GetComponent<ContentSizeFitter>();
                 sizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
                 sizeFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
                 this._canvas = this.rootObject.GetComponent<Canvas>();
                 this._canvas.sortingOrder = 3;
                 this._canvas.renderMode = RenderMode.WorldSpace;
+
                 var rectTransform = this._canvas.transform as RectTransform;
                 rectTransform.sizeDelta = CanvasSize;
                 this.rootObject.transform.position = RightPosition;
                 this.rootObject.transform.eulerAngles = RightRotation;
                 this.rootObject.transform.localScale = Scale;
 
-                Plugin.difficulty = this.CreateText(this._canvas.transform as RectTransform, string.Empty, new Vector2(10, 31));
-                rectTransform = Plugin.difficulty.transform as RectTransform;
+                Plugin.ui = this.CreateText(this._canvas.transform as RectTransform, string.Empty, new Vector2(10, 31));
+                rectTransform = Plugin.ui.transform as RectTransform;
                 rectTransform.SetParent(this._canvas.transform, false);
                 rectTransform.anchoredPosition = Vector2.zero;
-                Plugin.difficulty.fontSize = 12f;
-                Plugin.difficulty.color = Color.white;
-                Plugin.difficulty.text = "";
+                Plugin.ui.fontSize = 12f;
+                Plugin.ui.color = Color.white;
+                Plugin.ui.text = "";
 
                 this._platformLeaderboardViewController.didActivateEvent += this.OnLeaderboardActivated;
                 this._platformLeaderboardViewController.didDeactivateEvent += this.OnLeaderboardDeactivated;

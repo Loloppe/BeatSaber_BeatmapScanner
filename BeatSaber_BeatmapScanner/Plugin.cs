@@ -16,7 +16,9 @@ namespace BeatmapScanner
         internal static Plugin Instance;
         internal static IPALogger Log;
         internal static Harmony harmony;
-        internal static CurvedTextMeshPro difficulty;
+        internal static CurvedTextMeshPro ui;
+        internal static string difficulty;
+        internal static string tech;
 
         static class BsmlWrapper
         {
@@ -40,6 +42,18 @@ namespace BeatmapScanner
                     wrap();
                 }
             }
+        }
+
+        public static void SetUI()
+        {
+            ui.text = difficulty + tech;
+        }
+
+        public static void ClearUI()
+        {
+            difficulty = "";
+            tech = "";
+            ui.text = "";
         }
 
         [Init]

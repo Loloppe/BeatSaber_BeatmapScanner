@@ -35,7 +35,7 @@ namespace BeatmapScanner.Algorithm
                         if ((int)notes[i].cutDirection == 8)
                         {
                             previousAngle = data.Last().Angle;
-                            if (beat - previousBeat <= 1 / 32)
+                            if (beat - previousBeat <= 0.03125)
                             {
                                 angle = previousAngle;
                             }
@@ -52,11 +52,11 @@ namespace BeatmapScanner.Algorithm
                             }
                         }
                         // Check for pattern (sliders, etc)
-                        if (beat - previousBeat >= 1 / 32)
+                        if (beat - previousBeat >= 0.03125)
                         {
-                            if (beat - previousBeat > 1 / 8)
+                            if (beat - previousBeat > 0.125)
                             {
-                                if (beat - previousBeat > 1 / 2)
+                                if (beat - previousBeat > 0.5)
                                 {
                                     data.Add(new SwingData(beat, angle));
                                     (data.Last().EntryPosition, data.Last().ExitPosition) = MathUtil.CalculateBaseEntryExit(position, angle);
@@ -89,7 +89,7 @@ namespace BeatmapScanner.Algorithm
                             {
                                 if ((int)notes[i].cutDirection == 8 || Math.Abs(angle - previousAngle) < 90) // Probably a slider
                                 {
-                                    sliderDuration = 1 / 8;
+                                    sliderDuration = 0.125f;
                                     slider = true;
                                 }
                                 else
@@ -101,7 +101,7 @@ namespace BeatmapScanner.Algorithm
                         }
                         else // 1/32
                         {
-                            sliderDuration = 1 / 32;
+                            sliderDuration = 0.03125f;
                             slider = true;
                         }
 

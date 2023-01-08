@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using System.Linq;
 
 namespace BeatmapScanner.Patches
 {
@@ -15,44 +14,46 @@ namespace BeatmapScanner.Patches
                     if (beatmap.beatmapSaveData.colorNotes.Count > 20)
                     {
                         var value = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, ____selectedDifficultyBeatmap.level.beatsPerMinute);
-                        if (value <= 0f || value > 999f)
+                        if (value.star <= 0f || value.star > 999f)
                         {
-                            Plugin.difficulty.text = "☆ERROR";
+                            Plugin.ClearUI();
                         }
                         else
                         {
-                            Plugin.difficulty.text = "☆" + value.ToString();
-                            if (value > 10f)
+                            Plugin.difficulty = "☆" + value.star.ToString();
+                            Plugin.tech = "   Tech : " + value.tech.ToString();
+                            Plugin.SetUI();
+                            if (value.star > 10f)
                             {
-                                Plugin.difficulty.color = Config.Instance.D;
+                                Plugin.ui.color = Config.Instance.D;
                             }
-                            else if (value >= 7.5f)
+                            else if (value.star >= 7.5f)
                             {
-                                Plugin.difficulty.color = Config.Instance.C;
+                                Plugin.ui.color = Config.Instance.C;
                             }
-                            else if (value >= 5f)
+                            else if (value.star >= 5f)
                             {
-                                Plugin.difficulty.color = Config.Instance.B;
+                                Plugin.ui.color = Config.Instance.B;
                             }
                             else
                             {
-                                Plugin.difficulty.color = Config.Instance.A;
+                                Plugin.ui.color = Config.Instance.A;
                             }
                         }
                     }
                     else
                     {
-                        Plugin.difficulty.text = "";
+                        Plugin.ClearUI();
                     }
                 }
                 else
                 {
-                    Plugin.difficulty.text = "";
+                    Plugin.ClearUI();
                 }
             }
             else
             {
-                Plugin.difficulty.text = "";
+                Plugin.ClearUI();
             }
         }
     }
@@ -62,7 +63,7 @@ namespace BeatmapScanner.Patches
     {
         static void Postfix()
         {
-            Plugin.difficulty.text = "";
+            Plugin.ClearUI();
         }
     }
 
@@ -71,7 +72,7 @@ namespace BeatmapScanner.Patches
     {
         static void Postfix()
         {
-            Plugin.difficulty.text = "";
+            Plugin.ClearUI();
         }
     }
 }
