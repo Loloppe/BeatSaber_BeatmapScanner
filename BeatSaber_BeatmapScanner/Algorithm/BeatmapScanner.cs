@@ -153,6 +153,8 @@ namespace BeatmapScanner.Algorithm
 
             for (int i = 1; i < notes.Count(); i++)
             {
+                assumed = false;
+
                 if (notes[i].beat - notes[i - 1].beat < 0.125)
                 {
                     continue;
