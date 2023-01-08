@@ -11,10 +11,9 @@ The algorithm currently use:
 
 TODO:
 
-1. Clean up GetScorePerHand (remove multiplier) and replace GetDistance with CalcSwingCurve data
-2. Fix CalcSwingCurve, right now the data seems to be all over the place for some maps
-3. Better way to represent speed? Or at least rework the NPS
-4. Detect MappingExtension/NoodleExtension maps and ignore them
+1. Fix CalcSwingCurve tech factor, right now the data seems to be all over the place for some maps
+2. Better way to represent speed? Or at least rework the NPS
+3. Detect MappingExtension/NoodleExtension maps and ignore them?
 
 BUG TO FIX:
 
