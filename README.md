@@ -5,9 +5,8 @@ This plugin will show a difficulty value at the bottom of the selected custom be
 
 The algorithm currently use:
 + Average swing distance as base
-+ Active NPS for speed
-+ Strain calculator for tech
-+ Divided by X factor to bring it closer to known value (SS and BL).
++ Average angle strain for tech
++ Average note per second for speed
 
 TODO:
 
