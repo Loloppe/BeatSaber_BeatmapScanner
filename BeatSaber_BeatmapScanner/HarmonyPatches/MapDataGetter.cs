@@ -12,25 +12,32 @@ namespace BeatmapScanner.Patches
             {
                 if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap)
                 {
-                    if (beatmap.beatmapSaveData.colorNotes.Count > 0)
+                    if (beatmap.beatmapSaveData.colorNotes.Count > 10)
                     {
                         var value = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, ____selectedDifficultyBeatmap.level.beatsPerMinute);
-                        Plugin.difficulty.text = "☆" + value.ToString();
-                        if (value > 10f)
+                        if (value <= 0f || value > 999f)
                         {
-                            Plugin.difficulty.color = Config.Instance.D;
-                        }
-                        else if (value >= 7.5f)
-                        {
-                            Plugin.difficulty.color = Config.Instance.C;
-                        }
-                        else if (value >= 5f)
-                        {
-                            Plugin.difficulty.color = Config.Instance.B;
+                            Plugin.difficulty.text = "☆ERROR";
                         }
                         else
                         {
-                            Plugin.difficulty.color = Config.Instance.A;
+                            Plugin.difficulty.text = "☆" + value.ToString();
+                            if (value > 10f)
+                            {
+                                Plugin.difficulty.color = Config.Instance.D;
+                            }
+                            else if (value >= 7.5f)
+                            {
+                                Plugin.difficulty.color = Config.Instance.C;
+                            }
+                            else if (value >= 5f)
+                            {
+                                Plugin.difficulty.color = Config.Instance.B;
+                            }
+                            else
+                            {
+                                Plugin.difficulty.color = Config.Instance.A;
+                            }
                         }
                     }
                     else

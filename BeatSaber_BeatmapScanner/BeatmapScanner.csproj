@@ -122,7 +122,11 @@
   <ItemGroup>
     <Compile Include="Algorithm\BeatmapScanner.cs" />
     <Compile Include="Algorithm\ColorConverter.cs" />
+    <Compile Include="Algorithm\Data.cs" />
     <Compile Include="Algorithm\FloatConverter.cs" />
+    <Compile Include="Algorithm\Helper.cs" />
+    <Compile Include="Algorithm\MathUtil.cs" />
+    <Compile Include="Algorithm\Tech.cs" />
     <Compile Include="Config\Config.cs" />
     <Compile Include="HarmonyPatches\MapDataGetter.cs" />
     <Compile Include="Installers\BeatmapScannerMenuInstaller.cs" />
