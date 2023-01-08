@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System.Linq;
 
 namespace BeatmapScanner.Patches
 {
@@ -9,36 +10,47 @@ namespace BeatmapScanner.Patches
         {
             if(Config.Instance.Enabled)
             {
-                if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap)
+                var hasRequirement = SongCore.Collections.RetrieveDifficultyData(____selectedDifficultyBeatmap)?
+                    .additionalDifficultyData?
+                    ._requirements?.Any(x => x == "Noodle Extensions" || x == " Mapping Extensions") == true;
+
+                if(!hasRequirement)
                 {
-                    if (beatmap.beatmapSaveData.colorNotes.Count > 20)
+                    if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap)
                     {
-                        var value = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, ____selectedDifficultyBeatmap.level.beatsPerMinute);
-                        if (value.star <= 0f || value.star > 999f)
+                        if (beatmap.beatmapSaveData.colorNotes.Count > 20)
                         {
-                            Plugin.ClearUI();
-                        }
-                        else
-                        {
-                            Plugin.difficulty = "☆" + value.star.ToString();
-                            Plugin.tech = "   Tech : " + value.tech.ToString();
-                            Plugin.SetUI();
-                            if (value.star > 10f)
+                            var value = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, ____selectedDifficultyBeatmap.level.beatsPerMinute);
+                            if (value.star <= 0f || value.star > 999f)
                             {
-                                Plugin.ui.color = Config.Instance.D;
-                            }
-                            else if (value.star >= 7.5f)
-                            {
-                                Plugin.ui.color = Config.Instance.C;
-                            }
-                            else if (value.star >= 5f)
-                            {
-                                Plugin.ui.color = Config.Instance.B;
+                                Plugin.ClearUI();
                             }
                             else
                             {
-                                Plugin.ui.color = Config.Instance.A;
+                                Plugin.difficulty = "☆" + value.star.ToString();
+                                Plugin.tech = "   Tech : " + value.tech.ToString();
+                                Plugin.SetUI();
+                                if (value.star > 10f)
+                                {
+                                    Plugin.ui.color = Config.Instance.D;
+                                }
+                                else if (value.star >= 7.5f)
+                                {
+                                    Plugin.ui.color = Config.Instance.C;
+                                }
+                                else if (value.star >= 5f)
+                                {
+                                    Plugin.ui.color = Config.Instance.B;
+                                }
+                                else
+                                {
+                                    Plugin.ui.color = Config.Instance.A;
+                                }
                             }
+                        }
+                        else
+                        {
+                            Plugin.ClearUI();
                         }
                     }
                     else

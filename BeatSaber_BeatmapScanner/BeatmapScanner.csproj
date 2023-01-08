@@ -118,6 +118,11 @@
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+	  <Reference Include="SongCore">
+		  <HintPath>$(BeatSaberDir)\Plugins\SongCore.dll</HintPath>
+		  <Private>False</Private>
+		  <SpecificVersion>False</SpecificVersion>
+	  </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm\BeatmapScanner.cs" />
