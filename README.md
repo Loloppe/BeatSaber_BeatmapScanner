@@ -5,10 +5,5 @@ This plugin will show a difficulty value at the bottom of the selected custom be
 
 The algorithm currently use:
 + Average swing distance as base
-+ Average angle strain for tech
++ Average angle strain + type for tech
 + Average note per second for speed
-
-TODO:
-
-1. Handle map under X notes? Idk
-2. Detect MappingExtension/NoodleExtension maps and ignore them?
