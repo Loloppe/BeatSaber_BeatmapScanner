@@ -5,12 +5,10 @@ This plugin will show a difficulty value at the bottom of the selected custom be
 
 The algorithm currently use:
 + Average swing distance as base
-+ Active NPS for speed
-+ Strain calculator for tech
-+ Divided by X factor to bring it closer to known value (SS and BL).
++ Average angle strain for tech
++ Average note per second for speed
 
 TODO:
 
-1. Fix CalcSwingCurve tech factor, right now the data seems to be all over the place for some maps
-2. Better way to represent speed? Or at least rework the NPS
-3. Detect MappingExtension/NoodleExtension maps and ignore them?
+1. Handle map under X notes? Idk
+2. Detect MappingExtension/NoodleExtension maps and ignore them?
