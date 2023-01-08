@@ -14,7 +14,3 @@ TODO:
 1. Fix CalcSwingCurve tech factor, right now the data seems to be all over the place for some maps
 2. Better way to represent speed? Or at least rework the NPS
 3. Detect MappingExtension/NoodleExtension maps and ignore them?
-
-BUG TO FIX:
-
-+ Index was out of range get thrown out randomly for some specific maps (in ProcessSwing I think). There's trycatch so the algorithm will still work anyway for now.
