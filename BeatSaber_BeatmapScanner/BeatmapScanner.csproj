@@ -123,6 +123,11 @@
 		  <Private>False</Private>
 		  <SpecificVersion>False</SpecificVersion>
 	  </Reference>
+	  <Reference Include="BS_Utils">
+		  <HintPath>$(BeatSaberDir)\Plugins\BS_Utils.dll</HintPath>
+		  <Private>False</Private>
+		  <SpecificVersion>False</SpecificVersion>
+	  </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm\BeatmapScanner.cs" />

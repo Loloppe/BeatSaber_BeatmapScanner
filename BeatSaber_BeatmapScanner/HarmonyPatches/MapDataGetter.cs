@@ -8,13 +8,13 @@ namespace BeatmapScanner.Patches
     {
         static void Postfix(IDifficultyBeatmap ____selectedDifficultyBeatmap)
         {
-            if(Config.Instance.Enabled)
+            if(Config.Instance.Enabled && !Plugin.inGame)
             {
                 var hasRequirement = SongCore.Collections.RetrieveDifficultyData(____selectedDifficultyBeatmap)?
                     .additionalDifficultyData?
-                    ._requirements?.Any(x => x == "Noodle Extensions" || x == " Mapping Extensions") == true;
+                    ._requirements?.Any(x => x == "Noodle Extensions" || x == "Mapping Extensions") == true;
 
-                if(!hasRequirement)
+                if (!hasRequirement)
                 {
                     if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap)
                     {
@@ -65,6 +65,7 @@ namespace BeatmapScanner.Patches
             }
             else
             {
+                Plugin.inGame = false;
                 Plugin.ClearUI();
             }
         }
@@ -92,6 +93,15 @@ namespace BeatmapScanner.Patches
     public class Request
     {
         static void Postfix()
+        {
+            Plugin.ClearUI();
+        }
+    }
+
+    [HarmonyPatch(typeof(PracticeViewController), nameof(StandardLevelDetailViewController.SetData))]
+    public class Filter
+    {
+        static void Prefix()
         {
             Plugin.ClearUI();
         }
