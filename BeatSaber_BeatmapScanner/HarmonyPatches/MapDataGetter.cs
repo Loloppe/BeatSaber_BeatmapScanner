@@ -97,13 +97,4 @@ namespace BeatmapScanner.Patches
             Plugin.ClearUI();
         }
     }
-
-    [HarmonyPatch(typeof(PracticeViewController), nameof(StandardLevelDetailViewController.SetData))]
-    public class Filter
-    {
-        static void Prefix()
-        {
-            Plugin.ClearUI();
-        }
-    }
 }
