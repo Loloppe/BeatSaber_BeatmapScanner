@@ -16,8 +16,8 @@ namespace BeatmapScanner.Views
 
         public static readonly Vector2 CanvasSize = new(100, 50);
         public static readonly Vector3 Scale = new(0.01f, 0.01f, 0.01f);
-        public static readonly Vector3 RightPosition = new(0.8f, 0.11f, 3.5f);
-        public static readonly Vector3 RightRotation = new(0, 5, 0);
+        public static readonly Vector3 RightPosition = new(0.85f, 0.11f, 4.2f);
+        public static readonly Vector3 RightRotation = new(0, 10, 0);
 
         [Inject]
         public void Constructor(PlatformLeaderboardViewController platformLeaderboardViewController)
@@ -50,6 +50,7 @@ namespace BeatmapScanner.Views
                 Plugin.ui.fontSize = 12f;
                 Plugin.ui.color = Color.white;
                 Plugin.ui.text = "";
+                Plugin.ui.alignment = TMPro.TextAlignmentOptions.Left;
 
                 this._platformLeaderboardViewController.didActivateEvent += this.OnLeaderboardActivated;
                 this._platformLeaderboardViewController.didDeactivateEvent += this.OnLeaderboardDeactivated;

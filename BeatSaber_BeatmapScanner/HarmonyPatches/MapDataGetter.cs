@@ -28,7 +28,7 @@ namespace BeatmapScanner.Patches
                             else
                             {
                                 Plugin.difficulty = "☆" + value.star.ToString();
-                                Plugin.tech = "   Tech : " + value.tech.ToString();
+                                Plugin.tech = "    Tech : " + value.tech.ToString();
                                 Plugin.SetUI();
                                 if (value.star > 10f)
                                 {
