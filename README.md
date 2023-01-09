@@ -5,9 +5,8 @@ This plugin will show a difficulty value at the bottom of the selected custom be
 
 The algorithm currently use:
 + Average swing distance as base
-+ Average angle strain + type for tech
-+ Average note per second for speed
++ Average angle strain + type + inverted for tech
++ Average intensity for speed
 
 To fix:
 - Some maps with Mapping Extension still end up being analyzed for some reason (it shouldn't). Haven't really tested much, I don't use those plugins.
-- Some time the UI seems to broke and the label start duplicating, couldn't reproduce it properly.
