@@ -20,6 +20,8 @@ namespace BeatmapScanner
         internal static CurvedTextMeshPro difficulty;
         internal static CurvedTextMeshPro t;
         internal static CurvedTextMeshPro tech;
+        internal static CurvedTextMeshPro i;
+        internal static CurvedTextMeshPro intensity;
 
         static class BsmlWrapper
         {
@@ -27,7 +29,7 @@ namespace BeatmapScanner
 
             public static void EnableUI()
             {
-                void wrap() => BSMLSettings.instance.AddSettingsMenu("BeatmapScanner", "BeatmapScanner.Views.settings.bsml", Config.Instance);
+                static void wrap() => BSMLSettings.instance.AddSettingsMenu("BeatmapScanner", "BeatmapScanner.Views.settings.bsml", Config.Instance);
 
                 if (hasBsml)
                 {
@@ -36,7 +38,7 @@ namespace BeatmapScanner
             }
             public static void DisableUI()
             {
-                void wrap() => BSMLSettings.instance.RemoveSettingsMenu(Config.Instance);
+                static void wrap() => BSMLSettings.instance.RemoveSettingsMenu(Config.Instance);
 
                 if (hasBsml)
                 {
@@ -49,6 +51,7 @@ namespace BeatmapScanner
         {
             difficulty.text = "";
             tech.text = "";
+            intensity.text = "";
         }
 
         [Init]

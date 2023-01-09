@@ -7,4 +7,5 @@
 	<color-setting text='Mid value' value='B' apply-on-change='true' bind-value='true' />
 	<color-setting text='High value' value='C' apply-on-change='true' bind-value='true' />
 	<color-setting text='Extreme value' value='D' apply-on-change='true' bind-value='true' />
+	<checkbox-setting apply-on-change="true" value="Log" text="Enable Logs"/>
 </settings-container>

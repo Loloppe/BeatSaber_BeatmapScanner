@@ -20,24 +20,34 @@ namespace BeatmapScanner.Patches
                     {
                         if (beatmap.beatmapSaveData.colorNotes.Count > 20)
                         {
-                            var value = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, ____selectedDifficultyBeatmap.level.beatsPerMinute);
-                            if (value.star <= 0f || value.star > 999f)
+                            if(Config.Instance.Log)
+                            {
+                                Plugin.Log.Info("---------------------------------------------------------");
+                                Plugin.Log.Info("Beatmap Name: " + beatmap.level.songName + " Difficulty: " + beatmap.difficulty);
+                            }
+                            
+                            var (star, tech, intensity) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.level.beatsPerMinute);
+
+                            if (star <= 0f || star > 999f)
                             {
                                 Plugin.ClearUI();
                             }
                             else
                             {
-                                Plugin.difficulty.text = value.star.ToString();
-                                Plugin.tech.text = value.tech.ToString();
-                                if (value.star > 10f)
+
+                                Plugin.difficulty.text = star.ToString();
+                                Plugin.tech.text = tech.ToString();
+                                Plugin.intensity.text = intensity.ToString();
+
+                                if (star > 10f)
                                 {
                                     Plugin.difficulty.color = Config.Instance.D;
                                 }
-                                else if (value.star >= 7.5f)
+                                else if (star >= 7.5f)
                                 {
                                     Plugin.difficulty.color = Config.Instance.C;
                                 }
-                                else if (value.star >= 5f)
+                                else if (star >= 5f)
                                 {
                                     Plugin.difficulty.color = Config.Instance.B;
                                 }
@@ -46,21 +56,38 @@ namespace BeatmapScanner.Patches
                                     Plugin.difficulty.color = Config.Instance.A;
                                 }
 
-                                if (value.tech > 1.7f)
+                                if (tech > 0.5f)
                                 {
                                     Plugin.tech.color = Config.Instance.D;
                                 }
-                                else if (value.tech >= 1.5f)
+                                else if (tech >= 0.4f)
                                 {
                                     Plugin.tech.color = Config.Instance.C;
                                 }
-                                else if (value.tech >= 1.3f)
+                                else if (tech >= 0.3f)
                                 {
                                     Plugin.tech.color = Config.Instance.B;
                                 }
                                 else
                                 {
                                     Plugin.tech.color = Config.Instance.A;
+                                }
+
+                                if (intensity > 1f)
+                                {
+                                    Plugin.intensity.color = Config.Instance.D;
+                                }
+                                else if (intensity >= 0.75f)
+                                {
+                                    Plugin.intensity.color = Config.Instance.C;
+                                }
+                                else if (intensity >= 0.5f)
+                                {
+                                    Plugin.intensity.color = Config.Instance.B;
+                                }
+                                else
+                                {
+                                    Plugin.intensity.color = Config.Instance.A;
                                 }
                             }
                         }
@@ -79,6 +106,16 @@ namespace BeatmapScanner.Patches
                     Plugin.ClearUI();
                 }
             }
+        }
+    }
+
+    // Fix a bug that happen when changing colors in the config menu and then pressing Back instead of Apply.
+    [HarmonyPatch(typeof(MainFlowCoordinator), nameof(MainFlowCoordinator.HandleSoloFreePlayFlowCoordinatorDidFinish))]
+    public class BackButtonReset
+    {
+        static void Postfix()
+        {
+            Plugin.ClearUI();
         }
     }
 }

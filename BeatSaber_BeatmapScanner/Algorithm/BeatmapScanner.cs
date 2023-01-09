@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using static BeatmapSaveDataVersion3.BeatmapSaveData;
 using static BeatmapScanner.Algorithm.Data;
 
@@ -13,16 +12,16 @@ namespace BeatmapScanner.Algorithm
 {
     internal class BeatmapScanner
     {
-        public static (float star, float tech) Analyzer(List<ColorNoteData> notes, float bpm)
+        public static (float star, float tech, float intensity) Analyzer(List<ColorNoteData> notes, float bpm)
         {
-            var point = 1f;
-            var techList = new List<float>();
-            var tech = 1f;
-            var temp = 1f;
-            var nps = 1f;
-
             if (notes.Count > 2 && bpm > 0)
             {
+                float point;
+                var temp = 1f;
+                var tech = 1f;
+                var intensity = 1f;
+                var inverted = 1f;
+
                 List<ColorNoteData> red = new();
                 List<ColorNoteData> blue = new();
 
@@ -41,26 +40,37 @@ namespace BeatmapScanner.Algorithm
                 var FullData = new List<SwingData>();
                 if (red.Count() > 0)
                 {
+                    if (Config.Instance.Log)
+                    {
+                        Plugin.Log.Info("Left Data");
+                    }
                     var LeftSwingData = Tech.ProcessSwing(red);
                     var LeftPatternData = Tech.SplitPattern(LeftSwingData);
                     LeftSwingData = Tech.PredictParity(LeftPatternData, true);
                     LeftSwingData = Tech.CalcSwingCurve(LeftSwingData, true);
                     FullData.AddRange(LeftSwingData);
-                    techList = GetTechMultiplier(red);
+                    (tech, inverted) = GetTech(red);
+                    intensity = GetIntensity(red, bpm);
                 }
 
                 if (blue.Count() > 0)
                 {
+                    if (Config.Instance.Log)
+                    {
+                        Plugin.Log.Info("Right Data");
+                    }
                     var RightSwingData = Tech.ProcessSwing(blue);
                     var RightPatternData = Tech.SplitPattern(RightSwingData);
                     RightSwingData = Tech.PredictParity(RightPatternData, false);
                     RightSwingData = Tech.CalcSwingCurve(RightSwingData, false);
                     FullData.AddRange(RightSwingData);
-                    techList.AddRange(GetTechMultiplier(blue));
+                    float t;
+                    float t2;
+                    (t, t2) = GetTech(blue);
+                    tech = (tech + t) / 2;
+                    inverted = (inverted + t2) / 2;
+                    intensity = GetIntensity(notes, bpm);
                 }
-
-                techList = techList.OrderBy(o => o).ToList();
-                FullData = FullData.OrderBy(o => o.Time).ToList();
 
                 // Tech stuff
                 var angleStain = 0f;
@@ -72,16 +82,11 @@ namespace BeatmapScanner.Algorithm
 
                 angleStain /= FullData.Count();
 
-                for (int i = 0; i < techList.Count(); i++)
-                {
-                    tech += techList[i];
-                }
-
-                tech /= techList.Count();
-
                 tech *= (angleStain * 2f);
 
-                tech++;
+                tech += inverted;
+
+                Math.Round(tech, 2);
 
                 // Average of swing length as base with the Bezier curve.
                 for (int i = 0; i < FullData.Count(); i++)
@@ -90,61 +95,74 @@ namespace BeatmapScanner.Algorithm
                 }
                 temp /= FullData.Count();
 
-                // Multiplied by Tech
-                point = temp * tech;
+                Math.Round(temp, 2);
 
-                // Multiplied by NPS
-                nps = (notes.Count() / GetActiveSecond(notes, bpm)) * 0.75f;
-                point *= nps;
-                
-                // Rounded to two point decimal
-                point = (float)Math.Round(point, 2);
+                intensity /= 10;
+                Math.Round(intensity, 2);
+
+                point = (temp * (1 + tech) * (1 + (intensity * 5)));
+
+                // Debug
+                if(Config.Instance.Log)
+                {
+                    Plugin.Log.Info("Overall");
+                    Plugin.Log.Info("Base: " + temp + " Tech: " + tech + " Intensity: " + intensity + " Inverted: " + inverted + " Final: " + point);
+                }
+
+                return ((float)Math.Round(point, 2), (float)Math.Round(tech, 2), (float)Math.Round(intensity, 2));
             }
-
-            return (point, (float)Math.Round(tech, 2));
+            else
+            {
+                return (-1f, -1f, -1f);
+            }
         }
 
-        public static float GetActiveSecond(List<ColorNoteData> notes, float bpm)
+        public static float GetIntensity(List<ColorNoteData> notes, float bpm)
         {
-            var beat = 0f;
+            var count = 0;
+            var intensity = 1f;
             ColorNoteData lastNote = notes[0];
+
+            var speed = ((bpm * 1.75f) / 100);
 
             foreach(var note in notes)
             {
-                if (note.beat - lastNote.beat < 0.125)
+                if (note.beat - lastNote.beat <= 0.15)
                 {
                     lastNote = note;
+                    count++;
                     continue;
                 }
 
-                // Only calculate if there's more than one note every four beats
-                if (note.beat - lastNote.beat <= 4)
-                {
-                    beat += note.beat - lastNote.beat;
-                }
-                else 
-                {
-                    beat += 0.25f;    
-                }
+                intensity += speed / (note.beat - lastNote.beat);
 
                 lastNote = note;
             }
 
-            return MathUtil.ConvertBeat(beat, bpm) / 1000;
+            return (float)Math.Round(intensity / (notes.Count() - count), 2);
         }
 
-        public static List<float> GetTechMultiplier(List<ColorNoteData> notes)
+        public static (float, float) GetTech(List<ColorNoteData> notes)
         {
-            List<float> multiplier = new();
-            var assumed = false;
+            var multiplier = 0f;
+            bool assumed;
             var temp = 0f;
             int current;
             var previous = (int)notes[0].cutDirection;
             var linear = 1f;
             var semi = 1.25f;
             var tech = 4f;
-            var semidd = 5f;
-            var dd = 6f;
+            var semidd = 4.5f;
+            var dd = 5f;
+            var inverted = 0f;
+
+            var count = 0;
+            var count1 = 0;
+            var count2 = 0;
+            var count3 = 0;
+            var count4 = 0;
+            var count5 = 0;
+            var count6 = 0;
 
             if (previous == 8) // Assume that the first note is a down
             {
@@ -155,8 +173,9 @@ namespace BeatmapScanner.Algorithm
             {
                 assumed = false;
 
-                if (notes[i].beat - notes[i - 1].beat < 0.125)
+                if (notes[i].beat - notes[i - 1].beat <= 0.15)
                 {
+                    count++;
                     continue;
                 }
 
@@ -403,34 +422,69 @@ namespace BeatmapScanner.Algorithm
                         break;
                 }
 
-                if(temp > tech && notes[i].beat - notes[i - 1].beat >= 0.5) // Possibly bomb reset
+                // Log stuff
+                if(Config.Instance.Log)
                 {
-                    temp = tech;
-                }
-
-                if(temp > tech && assumed) // Probably wrong flow from assuming any direction
-                {
-                    temp = tech;
+                    if (temp == linear)
+                    {
+                        count1++;
+                    }
+                    else if (temp == semi)
+                    {
+                        count2++;
+                    }
+                    else if (temp == tech)
+                    {
+                        count3++;
+                    }
+                    else if(temp == semidd)
+                    {
+                        count4++;
+                    }
+                    else if(temp == dd)
+                    {
+                        count5++;
+                    }
                 }
 
                 var type = 0;
 
-                if(temp >= tech)
+                if (temp >= tech)
                 {
                     type = 2;
                 }
 
-                if(Helper.DetectInverted(notes[i], notes[i - 1], type))
+                if (Helper.DetectInverted(notes[i], notes[i - 1], type))
                 {
-                    temp += tech;
+                    inverted += 3f;
+                    count6++; 
+                }
+
+                if (temp >= tech && notes[i].beat - notes[i - 1].beat >= 1) // Possibly bomb reset or just slow tech
+                {
+                    temp = tech;
+                }
+                else if (temp >= tech && notes[i].beat - notes[i - 1].beat >= 0.5)
+                {
+                    temp = tech;
+                }
+
+                if(temp >= tech && assumed) // Probably wrong flow from assuming any direction
+                {
+                    temp = semi;
                 }
 
                 previous = current;
 
-                multiplier.Add(temp);
+                multiplier += temp;
             }
 
-            return multiplier;
+            if(Config.Instance.Log)
+            {
+                Plugin.Log.Info("Linear: " + count1 + " Semi: " + count2 + " Tech: " + count3 + " SemiDD: " + count4 + " DD: " + count5 + " Inverted: " + count6);
+            }
+
+            return ((float)Math.Round(multiplier / (notes.Count() - count), 2), (float)Math.Round(inverted / (notes.Count() - count), 2));
         }
     }
 }

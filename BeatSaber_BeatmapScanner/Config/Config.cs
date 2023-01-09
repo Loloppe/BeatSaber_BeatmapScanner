@@ -11,8 +11,9 @@ namespace BeatmapScanner
     {
         public static Config Instance;
         public virtual bool Enabled { get; set; } = true;
+        public virtual bool Log { get; set; } = false;
         [UseConverter(typeof(ColorConverter))]
-        public virtual Color A { get; set; } = Color.gray;
+        public virtual Color A { get; set; } = new Color(0.62f, 0.62f, 0.62f);
         [UseConverter(typeof(ColorConverter))]
         public virtual Color B { get; set; } = Color.yellow;
         [UseConverter(typeof(ColorConverter))]
