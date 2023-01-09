@@ -8,7 +8,7 @@ namespace BeatmapScanner.Patches
     {
         static void Postfix(IDifficultyBeatmap ____selectedDifficultyBeatmap)
         {
-            if(Config.Instance.Enabled && !Plugin.inGame)
+            if(Config.Instance.Enabled)
             {
                 var hasRequirement = SongCore.Collections.RetrieveDifficultyData(____selectedDifficultyBeatmap)?
                     .additionalDifficultyData?
@@ -27,24 +27,40 @@ namespace BeatmapScanner.Patches
                             }
                             else
                             {
-                                Plugin.difficulty = "☆" + value.star.ToString();
-                                Plugin.tech = "    Tech : " + value.tech.ToString();
-                                Plugin.SetUI();
+                                Plugin.difficulty.text = value.star.ToString();
+                                Plugin.tech.text = value.tech.ToString();
                                 if (value.star > 10f)
                                 {
-                                    Plugin.ui.color = Config.Instance.D;
+                                    Plugin.difficulty.color = Config.Instance.D;
                                 }
                                 else if (value.star >= 7.5f)
                                 {
-                                    Plugin.ui.color = Config.Instance.C;
+                                    Plugin.difficulty.color = Config.Instance.C;
                                 }
                                 else if (value.star >= 5f)
                                 {
-                                    Plugin.ui.color = Config.Instance.B;
+                                    Plugin.difficulty.color = Config.Instance.B;
                                 }
                                 else
                                 {
-                                    Plugin.ui.color = Config.Instance.A;
+                                    Plugin.difficulty.color = Config.Instance.A;
+                                }
+
+                                if (value.tech > 1.7f)
+                                {
+                                    Plugin.tech.color = Config.Instance.D;
+                                }
+                                else if (value.tech >= 1.5f)
+                                {
+                                    Plugin.tech.color = Config.Instance.C;
+                                }
+                                else if (value.tech >= 1.3f)
+                                {
+                                    Plugin.tech.color = Config.Instance.B;
+                                }
+                                else
+                                {
+                                    Plugin.tech.color = Config.Instance.A;
                                 }
                             }
                         }
@@ -63,38 +79,6 @@ namespace BeatmapScanner.Patches
                     Plugin.ClearUI();
                 }
             }
-            else
-            {
-                Plugin.inGame = false;
-                Plugin.ClearUI();
-            }
-        }
-    }
-
-    [HarmonyPatch(typeof(StandardLevelDetailView), nameof(StandardLevelDetailView.ClearContent))]
-    public class ResetData
-    {
-        static void Postfix()
-        {
-            Plugin.ClearUI();
-        }
-    }
-
-    [HarmonyPatch(typeof(MainFlowCoordinator), nameof(MainFlowCoordinator.HandleSoloFreePlayFlowCoordinatorDidFinish))]
-    public class BackButtonReset
-    {
-        static void Postfix()
-        {
-            Plugin.ClearUI();
-        }
-    }
-
-    [HarmonyPatch(typeof(PracticeViewController), nameof(PracticeViewController.RefreshUI))]
-    public class Request
-    {
-        static void Postfix()
-        {
-            Plugin.ClearUI();
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using BeatmapScanner.Views;
-using UnityEngine;
 using Zenject;
 
 namespace BeatmapScanner.Installers
@@ -8,7 +7,7 @@ namespace BeatmapScanner.Installers
     {
         public override void InstallBindings()
         {
-            this.Container.BindInterfacesAndSelfTo<BeatmapScannerViewer>().FromNewComponentOn(new GameObject()).AsSingle().NonLazy();
+            Container.BindInterfacesTo<ArtworkViewManager>().AsSingle();
         }
     }
 }

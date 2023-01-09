@@ -7,7 +7,6 @@ using SiraUtil.Zenject;
 using IPALogger = IPA.Logging.Logger;
 using BeatSaberMarkupLanguage.Settings;
 using IPA.Config.Stores;
-using UnityEngine.SceneManagement;
 
 namespace BeatmapScanner
 {
@@ -17,10 +16,10 @@ namespace BeatmapScanner
         internal static Plugin Instance;
         internal static IPALogger Log;
         internal static Harmony harmony;
-        internal static CurvedTextMeshPro ui;
-        internal static string difficulty;
-        internal static string tech;
-        internal static bool inGame = false;
+        internal static CurvedTextMeshPro star;
+        internal static CurvedTextMeshPro difficulty;
+        internal static CurvedTextMeshPro t;
+        internal static CurvedTextMeshPro tech;
 
         static class BsmlWrapper
         {
@@ -46,16 +45,10 @@ namespace BeatmapScanner
             }
         }
 
-        public static void SetUI()
-        {
-            ui.text = difficulty + tech;
-        }
-
         public static void ClearUI()
         {
-            difficulty = "";
-            tech = "";
-            ui.text = "";
+            difficulty.text = "";
+            tech.text = "";
         }
 
         [Init]
@@ -71,23 +64,13 @@ namespace BeatmapScanner
         [OnEnable]
         public void OnEnable()
         {
-            SceneManager.activeSceneChanged += OnActiveSceneChanged;
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             BsmlWrapper.EnableUI();
-        }
-
-        public void OnActiveSceneChanged(Scene prev, Scene next)
-        {
-            if (BS_Utils.SceneNames.Game == next.name)
-            {
-                inGame = true;
-            }
         }
 
         [OnDisable]
         public void OnDisable()
         {
-            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             harmony.UnpatchSelf();
             BsmlWrapper.DisableUI();
         }
