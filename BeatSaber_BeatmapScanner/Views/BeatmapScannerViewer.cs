@@ -16,7 +16,7 @@ namespace BeatmapScanner.Views
 
         public static readonly Vector2 CanvasSize = new(100, 50);
         public static readonly Vector3 Scale = new(0.01f, 0.01f, 0.01f);
-        public static readonly Vector3 RightPosition = new(0.85f, 0.11f, 4.2f);
+        public static readonly Vector3 RightPosition = new(0.68f, 0.625f, 4.25f);
         public static readonly Vector3 RightRotation = new(0, 10, 0);
 
         [Inject]

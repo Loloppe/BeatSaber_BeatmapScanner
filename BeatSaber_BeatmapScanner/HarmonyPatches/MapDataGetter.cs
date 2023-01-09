@@ -87,4 +87,13 @@ namespace BeatmapScanner.Patches
             Plugin.ClearUI();
         }
     }
+
+    [HarmonyPatch(typeof(PracticeViewController), nameof(PracticeViewController.RefreshUI))]
+    public class Request
+    {
+        static void Postfix()
+        {
+            Plugin.ClearUI();
+        }
+    }
 }
