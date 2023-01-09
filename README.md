@@ -9,5 +9,5 @@ The algorithm currently use:
 + Average note per second for speed
 
 To fix:
-- Data still show if you press song pack filter, favorite filter or a playlist (no idea how to fix that, would probably be easier to just link the text to an actual GameObject that already exist instead. That way we could remove the rest of the Harmony Patches.
-- Some maps with Mapping Extension still end up being analyzed for some reason (it shouldn't). Haven't really tested much.
+- Some maps with Mapping Extension still end up being analyzed for some reason (it shouldn't). Haven't really tested much, I don't use those plugins.
+- Some time the UI seems to broke and the label start duplicating, couldn't reproduce it properly.
