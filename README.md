@@ -13,7 +13,7 @@ The algorithm currently use:
 To fix:
 - Some maps with Mapping Extension still end up being analyzed for some reason (it shouldn't). Haven't really tested much, I don't use those plugins.
 - Tech map that heavily rely on wrist rolls end up super overweighted because it both affect Tech and Movement, need to nerf that somehow.
+- DD heavy map ended up nerfed due to my fix to true acc reset maps, need to somehow fix that (or reduce the nerf).
 
 To do:
-- Make it usable in multiplayer (maybe by displaying the values in the config menu)
 - Port the plugin to ChroMapper
