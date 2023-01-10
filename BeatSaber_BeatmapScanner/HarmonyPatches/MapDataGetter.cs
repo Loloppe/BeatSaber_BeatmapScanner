@@ -26,7 +26,7 @@ namespace BeatmapScanner.Patches
                                 Plugin.Log.Info("Beatmap Name: " + beatmap.level.songName + " Difficulty: " + beatmap.difficulty);
                             }
                             
-                            var (star, tech, intensity) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.level.beatsPerMinute);
+                            var (star, tech, intensity, movement) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.level.beatsPerMinute);
 
                             if (star <= 0f || star > 999f)
                             {
@@ -38,6 +38,7 @@ namespace BeatmapScanner.Patches
                                 Plugin.difficulty.text = star.ToString();
                                 Plugin.tech.text = tech.ToString();
                                 Plugin.intensity.text = intensity.ToString();
+                                Plugin.movement.text = movement.ToString();
 
                                 if (star > 10f)
                                 {
@@ -73,21 +74,38 @@ namespace BeatmapScanner.Patches
                                     Plugin.tech.color = Config.Instance.A;
                                 }
 
-                                if (intensity > 1f)
+                                if (intensity > 4f)
                                 {
                                     Plugin.intensity.color = Config.Instance.D;
                                 }
-                                else if (intensity >= 0.75f)
+                                else if (intensity >= 0.3f)
                                 {
                                     Plugin.intensity.color = Config.Instance.C;
                                 }
-                                else if (intensity >= 0.5f)
+                                else if (intensity >= 0.2f)
                                 {
                                     Plugin.intensity.color = Config.Instance.B;
                                 }
                                 else
                                 {
                                     Plugin.intensity.color = Config.Instance.A;
+                                }
+
+                                if (movement > 0.9f)
+                                {
+                                    Plugin.movement.color = Config.Instance.D;
+                                }
+                                else if (movement >= 0.6f)
+                                {
+                                    Plugin.movement.color = Config.Instance.C;
+                                }
+                                else if (movement >= 0.3f)
+                                {
+                                    Plugin.movement.color = Config.Instance.B;
+                                }
+                                else
+                                {
+                                    Plugin.movement.color = Config.Instance.A;
                                 }
                             }
                         }
@@ -105,6 +123,10 @@ namespace BeatmapScanner.Patches
                 {
                     Plugin.ClearUI();
                 }
+            }
+            else
+            {
+                Plugin.ClearUI();
             }
         }
     }

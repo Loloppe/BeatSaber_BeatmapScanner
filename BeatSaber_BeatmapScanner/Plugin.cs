@@ -7,6 +7,7 @@ using SiraUtil.Zenject;
 using IPALogger = IPA.Logging.Logger;
 using BeatSaberMarkupLanguage.Settings;
 using IPA.Config.Stores;
+using BeatSaberMarkupLanguage.GameplaySetup;
 
 namespace BeatmapScanner
 {
@@ -22,6 +23,8 @@ namespace BeatmapScanner
         internal static CurvedTextMeshPro tech;
         internal static CurvedTextMeshPro i;
         internal static CurvedTextMeshPro intensity;
+        internal static CurvedTextMeshPro m;
+        internal static CurvedTextMeshPro movement;
 
         static class BsmlWrapper
         {
@@ -30,19 +33,23 @@ namespace BeatmapScanner
             public static void EnableUI()
             {
                 static void wrap() => BSMLSettings.instance.AddSettingsMenu("BeatmapScanner", "BeatmapScanner.Views.settings.bsml", Config.Instance);
+                void wrap2() => GameplaySetup.instance.AddTab("BeatmapScanner", "BeatmapScanner.Views.settings.bsml", Config.Instance, MenuType.All);
 
                 if (hasBsml)
                 {
                     wrap();
+                    wrap2();
                 }
             }
             public static void DisableUI()
             {
                 static void wrap() => BSMLSettings.instance.RemoveSettingsMenu(Config.Instance);
+                void wrap2() => GameplaySetup.instance.RemoveTab("BeatmapScanner");
 
                 if (hasBsml)
                 {
                     wrap();
+                    wrap2();
                 }
             }
         }
@@ -52,6 +59,7 @@ namespace BeatmapScanner
             difficulty.text = "";
             tech.text = "";
             intensity.text = "";
+            movement.text = "";
         }
 
         [Init]

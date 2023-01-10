@@ -1,6 +1,10 @@
 ﻿<settings-container>
 	<checkbox-setting apply-on-change="true" value="Enabled" text="Enable Plugin"/>
 	<horizontal>
+		<text text='Need to reload/apply to apply this feature' align='Center'/>
+	</horizontal>
+	<checkbox-setting apply-on-change="true" value="ImageCoverExpander" text="Use ImageCoverExpander"/>
+	<horizontal>
 		<text text='Colors' align='Center'/>
 	</horizontal>
 	<color-setting text='Low value' value='A' apply-on-change='true' bind-value='true' />
@@ -8,4 +12,13 @@
 	<color-setting text='High value' value='C' apply-on-change='true' bind-value='true' />
 	<color-setting text='Extreme value' value='D' apply-on-change='true' bind-value='true' />
 	<checkbox-setting apply-on-change="true" value="Log" text="Enable Logs"/>
+	<horizontal>
+		<text text='Multiplier (For testing purpose)' align='Center'/>
+	</horizontal>
+	<slider-setting apply-on-change="true" value="Tech" text="Tech"
+					min="1" max="2" increment="0.05"/>
+	<slider-setting apply-on-change="true" value="Intensity" text="Intensity"
+					min="1" max="2" increment="0.05"/>
+	<slider-setting apply-on-change="true" value="Movement" text="Movement"
+					min="1" max="2" increment="0.05"/>
 </settings-container>

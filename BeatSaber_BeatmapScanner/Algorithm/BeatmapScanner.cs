@@ -12,7 +12,7 @@ namespace BeatmapScanner.Algorithm
 {
     internal class BeatmapScanner
     {
-        public static (float star, float tech, float intensity) Analyzer(List<ColorNoteData> notes, float bpm)
+        public static (float star, float tech, float intensity, float movement) Analyzer(List<ColorNoteData> notes, float bpm)
         {
             if (notes.Count > 2 && bpm > 0)
             {
@@ -20,7 +20,7 @@ namespace BeatmapScanner.Algorithm
                 var temp = 1f;
                 var tech = 1f;
                 var intensity = 1f;
-                var inverted = 1f;
+                var movement = 1f;
 
                 List<ColorNoteData> red = new();
                 List<ColorNoteData> blue = new();
@@ -49,8 +49,9 @@ namespace BeatmapScanner.Algorithm
                     LeftSwingData = Tech.PredictParity(LeftPatternData, true);
                     LeftSwingData = Tech.CalcSwingCurve(LeftSwingData, true);
                     FullData.AddRange(LeftSwingData);
-                    (tech, inverted) = GetTech(red);
+                    tech = GetTech(red, bpm);
                     intensity = GetIntensity(red, bpm);
+                    movement = GetMovement(red, bpm);
                 }
 
                 if (blue.Count() > 0)
@@ -64,12 +65,9 @@ namespace BeatmapScanner.Algorithm
                     RightSwingData = Tech.PredictParity(RightPatternData, false);
                     RightSwingData = Tech.CalcSwingCurve(RightSwingData, false);
                     FullData.AddRange(RightSwingData);
-                    float t;
-                    float t2;
-                    (t, t2) = GetTech(blue);
-                    tech = (tech + t) / 2;
-                    inverted = (inverted + t2) / 2;
-                    intensity = GetIntensity(notes, bpm);
+                    tech += GetTech(blue, bpm);
+                    intensity += GetIntensity(notes, bpm);
+                    movement += GetMovement(blue, bpm);
                 }
 
                 // Tech stuff
@@ -82,10 +80,19 @@ namespace BeatmapScanner.Algorithm
 
                 angleStain /= FullData.Count();
 
-                tech *= (angleStain * 2f);
+                if(Config.Instance.Log)
+                {
+                    Plugin.Log.Info("Angle Strain: " + angleStain);
+                }
 
-                tech += inverted;
-
+                tech /= 2; // Average of left and right hand
+                tech--; // 0 should be the default, not 1.
+                tech *= (1 + angleStain);
+                if(tech < 0)
+                {
+                    tech = 0;
+                }
+                tech *= 2;
                 Math.Round(tech, 2);
 
                 // Average of swing length as base with the Bezier curve.
@@ -94,27 +101,190 @@ namespace BeatmapScanner.Algorithm
                     temp += (float)FullData[i].Length;
                 }
                 temp /= FullData.Count();
-
                 Math.Round(temp, 2);
 
-                intensity /= 10;
+                // Intensity
+                intensity /= (2 * 10);
                 Math.Round(intensity, 2);
 
-                point = (temp * (1 + tech) * (1 + (intensity * 5)));
+                // Movement
+                movement /= 2;
+                Math.Round(movement, 2);
+
+                // Final calculation
+                point = (temp * ((1 + tech) * Config.Instance.Tech) * ((1 + movement) * Config.Instance.Movement) * ((1 + intensity) * Config.Instance.Intensity));
 
                 // Debug
                 if(Config.Instance.Log)
                 {
                     Plugin.Log.Info("Overall");
-                    Plugin.Log.Info("Base: " + temp + " Tech: " + tech + " Intensity: " + intensity + " Inverted: " + inverted + " Final: " + point);
+                    Plugin.Log.Info("Base: " + temp + " Tech: " + tech + " Intensity: " + intensity + " Movement: " + movement + " Final: " + point);
                 }
 
-                return ((float)Math.Round(point, 2), (float)Math.Round(tech, 2), (float)Math.Round(intensity, 2));
+                return ((float)Math.Round(point, 2), (float)Math.Round(tech, 2), (float)Math.Round(intensity, 2), (float)Math.Round(movement, 2));
             }
             else
             {
-                return (-1f, -1f, -1f);
+                return (-1f, -1f, -1f, -1f);
             }
+        }
+
+        public static int[] VerticalSwing = { 0, 1, 4, 5, 6, 7};
+        public static int[] DiagonalSwing = { 4, 5, 6, 7 };
+
+        public static float GetMovement(List<ColorNoteData> notes, float bpm)
+        {
+            var movement = 1f;
+            var inverted = 5f;
+            var previous = 1;
+            int current;
+            float temp;
+            var count = 0;
+            var count2 = 0;
+
+            ColorNoteData lastNote = notes[0];
+
+            foreach (var note in notes)
+            {
+                current = (int)note.cutDirection;
+                temp = 0f;
+
+                if (note.beat - lastNote.beat <= 0.15) // Skip pattern or stuff that are just too fast.
+                {
+                    count2++;
+                    if(current != 8)
+                    {
+                        previous = current;
+                    }
+                    lastNote = note;
+                    continue;
+                }
+
+                if ((int)note.cutDirection == 8)
+                {
+                    // Gotta simulate next cut if it's a dot
+                    current = Helper.ReverseCutDirection(previous);
+                }
+
+                if (!(lastNote.line == note.line && lastNote.layer == note.layer)) // We don't want to check fused notes
+                {
+                    if (DiagonalSwing.Contains(previous))
+                    {
+                        if (previous == 4 || previous == 7) // Up-Left and Down-Right
+                        {
+                            if (lastNote.layer == note.layer - 1 && lastNote.line == note.line - 1) // Side temp
+                            {
+                                temp += Math.Abs(lastNote.line - note.line);
+                            }
+                            else if (lastNote.layer == note.layer + 1 && lastNote.line == note.line + 1) // Side temp
+                            {
+                                temp += Math.Abs(lastNote.line - note.line);
+                            }
+                            else if (lastNote.layer == note.layer - 2 && lastNote.line == note.line - 2) // Side temp
+                            {
+                                temp += Math.Abs(lastNote.line - note.line);
+                            }
+                            else if (lastNote.layer == note.layer + 2 && lastNote.line == note.line + 2) // Side temp
+                            {
+                                temp += Math.Abs(lastNote.line - note.line);
+                            }
+
+                            if (previous == 4 && lastNote.layer <= note.layer && lastNote.line >= note.line) // Inverted
+                            {
+                                temp += Math.Max(Math.Abs(lastNote.line - note.line), Math.Abs(lastNote.layer - note.layer)) * inverted;
+                                count++;
+                            }
+                            else if (previous == 7 && lastNote.layer >= note.layer && lastNote.line <= note.line) // Inverted
+                            {
+                                temp += Math.Max(Math.Abs(lastNote.line - note.line), Math.Abs(lastNote.layer - note.layer)) * inverted;
+                                count++;
+                            }
+                        }
+                        else if (previous == 5 && previous == 6) // Up-Right and Down-Left
+                        {
+                            if (lastNote.layer == note.layer + 1 && lastNote.line == note.line - 1) // Side temp
+                            {
+                                temp += Math.Abs(lastNote.line - note.line);
+                            }
+                            else if (lastNote.layer == note.layer - 1 && lastNote.line == note.line + 1) // Side temp
+                            {
+                                temp += Math.Abs(lastNote.line - note.line);
+                            }
+                            else if (lastNote.layer == note.layer + 2 && lastNote.line == note.line - 2) // Side temp
+                            {
+                                temp += Math.Abs(lastNote.line - note.line);
+                            }
+                            else if (lastNote.layer == note.layer - 2 && lastNote.line == note.line + 2) // Side temp
+                            {
+                                temp += Math.Abs(lastNote.line - note.line);
+                            }
+
+                            if (previous == 5 && lastNote.layer <= note.layer && lastNote.line <= note.line) // Inverted
+                            {
+                                temp += Math.Max(Math.Abs(lastNote.line - note.line), Math.Abs(lastNote.layer - note.layer)) * inverted;
+                                count++;
+                            }
+                            else if (previous == 6 && lastNote.layer >= note.layer && lastNote.line >= note.line) // Inverted
+                            {
+                                temp += Math.Max(Math.Abs(lastNote.line - note.line), Math.Abs(lastNote.layer - note.layer)) * inverted;
+                                count++;
+                            }
+                        }
+                    }
+                    else if (VerticalSwing.Contains(previous))
+                    {
+                        if (lastNote.line != note.line) // Side temp
+                        {
+                            temp += Math.Abs(lastNote.line - note.line);
+                        }
+
+                        if (lastNote.layer < note.layer && previous == 0 && current == 1) // Inverted
+                        {
+                            temp += Math.Abs(lastNote.layer - note.layer) * inverted;
+                            count++;
+                        }
+                        else if (lastNote.layer > note.layer && previous == 1 && current == 0) // Inverted
+                        {
+                            temp += Math.Abs(lastNote.layer - note.layer) * inverted;
+                            count++;
+                        }
+                    }
+                    else // Horizontal
+                    {
+                        if (lastNote.layer != note.layer)
+                        {
+                            temp += Math.Abs(lastNote.layer - note.layer);
+                        }
+
+                        if (lastNote.line > note.line && previous == 2 && current == 3) // Inverted
+                        {
+                            temp += Math.Abs(lastNote.line - note.line) * inverted;
+                            count++;
+                        }
+                        else if (lastNote.line < note.line && previous == 3 && current == 2) // Inverted
+                        {
+                            temp += Math.Abs(lastNote.line - note.line) * inverted;
+                            count++;
+                        }
+                    }
+                }
+
+                if (note.beat - lastNote.beat < 0.5 * (bpm / 100)) // Not sure if it's the right way to do it, maybe a static beat value would be better.
+                {
+                    movement += temp / (note.beat - lastNote.beat);
+                }
+
+                previous = current;
+                lastNote = note;
+            }
+
+            // Log stuff
+            if(Config.Instance.Log)
+            {
+                Plugin.Log.Info("Inverted: " + count);
+            }
+            
+            return (float)Math.Round(movement / (notes.Count() - count2), 2);
         }
 
         public static float GetIntensity(List<ColorNoteData> notes, float bpm)
@@ -123,18 +293,18 @@ namespace BeatmapScanner.Algorithm
             var intensity = 1f;
             ColorNoteData lastNote = notes[0];
 
-            var speed = ((bpm * 1.75f) / 100);
+            var speed = ((bpm * 1.75f) / 100); // Maybe
 
             foreach(var note in notes)
             {
-                if (note.beat - lastNote.beat <= 0.15)
+                if (note.beat - lastNote.beat <= 0.15) // Skip pattern or stuff that are too fast
                 {
                     lastNote = note;
                     count++;
                     continue;
                 }
 
-                intensity += speed / (note.beat - lastNote.beat);
+                intensity += speed / (note.beat - lastNote.beat); // Calculate intensity based on speed
 
                 lastNote = note;
             }
@@ -142,7 +312,7 @@ namespace BeatmapScanner.Algorithm
             return (float)Math.Round(intensity / (notes.Count() - count), 2);
         }
 
-        public static (float, float) GetTech(List<ColorNoteData> notes)
+        public static float GetTech(List<ColorNoteData> notes, float bpm)
         {
             var multiplier = 0f;
             bool assumed;
@@ -151,10 +321,8 @@ namespace BeatmapScanner.Algorithm
             var previous = (int)notes[0].cutDirection;
             var linear = 1f;
             var semi = 1.25f;
-            var tech = 4f;
-            var semidd = 4.5f;
-            var dd = 5f;
-            var inverted = 0f;
+            var tech = 5f;
+            var dd = 6f;
 
             var count = 0;
             var count1 = 0;
@@ -173,7 +341,7 @@ namespace BeatmapScanner.Algorithm
             {
                 assumed = false;
 
-                if (notes[i].beat - notes[i - 1].beat <= 0.15)
+                if (notes[i].beat - notes[i - 1].beat <= 0.15) // Skip pattern or stuff that are too fast
                 {
                     count++;
                     continue;
@@ -187,7 +355,7 @@ namespace BeatmapScanner.Algorithm
                     assumed = true;
                 }
 
-                switch (previous)
+                switch (previous) // Try to get type of tech based on cut direction
                 {
                     case 0: switch(current)
                         {
@@ -204,10 +372,10 @@ namespace BeatmapScanner.Algorithm
                                 temp = tech;
                                 break;
                             case 4: 
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 5:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 6:
                                 temp = semi;
@@ -239,10 +407,10 @@ namespace BeatmapScanner.Algorithm
                                 temp = semi;
                                 break;
                             case 6:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 7:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                         }
                         break;
@@ -262,13 +430,13 @@ namespace BeatmapScanner.Algorithm
                                 temp = linear;
                                 break;
                             case 4:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 5:
                                 temp = semi;
                                 break;
                             case 6:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 7:
                                 temp = semi;
@@ -294,13 +462,13 @@ namespace BeatmapScanner.Algorithm
                                 temp = semi;
                                 break;
                             case 5:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 6:
                                 temp = semi;
                                 break;
                             case 7:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                         }
                         break;
@@ -308,13 +476,13 @@ namespace BeatmapScanner.Algorithm
                         switch (current)
                         {
                             case 0:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 1:
                                 temp = semi;
                                 break;
                             case 2:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 3:
                                 temp = semi;
@@ -337,7 +505,7 @@ namespace BeatmapScanner.Algorithm
                         switch (current)
                         {
                             case 0:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 1:
                                 temp = semi;
@@ -346,7 +514,7 @@ namespace BeatmapScanner.Algorithm
                                 temp = semi;
                                 break;
                             case 3:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 4:
                                 temp = tech;
@@ -369,10 +537,10 @@ namespace BeatmapScanner.Algorithm
                                 temp = semi;
                                 break;
                             case 1:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 2:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 3:
                                 temp = semi;
@@ -398,13 +566,13 @@ namespace BeatmapScanner.Algorithm
                                 temp = semi;
                                 break;
                             case 1:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 2:
                                 temp = semi;
                                 break;
                             case 3:
-                                temp = semidd;
+                                temp = dd;
                                 break;
                             case 4:
                                 temp = linear;
@@ -423,7 +591,7 @@ namespace BeatmapScanner.Algorithm
                 }
 
                 // Log stuff
-                if(Config.Instance.Log)
+                if (Config.Instance.Log)
                 {
                     if (temp == linear)
                     {
@@ -437,41 +605,34 @@ namespace BeatmapScanner.Algorithm
                     {
                         count3++;
                     }
-                    else if(temp == semidd)
+                    else if(temp == dd)
                     {
                         count4++;
                     }
-                    else if(temp == dd)
+                }
+
+                if (temp >= tech && notes[i].beat - notes[i - 1].beat >= 0.4) // Nerf
+                {
+                    if(temp == dd) // DD
                     {
-                        count5++;
+                        temp = linear;
                     }
-                }
-
-                var type = 0;
-
-                if (temp >= tech)
-                {
-                    type = 2;
-                }
-
-                if (Helper.DetectInverted(notes[i], notes[i - 1], type))
-                {
-                    inverted += 3f;
-                    count6++; 
-                }
-
-                if (temp >= tech && notes[i].beat - notes[i - 1].beat >= 1) // Possibly bomb reset or just slow tech
-                {
-                    temp = tech;
-                }
-                else if (temp >= tech && notes[i].beat - notes[i - 1].beat >= 0.5)
-                {
-                    temp = tech;
+                    else
+                    {
+                        temp -= (500 / bpm) * (notes[i].beat - notes[i - 1].beat);
+                        if (temp < linear)
+                        {
+                            temp = linear;
+                        }
+                    }
+                    
+                    count5++;
                 }
 
                 if(temp >= tech && assumed) // Probably wrong flow from assuming any direction
                 {
                     temp = semi;
+                    count6++;
                 }
 
                 previous = current;
@@ -481,10 +642,10 @@ namespace BeatmapScanner.Algorithm
 
             if(Config.Instance.Log)
             {
-                Plugin.Log.Info("Linear: " + count1 + " Semi: " + count2 + " Tech: " + count3 + " SemiDD: " + count4 + " DD: " + count5 + " Inverted: " + count6);
+                Plugin.Log.Info("Linear: " + count1 + " Semi: " + count2 + " Tech: " + count3 + " DD: " + dd + " Nerf: " + count5 + " Assumed Dot: " + count6);
             }
 
-            return ((float)Math.Round(multiplier / (notes.Count() - count), 2), (float)Math.Round(inverted / (notes.Count() - count), 2));
+            return (float)Math.Round(multiplier / (notes.Count() - count), 2);
         }
     }
 }

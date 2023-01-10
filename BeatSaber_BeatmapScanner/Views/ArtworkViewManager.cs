@@ -3,6 +3,7 @@ using Zenject;
 using HMUI;
 using UnityEngine;
 using IPA.Utilities;
+using BeatSaberMarkupLanguage.Components;
 
 // I fused the UI with ImageCoverExpander: https://github.com/Spooky323/ImageCoverExpander/blob/master/ImageCoverExpander/ArtworkViewManager.cs
 
@@ -13,8 +14,8 @@ namespace BeatmapScanner.Views
         private StandardLevelDetailViewController _standardLevelViewController;
         private MainMenuViewController _mainMenuViewController;
 
-        private static readonly Vector3 modifiedSizeDelta = new Vector2(70.5f, 58);
-        private static readonly Vector3 modifiedPositon = new Vector3(-34.4f, -56f, 0f);
+        private static readonly Vector3 modifiedSizeDelta = new(70.5f, 58);
+        private static readonly Vector3 modifiedPositon = new(-34.4f, -56f, 0f);
         private static readonly float modifiedSkew = 0;
 
         public ArtworkViewManager(StandardLevelDetailViewController standardLevelDetailViewController, MainMenuViewController mainMenuViewController)
@@ -41,22 +42,45 @@ namespace BeatmapScanner.Views
             try
             {
                 var imageTransform = levelBarTranform.Find("SongArtwork").GetComponent<RectTransform>();
-                imageTransform.sizeDelta = modifiedSizeDelta;
-                imageTransform.localPosition = modifiedPositon;
-                imageTransform.SetAsFirstSibling();
 
-                var imageView = imageTransform.GetComponent<ImageView>();
-                imageView.color = new Color(0.5f, 0.5f, 0.5f, 1);
-                imageView.preserveAspect = false;
-                FieldAccessor<ImageView, float>.Set(ref imageView, "_skew", modifiedSkew);
+                if (Config.Instance.ImageCoverExpander)
+                {
+                    imageTransform.sizeDelta = modifiedSizeDelta;
+                    imageTransform.localPosition = modifiedPositon;
+                    imageTransform.SetAsFirstSibling();
 
-                Plugin.star = CreateText(imageTransform, "☆", new Vector2(3.6f, 43.75f));
+                    var imageView = imageTransform.GetComponent<ImageView>();
+                    imageView.color = new Color(0.5f, 0.5f, 0.5f, 1);
+                    imageView.preserveAspect = false;
+                    FieldAccessor<ImageView, float>.Set(ref imageView, "_skew", modifiedSkew);
+
+                    // DiTails
+                    var clickableImage = imageTransform.GetComponent<ClickableImage>();
+                    if (clickableImage != null)
+                    {
+                        clickableImage.DefaultColor = new Color(0.5f, 0.5f, 0.5f, 1);
+                        clickableImage.HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1);
+                    }
+                }
+
+                if(Config.Instance.ImageCoverExpander)
+                {
+                    Plugin.star = CreateText(imageTransform, "☆", new Vector2(3.7f, 48.75f));
+                }
+                else
+                {
+                    Plugin.star = CreateText(imageTransform, "☆", new Vector2(3.7f, 1.5f));
+                }
                 Plugin.difficulty = CreateText(Plugin.star.rectTransform, string.Empty, new Vector2(4.2f, 0f));
                 Plugin.t = CreateText(Plugin.difficulty.rectTransform, "T", new Vector2(15f, 0f));
                 Plugin.tech = CreateText(Plugin.t.rectTransform, string.Empty, new Vector2(3f, 0f));
                 Plugin.i = CreateText(Plugin.tech.rectTransform, "I", new Vector2(15f, 0f));
                 Plugin.intensity = CreateText(Plugin.i.rectTransform, string.Empty, new Vector2(3f, 0f));
+                Plugin.m = CreateText(Plugin.intensity.rectTransform, "M", new Vector2(14.8f, 0f));
+                Plugin.movement = CreateText(Plugin.m.rectTransform, string.Empty, new Vector2(3f, 0f));
                 Plugin.star.rectTransform.Rotate(new Vector3(0, 10f));
+                Plugin.i.rectTransform.Rotate(new Vector3(0, 20f));
+
             }
             catch (Exception e)
             {
