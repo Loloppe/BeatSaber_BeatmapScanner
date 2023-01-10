@@ -65,19 +65,19 @@ namespace BeatmapScanner.Views
 
                 if(Config.Instance.ImageCoverExpander)
                 {
-                    Plugin.star = CreateText(imageTransform, "☆", new Vector2(3.7f, 48.75f));
+                    Plugin.star = CreateText(imageTransform, "☆", new Vector2(3.7f, 43.75f));
                 }
                 else
                 {
                     Plugin.star = CreateText(imageTransform, "☆", new Vector2(3.7f, 1.5f));
                 }
                 Plugin.difficulty = CreateText(Plugin.star.rectTransform, string.Empty, new Vector2(4.2f, 0f));
-                Plugin.t = CreateText(Plugin.difficulty.rectTransform, "T", new Vector2(15f, 0f));
+                Plugin.t = CreateText(Plugin.difficulty.rectTransform, "T", new Vector2(14.9f, 0f));
                 Plugin.tech = CreateText(Plugin.t.rectTransform, string.Empty, new Vector2(3f, 0f));
                 Plugin.i = CreateText(Plugin.tech.rectTransform, "I", new Vector2(15f, 0f));
                 Plugin.intensity = CreateText(Plugin.i.rectTransform, string.Empty, new Vector2(3f, 0f));
                 Plugin.m = CreateText(Plugin.intensity.rectTransform, "M", new Vector2(14.8f, 0f));
-                Plugin.movement = CreateText(Plugin.m.rectTransform, string.Empty, new Vector2(3f, 0f));
+                Plugin.movement = CreateText(Plugin.m.rectTransform, string.Empty, new Vector2(2.9f, 0f));
                 Plugin.star.rectTransform.Rotate(new Vector3(0, 10f));
                 Plugin.i.rectTransform.Rotate(new Vector3(0, 20f));
 
