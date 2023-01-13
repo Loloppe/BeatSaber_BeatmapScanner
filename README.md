@@ -3,8 +3,8 @@ This plugin display new values directly on the image cover.
 
 ☆ is the average difficulty of a map, calculated with T, I and M.  
 T represent tech.  
-I represent speed and intensity.
-M represent horizontal movement and extra arms movement. 
+I represent speed and intensity.  
+M represent horizontal movement and extra arms movement.  
 
 Configuration include:
 - Turning on/off the plugin
