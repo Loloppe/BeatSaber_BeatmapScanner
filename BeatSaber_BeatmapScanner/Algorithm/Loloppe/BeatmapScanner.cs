@@ -241,9 +241,6 @@ namespace BeatmapScanner.Algorithm
 
             #endregion
 
-            Plugin.Log.Info("T:" + (float)Math.Round(t, 2) + " I:" + (float)Math.Round(i, 2) + " M:" + (float)Math.Round(m, 2));
-            Plugin.Log.Info("Star:" + (float)Math.Round(point, 2) + " Tech:" + (float)Math.Round(tech, 2) + " Intensity:" + (float)Math.Round(intensity, 2) + " Movement:" + (float)Math.Round(movement, 2));
-
             return ((float)Math.Round(point, 2), (float)Math.Round(tech, 2), (float)Math.Round(intensity, 2), (float)Math.Round(movement, 2));
         }
 

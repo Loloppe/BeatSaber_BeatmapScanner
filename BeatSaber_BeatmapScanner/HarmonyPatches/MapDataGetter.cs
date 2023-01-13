@@ -29,7 +29,6 @@ namespace BeatmapScanner.Patches
                     {
                         if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap)
                         {
-                            Plugin.Log.Error(beatmap.level.songName);
                             if (beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
                             {
                                 var (star, tech, intensity, movement) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute, beatmap.noteJumpMovementSpeed, beatmap.level.songDuration);
