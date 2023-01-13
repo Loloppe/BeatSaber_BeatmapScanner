@@ -1,112 +1,130 @@
-﻿using HarmonyLib;
+﻿using BeatSaberMarkupLanguage;
+using HarmonyLib;
+using HMUI;
+using IPA.Utilities;
+using System;
+using System.Collections;
 using System.Linq;
+using System.Reflection;
+using TMPro;
+using UnityEngine;
 
 namespace BeatmapScanner.Patches
 {
     [HarmonyPatch(typeof(StandardLevelDetailView), nameof(StandardLevelDetailView.RefreshContent))]
-    public class MapDataGetter
+    static class MapDataGetter
     {
         static void Postfix(IDifficultyBeatmap ____selectedDifficultyBeatmap)
         {
             if(Config.Instance.Enabled)
             {
-                var hasRequirement = SongCore.Collections.RetrieveDifficultyData(____selectedDifficultyBeatmap)?
-                    .additionalDifficultyData?
-                    ._requirements?.Any(x => x == "Noodle Extensions" || x == "Mapping Extensions") == true;
-
-                if (!hasRequirement)
+                try
                 {
-                    if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap)
-                    {
-                        if (beatmap.beatmapSaveData.colorNotes.Count > 20)
-                        {
-                            if(Config.Instance.Log)
-                            {
-                                Plugin.Log.Info("---------------------------------------------------------");
-                                Plugin.Log.Info("Beatmap Name: " + beatmap.level.songName + " Difficulty: " + beatmap.difficulty);
-                            }
-                            
-                            var (star, tech, intensity, movement) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.level.beatsPerMinute);
+                    // Not sure if that actually work, I don't use those plugins
+                    var hasRequirement = SongCore.Collections.RetrieveDifficultyData(____selectedDifficultyBeatmap)?
+                        .additionalDifficultyData?
+                        ._requirements?.Any(x => x == "Noodle Extensions" || x == "Mapping Extensions") == true;
 
-                            if (star <= 0f || star > 999f)
+                    if (!hasRequirement)
+                    {
+                        if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap)
+                        {
+                            Plugin.Log.Error(beatmap.level.songName);
+                            if (beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
                             {
-                                Plugin.ClearUI();
+                                var (star, tech, intensity, movement) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute, beatmap.noteJumpMovementSpeed, beatmap.level.songDuration);
+
+                                if (star > 999f) // ???
+                                {
+                                    Plugin.ClearUI();
+                                }
+                                else
+                                {
+                                    #region Apply text
+
+                                    Plugin.difficulty.text = star.ToString();
+                                    Plugin.tech.text = tech.ToString();
+                                    Plugin.intensity.text = intensity.ToString();
+                                    Plugin.movement.text = movement.ToString();
+
+                                    #endregion
+
+                                    #region Apply color
+
+                                    if (star > 9f)
+                                    {
+                                        Plugin.difficulty.color = Config.Instance.D;
+                                    }
+                                    else if (star >= 7f)
+                                    {
+                                        Plugin.difficulty.color = Config.Instance.C;
+                                    }
+                                    else if (star >= 5f)
+                                    {
+                                        Plugin.difficulty.color = Config.Instance.B;
+                                    }
+                                    else
+                                    {
+                                        Plugin.difficulty.color = Config.Instance.A;
+                                    }
+
+                                    if (tech > 0.4f)
+                                    {
+                                        Plugin.tech.color = Config.Instance.D;
+                                    }
+                                    else if (tech >= 0.3f)
+                                    {
+                                        Plugin.tech.color = Config.Instance.C;
+                                    }
+                                    else if (tech >= 0.2f)
+                                    {
+                                        Plugin.tech.color = Config.Instance.B;
+                                    }
+                                    else
+                                    {
+                                        Plugin.tech.color = Config.Instance.A;
+                                    }
+
+                                    if (intensity > 0.5f)
+                                    {
+                                        Plugin.intensity.color = Config.Instance.D;
+                                    }
+                                    else if (intensity >= 0.4f)
+                                    {
+                                        Plugin.intensity.color = Config.Instance.C;
+                                    }
+                                    else if (intensity >= 0.3f)
+                                    {
+                                        Plugin.intensity.color = Config.Instance.B;
+                                    }
+                                    else
+                                    {
+                                        Plugin.intensity.color = Config.Instance.A;
+                                    }
+
+                                    if (movement > 0.4f)
+                                    {
+                                        Plugin.movement.color = Config.Instance.D;
+                                    }
+                                    else if (movement >= 0.3f)
+                                    {
+                                        Plugin.movement.color = Config.Instance.C;
+                                    }
+                                    else if (movement >= 0.2f)
+                                    {
+                                        Plugin.movement.color = Config.Instance.B;
+                                    }
+                                    else
+                                    {
+                                        Plugin.movement.color = Config.Instance.A;
+                                    }
+
+                                    #endregion
+                                }
                             }
                             else
                             {
-
-                                Plugin.difficulty.text = star.ToString();
-                                Plugin.tech.text = tech.ToString();
-                                Plugin.intensity.text = intensity.ToString();
-                                Plugin.movement.text = movement.ToString();
-
-                                if (star > 10f)
-                                {
-                                    Plugin.difficulty.color = Config.Instance.D;
-                                }
-                                else if (star >= 7.5f)
-                                {
-                                    Plugin.difficulty.color = Config.Instance.C;
-                                }
-                                else if (star >= 5f)
-                                {
-                                    Plugin.difficulty.color = Config.Instance.B;
-                                }
-                                else
-                                {
-                                    Plugin.difficulty.color = Config.Instance.A;
-                                }
-
-                                if (tech > 0.5f)
-                                {
-                                    Plugin.tech.color = Config.Instance.D;
-                                }
-                                else if (tech >= 0.4f)
-                                {
-                                    Plugin.tech.color = Config.Instance.C;
-                                }
-                                else if (tech >= 0.3f)
-                                {
-                                    Plugin.tech.color = Config.Instance.B;
-                                }
-                                else
-                                {
-                                    Plugin.tech.color = Config.Instance.A;
-                                }
-
-                                if (intensity > 4f)
-                                {
-                                    Plugin.intensity.color = Config.Instance.D;
-                                }
-                                else if (intensity >= 0.3f)
-                                {
-                                    Plugin.intensity.color = Config.Instance.C;
-                                }
-                                else if (intensity >= 0.2f)
-                                {
-                                    Plugin.intensity.color = Config.Instance.B;
-                                }
-                                else
-                                {
-                                    Plugin.intensity.color = Config.Instance.A;
-                                }
-
-                                if (movement > 0.9f)
-                                {
-                                    Plugin.movement.color = Config.Instance.D;
-                                }
-                                else if (movement >= 0.6f)
-                                {
-                                    Plugin.movement.color = Config.Instance.C;
-                                }
-                                else if (movement >= 0.3f)
-                                {
-                                    Plugin.movement.color = Config.Instance.B;
-                                }
-                                else
-                                {
-                                    Plugin.movement.color = Config.Instance.A;
-                                }
+                                Plugin.ClearUI();
                             }
                         }
                         else
@@ -119,9 +137,9 @@ namespace BeatmapScanner.Patches
                         Plugin.ClearUI();
                     }
                 }
-                else
+                catch(Exception e)
                 {
-                    Plugin.ClearUI();
+                    Plugin.Log.Error(e.Message);
                 }
             }
             else

@@ -65,7 +65,7 @@ namespace BeatmapScanner.Views
 
                 if(Config.Instance.ImageCoverExpander)
                 {
-                    Plugin.star = CreateText(imageTransform, "☆", new Vector2(3.7f, 43.75f));
+                    Plugin.star = CreateText(imageTransform, "☆", new Vector3(3.7f, 43.75f, -3f));
                 }
                 else
                 {
@@ -76,11 +76,10 @@ namespace BeatmapScanner.Views
                 Plugin.tech = CreateText(Plugin.t.rectTransform, string.Empty, new Vector2(3f, 0f));
                 Plugin.i = CreateText(Plugin.tech.rectTransform, "I", new Vector2(15f, 0f));
                 Plugin.intensity = CreateText(Plugin.i.rectTransform, string.Empty, new Vector2(3f, 0f));
-                Plugin.m = CreateText(Plugin.intensity.rectTransform, "M", new Vector2(14.8f, 0f));
+                Plugin.m = CreateText(Plugin.intensity.rectTransform, "M", new Vector2(14.1f, 0f));
                 Plugin.movement = CreateText(Plugin.m.rectTransform, string.Empty, new Vector2(2.9f, 0f));
-                Plugin.star.rectTransform.Rotate(new Vector3(0, 10f));
-                Plugin.i.rectTransform.Rotate(new Vector3(0, 20f));
-
+                Plugin.star.rectTransform.Rotate(new Vector3(0, 12.5f));
+                Plugin.i.rectTransform.Rotate(new Vector3(0, 12.5f));
             }
             catch (Exception e)
             {
@@ -89,12 +88,12 @@ namespace BeatmapScanner.Views
             }
         }
 
-        private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition)
+        private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector3 anchoredPosition)
         {
             return this.CreateText(parent, text, anchoredPosition, new Vector2(0, 0));
         }
 
-        private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector2 anchoredPosition, Vector2 sizeDelta)
+        private CurvedTextMeshPro CreateText(RectTransform parent, string text, Vector3 anchoredPosition, Vector2 sizeDelta)
         {
             var gameObj = new GameObject("CustomUIText");
             gameObj.SetActive(false);

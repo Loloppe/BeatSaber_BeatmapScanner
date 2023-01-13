@@ -12,7 +12,7 @@ namespace BeatmapScanner
         public static Config Instance;
         public virtual bool Enabled { get; set; } = true;
         public virtual bool ImageCoverExpander { get; set; } = true;
-        public virtual bool Log { get; set; } = false;
+        public virtual bool StarLimiter { get; set; } = true;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color A { get; set; } = new Color(0.62f, 0.62f, 0.62f);
         [UseConverter(typeof(ColorConverter))]
@@ -21,19 +21,13 @@ namespace BeatmapScanner
         public virtual Color C { get; set; } = Color.green;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color D { get; set; } = Color.red;
-        public virtual float Tech { get; set; } = 1.25f;
-        public virtual float Intensity { get; set; } = 1.75f;
-        public virtual float Movement { get; set; } = 1.25f;
-
+        
         /// <summary>
 		/// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
 		/// </summary>
 		public virtual void OnReload()
         {
             // Do stuff after config is read from disk.
-            Tech = 1.25f;
-            Intensity = 1.75f;
-            Movement = 1.25f;
         }
 
         /// <summary>

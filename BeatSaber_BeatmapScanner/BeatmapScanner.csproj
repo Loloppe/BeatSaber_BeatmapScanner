@@ -123,15 +123,19 @@
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+	  <Reference Include="Polyglot">
+		  <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Polyglot.dll</HintPath>
+		  <Private>False</Private>
+		  <SpecificVersion>False</SpecificVersion>
+	  </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algorithm\BeatmapScanner.cs" />
-    <Compile Include="Algorithm\ColorConverter.cs" />
-    <Compile Include="Algorithm\Data.cs" />
-    <Compile Include="Algorithm\FloatConverter.cs" />
-    <Compile Include="Algorithm\Helper.cs" />
-    <Compile Include="Algorithm\MathUtil.cs" />
-    <Compile Include="Algorithm\Tech.cs" />
+    <Compile Include="Algorithm\Loloppe\BeatmapScanner.cs" />
+    <Compile Include="Algorithm\Loloppe\Cube.cs" />
+    <Compile Include="Helper\ColorConverter.cs" />
+    <Compile Include="Helper\FloatConverter.cs" />
+    <Compile Include="Helper\Helper.cs" />
+    <Compile Include="Helper\MathUtil.cs" />
     <Compile Include="Config\Config.cs" />
     <Compile Include="HarmonyPatches\MapDataGetter.cs" />
     <Compile Include="Installers\BeatmapScannerMenuInstaller.cs" />
@@ -152,5 +156,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Views\settings.bsml" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
