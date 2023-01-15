@@ -54,6 +54,12 @@ namespace BeatmapScanner
 
         public static void ClearUI()
         {
+            if(!Config.Instance.Enabled)
+            {
+                star.text = "";
+                t.text = "";
+                i.text = "";
+            }
             difficulty.text = "";
             tech.text = "";
             intensity.text = "";

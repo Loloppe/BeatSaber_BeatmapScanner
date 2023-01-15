@@ -34,9 +34,12 @@ namespace BeatmapScanner.Patches
                                 {
                                     #region Apply text
 
-                                    Plugin.difficulty.text = star.ToString();
-                                    Plugin.tech.text = tech.ToString();
-                                    Plugin.intensity.text = intensity.ToString();
+                                    Plugin.star.text = "☆";
+                                    Plugin.t.text = "T";
+                                    Plugin.i.text = "I";
+                                    Plugin.difficulty.text = "<i>" + star.ToString() + "</i>";
+                                    Plugin.tech.text = "<i>" + tech.ToString() + "</i>";
+                                    Plugin.intensity.text = "<i>" + intensity.ToString() + "</i>";
 
                                     #endregion
 

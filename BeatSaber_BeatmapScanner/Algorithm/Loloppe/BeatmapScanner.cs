@@ -89,6 +89,7 @@ namespace BeatmapScanner.Algorithm
 
             if (red.Count() > 0)
             {
+                
                 // Pre-modify data for LackWiz algorithm
                 Helper.FindNoteDirection(red, bombs);
                 Helper.FixPatternHead(red);
@@ -148,8 +149,6 @@ namespace BeatmapScanner.Algorithm
                 intensity = 0f;
             }
 
-            #endregion
-
             if(data.Count() > 0)
             {
                 var test = data.Select(c => c.AngleStrain + c.PathStrain).ToList();
@@ -189,6 +188,8 @@ namespace BeatmapScanner.Algorithm
                     tech = 0;
                 }
             }
+
+            #endregion
 
             return ((float)Math.Round(diff, 2), (float)Math.Round(tech, 2), (float)Math.Round(intensity, 2));
         }
