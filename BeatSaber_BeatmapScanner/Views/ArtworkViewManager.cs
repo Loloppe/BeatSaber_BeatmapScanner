@@ -13,7 +13,6 @@ namespace BeatmapScanner.Views
     {
         private StandardLevelDetailViewController _standardLevelViewController;
         private MainMenuViewController _mainMenuViewController;
-
         private static readonly Vector3 modifiedSizeDelta = new(70.5f, 58);
         private static readonly Vector3 modifiedPositon = new(-34.4f, -56f, 0f);
         private static readonly float modifiedSkew = 0;
@@ -63,7 +62,7 @@ namespace BeatmapScanner.Views
                     }
                 }
 
-                if(Config.Instance.ImageCoverExpander)
+                if (Config.Instance.ImageCoverExpander)
                 {
                     Plugin.star = CreateText(imageTransform, "☆", new Vector3(3.7f, 43.75f, -3f));
                 }
@@ -76,8 +75,6 @@ namespace BeatmapScanner.Views
                 Plugin.tech = CreateText(Plugin.t.rectTransform, string.Empty, new Vector2(3f, 0f));
                 Plugin.i = CreateText(Plugin.tech.rectTransform, "I", new Vector2(15f, 0f));
                 Plugin.intensity = CreateText(Plugin.i.rectTransform, string.Empty, new Vector2(3f, 0f));
-                Plugin.m = CreateText(Plugin.intensity.rectTransform, "M", new Vector2(14.1f, 0f));
-                Plugin.movement = CreateText(Plugin.m.rectTransform, string.Empty, new Vector2(2.9f, 0f));
                 Plugin.star.rectTransform.Rotate(new Vector3(0, 12.5f));
                 Plugin.i.rectTransform.Rotate(new Vector3(0, 12.5f));
             }

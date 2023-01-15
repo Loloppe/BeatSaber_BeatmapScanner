@@ -11,8 +11,4 @@
 	<color-setting text='Mid value' value='B' apply-on-change='true' bind-value='true' />
 	<color-setting text='High value' value='C' apply-on-change='true' bind-value='true' />
 	<color-setting text='Extreme value' value='D' apply-on-change='true' bind-value='true' />
-	<horizontal>
-		<text text='Experimental features' align='Center'/>
-	</horizontal>
-	<checkbox-setting apply-on-change="true" value="StarLimiter" text="Star Limiter"/>
 </settings-container>

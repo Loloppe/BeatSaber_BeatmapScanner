@@ -1,11 +1,10 @@
 ﻿#region Import
 
+using BeatmapScanner.Algorithm.LackWiz;
 using BeatmapScanner.Algorithm.Loloppe;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using static BeatmapSaveDataVersion3.BeatmapSaveData;
 
 #endregion
@@ -45,56 +44,32 @@ namespace BeatmapScanner.Algorithm
         public static float MinNote = 80f;
         public static float MaxNote = 10000f;
 
-        // T multipler
-        public static float TechCap = 3f;
-        public static float Diagonal = 0f;
-        public static float Horizontal = 1f;
-        public static float WristRoll = 1f;
-        public static float PalmUp = 1f;
-
         // I multipler
-        public static float IntensityCap = 11f; 
         public static float Speed = 0.00125f;
         public static float Reset = 1.1f;
-
-        // M multipler
-        public static float MovementCap = 3f;
-        public static float Movement = 1f;
-        public static float Inverted = 1f;
-        public static float Pattern = 0.5f;
-
-        // Duration
-        public static float Duration = 300f;
-        public static float DurationMultiplier = 0.5f;
-
-        // NJS
-        public static float NJS = 10f;
-        public static float NJSMultiplier = 0.02f;
-
-        // Global multipler
-        public static float Base = 1f;
-        public static float T = 15f;
-        public static float I = 15f;
-        public static float M = 15f;
-        public static float Global = 1f;
 
         #endregion
 
         #region Analyzer
 
-        public static (float star, float tech, float intensity, float movement) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm, float njs, float duration)
+        public static (float star, float tech, float intensity) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm, float njs, float duration)
         {
             #region Prep
 
             // Multiplier that will be fetched by the algorithm
-            var tech = 0f;
-            var intensity = 0f;
-            var movement = 0f;
-
+            var diff = 0d;
+            var tech = 0d;
+            var intensity = 0d;
 
             // Separate the note per color, it's easier that way.
             List<Cube> red = new();
             List<Cube> blue = new();
+            List<Cube> cube = new();
+            List<SwingData> redSwingData = new();
+            List<SwingData> blueSwingData = new();
+            List<List<SwingData>> redPatternData = new();
+            List<List<SwingData>> bluePatternData = new();
+            List<SwingData> data = new();
 
             foreach (var note in notes)
             {
@@ -114,30 +89,40 @@ namespace BeatmapScanner.Algorithm
 
             if (red.Count() > 0)
             {
+                // Pre-modify data for LackWiz algorithm
                 Helper.FindNoteDirection(red, bombs);
                 Helper.FixPatternHead(red);
-                Helper.FindReset(red, blue);
-                Helper.FindForeHand(red);
-                Helper.FindPalmUp(red);
-                Helper.FindEntryExit(red);
-                Helper.FindSwingCurve(red);
-                tech += GetTech(red, bpm);
+                // Lackwiz algorithm
+                redSwingData = Method.SwingProcesser(red);
+                redPatternData = Method.PatternSplitter(redSwingData);
+                redSwingData = Method.ParityPredictor(redPatternData, false);
+                Method.SwingCurveCalc(redSwingData, false);
+                diff = Method.DiffToPass(redSwingData, bpm);
+                data.AddRange(redSwingData);
+                // Fill out the rest of the data
+                Helper.FindReset(red);
+                cube.AddRange(red);
+                // Run other algorithm
                 intensity += GetIntensity(red, bpm);
-                movement += GetMovement(red, bpm);
             }
 
             if (blue.Count() > 0)
             {
+                // Pre-modify data for LackWiz algorithm
                 Helper.FindNoteDirection(blue, bombs);
                 Helper.FixPatternHead(blue);
-                Helper.FindReset(blue, red);
-                Helper.FindForeHand(blue);
-                Helper.FindPalmUp(blue);
-                Helper.FindEntryExit(blue);
-                Helper.FindSwingCurve(blue);
-                tech += GetTech(blue, bpm);
+                // Lackwiz algorithm
+                blueSwingData = Method.SwingProcesser(blue);
+                bluePatternData = Method.PatternSplitter(blueSwingData);
+                blueSwingData = Method.ParityPredictor(bluePatternData, true);
+                Method.SwingCurveCalc(blueSwingData, true);
+                diff = Math.Max(diff, Method.DiffToPass(blueSwingData, bpm));
+                data.AddRange(blueSwingData);
+                // Fill out the rest of the data
+                Helper.FindReset(blue);
+                cube.AddRange(blue);
+                // Run other algorithm
                 intensity += GetIntensity(blue, bpm);
-                movement += GetMovement(blue, bpm);
             }
 
             #endregion
@@ -147,182 +132,65 @@ namespace BeatmapScanner.Algorithm
             // Nerf if the amount of notes is too low
             if (notes.Count() < MinNote)
             {
-                tech *= notes.Count() / MinNote;
                 intensity *= notes.Count() / MinNote;
-                movement *= notes.Count() / MinNote;
             }
             else
             {
                 var normalized = MathUtil.NormalizeVariable2(MaxNote / Math.Max(notes.Count(), MaxNote));
                 var buff = MathUtil.ReduceWithExponentialCurve(2, 0, 1, normalized);
 
-                tech *= buff;
                 intensity *= buff;
-                movement *= buff;
             }
 
-            // Tech
-            if (tech < 0)
-            {
-                tech = 0f;
-            }
-            var t = tech;
-            t *= (float)Math.Pow(0.9, tech);
-
-            // Intensity
             intensity /= 2;
             if (intensity < 0)
             {
                 intensity = 0f;
             }
-            var i = intensity;
-            
-
-            // Movement
-            movement /= 2;
-            if (movement < 0)
-            {
-                movement = 0f;
-            }
-            var m = movement;
-            m *= (float)Math.Pow(0.9, movement);
-
-            // NJS
-            var js = (njs / NJS) * NJSMultiplier;
-
-            // Duration
-            var d = (duration / Duration) * DurationMultiplier;
-
-            // Multiplier
-            t *= T;
-            i *= I;
-            m *= M;
-
-            // Cap
-            if(Config.Instance.StarLimiter)
-            {
-                if (t > TechCap)
-                {
-                    t = TechCap;
-                }
-                if (m > MovementCap)
-                {
-                    m = MovementCap;
-                }
-                if (i > IntensityCap)
-                {
-                    i = IntensityCap;
-                }
-            }
-            
-
-            // Final calculation
-            float point;
-            if (!Config.Instance.StarLimiter)
-            {
-                point = (Base + d + js + t + i + m);
-            }
-            else if (tech > movement)
-            {
-                point = (Base + d + js + t + i + m * 0.2f);
-            }
-            else
-            {
-                point = (Base + d + js + t * 0.2f + i + m);
-            }
-
-            point--;
-            point *= Global;
-
-            if (point < 0) // Minimum value
-            {
-                point = 0.01f;
-            }
 
             #endregion
 
-            return ((float)Math.Round(point, 2), (float)Math.Round(tech, 2), (float)Math.Round(intensity, 2), (float)Math.Round(movement, 2));
-        }
-
-        #endregion
-
-        #region Tech
-
-        public static float GetTech(List<Cube> cubes, float bpm)
-        {
-            #region Prep
-
-            float tech;
-            float horizontal;
-            float diagonal;
-            float palmUp;
-            var skipped = 0f;
-            var nerfed = 0;
-            var countNo = 0;
-            var averageNerfTime = 0f;
-            var total = 0f;
-            float nerf;
-            float timeInMS;
-            float normalized;
-
-            #endregion
-
-            #region Algorithm
-
-            for (int i = 1; i < cubes.Count(); i++)
+            if(data.Count() > 0)
             {
-                horizontal = 0f;
-                diagonal = 0f;
-                palmUp = 0f;
-                tech = 0f;
-                nerf = 1f;
-                timeInMS = MathUtil.ConvertBeatToMS(cubes[i].Beat - cubes[i - 1].Beat, bpm);
+                var test = data.Select(c => c.AngleStrain + c.PathStrain).ToList();
+                test.Sort();
+                tech = Math.Round(test.Skip((int)(data.Count() * 0.25)).Average(), 3);
+                // Remove tech from DD map
+                var temp = 1 - cube.Where(c => c.Reset).Count() * 1.25 / cube.Count();
+                if(temp < 0)
+                {
+                    temp = 0;
+                }
+                tech *= temp;
+                // Nerf tech based on speed (mostly to remove slow DD)
+                if (cube.Count() > 0)
+                {
+                    var nerf = 0d;
 
-                if (cubes[i].Pattern && !cubes[i].Head) // Skip rest of pattern
-                {
-                    skipped++;
-                    continue;
-                }
+                    for (int i = 1; i < cube.Count(); i++)
+                    {
+                        var timeInMS = MathUtil.ConvertBeatToMS(cube[i].Beat - cube[i - 1].Beat, bpm);
 
-                if (timeInMS > MinNerfMS && timeInMS <= MaxNerfMS) // Nerf tech
-                {
-                    normalized = MathUtil.NormalizeVariable(timeInMS);
-                    nerf = MathUtil.ReduceWithExponentialCurve(2, 0, 1, normalized);
-                    averageNerfTime += timeInMS;
-                    nerfed++;
+                        if (timeInMS > MinNerfMS && timeInMS <= MaxNerfMS) 
+                        {
+                            var normalized = MathUtil.NormalizeVariable(timeInMS);
+                            nerf += MathUtil.ReduceWithExponentialCurve(2, 0, 1, normalized);
+                        }
+                        else if (timeInMS > MaxNerfMS) 
+                        {
+                            nerf++;
+                        }
+                    }
+                    tech *= 1 - nerf / 1.5 / cube.Count();
                 }
-                else if (timeInMS > MaxNerfMS) // No tech
+                tech -= 0.5;
+                if (tech < 0)
                 {
-                    nerf = 0f;
-                    countNo++;
+                    tech = 0;
                 }
-
-                if (cubes[i].PalmUp) // Palm Up
-                {
-                    palmUp = PalmUp;
-                }
-
-                if (Helper.FindTech(cubes[i - 1], cubes[i])) // Wristroll
-                {
-                    tech = WristRoll;
-                }
-                else if (PureHorizontalSwing.Contains(cubes[i].Direction)) // Horizontal
-                {
-                    horizontal = Horizontal;
-                }
-                else if (DiagonalSwing.Contains(cubes[i].Direction)) // Diagonal
-                {
-                    diagonal = Diagonal;
-                }
-
-                total += (horizontal + diagonal + palmUp + tech) * nerf;
             }
 
-            total /= (cubes.Count() - skipped);
-
-            #endregion
-
-            return total;
+            return ((float)Math.Round(diff, 2), (float)Math.Round(tech, 2), (float)Math.Round(intensity, 2));
         }
 
         #endregion
@@ -369,71 +237,6 @@ namespace BeatmapScanner.Algorithm
             #endregion
 
             return intensity / cubes.Where(c => !c.Pattern || c.Head).Count();
-        }
-
-        #endregion
-
-        #region Movement
-
-        public static float GetMovement(List<Cube> cubes, float bpm)
-        {
-            #region Prep
-
-            var movement = 0f;
-            var inverted = 0;
-            var pattern = 0f;
-            var nerfed = 0;
-            var removed = 0;
-            float multiplier;
-            float nerf;
-            float timeInMS;
-            float normalized;
-            int temp;
-
-            #endregion
-
-            #region Algorithm
-
-            for (int i = 1; i < cubes.Count(); i++)
-            {
-                multiplier = 0f;
-                nerf = 1f;
-                timeInMS = MathUtil.ConvertBeatToMS(cubes[i].Beat - cubes[i - 1].Beat, bpm);
-
-                if (timeInMS > MinNerfMS && timeInMS <= MaxNerfMS) // Nerf movement
-                {
-                    nerfed++;
-                    normalized = MathUtil.NormalizeVariable(timeInMS);
-                    nerf = MathUtil.ReduceWithExponentialCurve(2, 0, 1, normalized);
-                }
-                else if (timeInMS > MaxNerfMS) // No movement
-                {
-                    removed++;
-                    nerf = 0f;
-                }
-
-                if (cubes[i].Pattern && !cubes[i].Head) // Skip pattern that aren't head
-                {
-                    pattern += Pattern * nerf;
-                    continue;
-                }
-
-                if (!(cubes[i - 1].Line == cubes[i].Line && cubes[i - 1].Layer == cubes[i].Layer)) // Don't check if there's no movement
-                {
-                    (multiplier, temp) = Helper.FindMovement(cubes[i - 1], cubes[i]);
-                    inverted += temp;
-                    multiplier += (temp * Inverted);
-                }
-                    
-                multiplier *= nerf; // Nerf if necessary
-                movement += multiplier; // Store value found
-            }
-
-            movement += pattern; // Add pattern notes as extra movement
-
-            #endregion
-
-            return movement / cubes.Count();
         }
 
         #endregion

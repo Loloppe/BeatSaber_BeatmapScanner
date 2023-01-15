@@ -18,11 +18,6 @@ namespace BeatmapScanner.Algorithm.Loloppe
         public bool PalmUp { get; set; } = false;
         public bool Head { get; set; } = false;
         public bool Pattern { get; set; } = false;
-        public float Angle { get; set; } = 0;
-        public Vector2 EntryPosition { get; set; } = new Vector2();
-        public Vector2 ExitPosition { get; set; } = new Vector2();
-        public float PathAngleStrain { get; set; } = 0;
-        public float CurveComplexity { get; set; } = 0;
         
 
         public Cube(ColorNoteData note)

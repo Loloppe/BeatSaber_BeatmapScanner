@@ -1,13 +1,6 @@
-﻿using BeatSaberMarkupLanguage;
-using HarmonyLib;
-using HMUI;
-using IPA.Utilities;
+﻿using HarmonyLib;
 using System;
-using System.Collections;
 using System.Linq;
-using System.Reflection;
-using TMPro;
-using UnityEngine;
 
 namespace BeatmapScanner.Patches
 {
@@ -31,9 +24,9 @@ namespace BeatmapScanner.Patches
                         {
                             if (beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
                             {
-                                var (star, tech, intensity, movement) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute, beatmap.noteJumpMovementSpeed, beatmap.level.songDuration);
+                                var (star, tech, intensity) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute, beatmap.noteJumpMovementSpeed, beatmap.level.songDuration);
 
-                                if (star > 999f) // ???
+                                if (star > 999f)
                                 {
                                     Plugin.ClearUI();
                                 }
@@ -44,7 +37,6 @@ namespace BeatmapScanner.Patches
                                     Plugin.difficulty.text = star.ToString();
                                     Plugin.tech.text = tech.ToString();
                                     Plugin.intensity.text = intensity.ToString();
-                                    Plugin.movement.text = movement.ToString();
 
                                     #endregion
 
@@ -101,23 +93,6 @@ namespace BeatmapScanner.Patches
                                         Plugin.intensity.color = Config.Instance.A;
                                     }
 
-                                    if (movement > 0.4f)
-                                    {
-                                        Plugin.movement.color = Config.Instance.D;
-                                    }
-                                    else if (movement >= 0.3f)
-                                    {
-                                        Plugin.movement.color = Config.Instance.C;
-                                    }
-                                    else if (movement >= 0.2f)
-                                    {
-                                        Plugin.movement.color = Config.Instance.B;
-                                    }
-                                    else
-                                    {
-                                        Plugin.movement.color = Config.Instance.A;
-                                    }
-
                                     #endregion
                                 }
                             }
@@ -138,7 +113,7 @@ namespace BeatmapScanner.Patches
                 }
                 catch(Exception e)
                 {
-                    Plugin.Log.Error(e.Message);
+                    Plugin.Log.Error(e);
                 }
             }
             else

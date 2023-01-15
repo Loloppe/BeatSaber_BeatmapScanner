@@ -23,8 +23,6 @@ namespace BeatmapScanner
         internal static CurvedTextMeshPro tech;
         internal static CurvedTextMeshPro i;
         internal static CurvedTextMeshPro intensity;
-        internal static CurvedTextMeshPro m;
-        internal static CurvedTextMeshPro movement;
 
         static class BsmlWrapper
         {
@@ -59,7 +57,6 @@ namespace BeatmapScanner
             difficulty.text = "";
             tech.text = "";
             intensity.text = "";
-            movement.text = "";
         }
 
         [Init]
