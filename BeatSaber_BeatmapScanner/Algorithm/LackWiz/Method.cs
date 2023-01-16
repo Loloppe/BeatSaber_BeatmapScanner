@@ -9,8 +9,8 @@ namespace BeatmapScanner.Algorithm.LackWiz
     {
         public static (double tech, double diff, List<SwingData> data) UseLackWizAlgorithm(List<ColorNoteData> red, List<ColorNoteData> blue, double bpm)
         {
-            double diff = 0f;
-            double tech = 0f;
+            double diff = 0;
+            double tech = 0;
             List<SwingData> redSwingData;
             List<SwingData> blueSwingData;
             List<List<SwingData>> redPatternData;
