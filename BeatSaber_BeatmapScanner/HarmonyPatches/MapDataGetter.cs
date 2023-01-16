@@ -24,7 +24,7 @@ namespace BeatmapScanner.Patches
                         {
                             if (beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
                             {
-                                var (star, tech, intensity) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute, beatmap.noteJumpMovementSpeed, beatmap.level.songDuration);
+                                var (star, tech, intensity) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute);
 
                                 if (star > 999f)
                                 {

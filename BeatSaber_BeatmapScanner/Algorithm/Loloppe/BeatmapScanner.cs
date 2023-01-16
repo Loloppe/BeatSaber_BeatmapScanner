@@ -52,36 +52,24 @@ namespace BeatmapScanner.Algorithm
 
         #region Analyzer
 
-        public static (float star, float tech, float intensity) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm, float njs, float duration)
+        public static (float star, float tech, float intensity) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm)
         {
             #region Prep
 
-            // Multiplier that will be fetched by the algorithm
             var diff = 0d;
             var tech = 0d;
             var intensity = 0d;
 
-            // Separate the note per color, it's easier that way.
-            List<Cube> red = new();
-            List<Cube> blue = new();
             List<Cube> cube = new();
-            List<SwingData> redSwingData = new();
-            List<SwingData> blueSwingData = new();
-            List<List<SwingData>> redPatternData = new();
-            List<List<SwingData>> bluePatternData = new();
             List<SwingData> data = new();
 
-            foreach (var note in notes)
+            foreach(var note in notes)
             {
-                if (note.color == NoteColorType.ColorA && (int)note.cutDirection != 9)
-                {
-                    red.Add(new Cube(note));
-                }
-                else if (note.color == NoteColorType.ColorB && (int)note.cutDirection != 9)
-                {
-                    blue.Add(new Cube(note));
-                }
+                cube.Add(new Cube(note));
             }
+
+            var red = cube.Where(c => (int)c.Note.color == 0).ToList();
+            var blue = cube.Where(c => (int)c.Note.color == 1).ToList();
 
             #endregion
 
@@ -89,42 +77,22 @@ namespace BeatmapScanner.Algorithm
 
             if (red.Count() > 0)
             {
-                
-                // Pre-modify data for LackWiz algorithm
                 Helper.FindNoteDirection(red, bombs);
                 Helper.FixPatternHead(red);
-                // Lackwiz algorithm
-                redSwingData = Method.SwingProcesser(red);
-                redPatternData = Method.PatternSplitter(redSwingData);
-                redSwingData = Method.ParityPredictor(redPatternData, false);
-                Method.SwingCurveCalc(redSwingData, false);
-                diff = Method.DiffToPass(redSwingData, bpm);
-                data.AddRange(redSwingData);
-                // Fill out the rest of the data
                 Helper.FindReset(red);
-                cube.AddRange(red);
-                // Run other algorithm
                 intensity += GetIntensity(red, bpm);
             }
 
             if (blue.Count() > 0)
             {
-                // Pre-modify data for LackWiz algorithm
                 Helper.FindNoteDirection(blue, bombs);
                 Helper.FixPatternHead(blue);
-                // Lackwiz algorithm
-                blueSwingData = Method.SwingProcesser(blue);
-                bluePatternData = Method.PatternSplitter(blueSwingData);
-                blueSwingData = Method.ParityPredictor(bluePatternData, true);
-                Method.SwingCurveCalc(blueSwingData, true);
-                diff = Math.Max(diff, Method.DiffToPass(blueSwingData, bpm));
-                data.AddRange(blueSwingData);
-                // Fill out the rest of the data
                 Helper.FindReset(blue);
-                cube.AddRange(blue);
-                // Run other algorithm
                 intensity += GetIntensity(blue, bpm);
             }
+
+            // LackWiz algorithm
+            (tech, diff, data) = Method.UseLackWizAlgorithm(red.Select(c => c.Note).ToList(), blue.Select(c => c.Note).ToList(), bpm);
 
             #endregion
 
@@ -151,9 +119,6 @@ namespace BeatmapScanner.Algorithm
 
             if(data.Count() > 0)
             {
-                var test = data.Select(c => c.AngleStrain + c.PathStrain).ToList();
-                test.Sort();
-                tech = Math.Round(test.Skip((int)(data.Count() * 0.25)).Average(), 3);
                 // Remove tech from DD map
                 var temp = 1 - cube.Where(c => c.Reset).Count() * 1.25 / cube.Count();
                 if(temp < 0)
@@ -164,23 +129,25 @@ namespace BeatmapScanner.Algorithm
                 // Nerf tech based on speed (mostly to remove slow DD)
                 if (cube.Count() > 0)
                 {
-                    var nerf = 0d;
+                    var nerf = 1d; // The higher number, the less it will be nerfed.
 
-                    for (int i = 1; i < cube.Count(); i++)
+                    for (int i = 1; i < cube.Count(); i++) 
                     {
-                        var timeInMS = MathUtil.ConvertBeatToMS(cube[i].Beat - cube[i - 1].Beat, bpm);
+                        if (!cube[i].Pattern || cube[i].Head)
+                        {
+                            var timeInMS = MathUtil.ConvertBeatToMS(cube[i].Beat - cube[i - 1].Beat, bpm);
 
-                        if (timeInMS > MinNerfMS && timeInMS <= MaxNerfMS) 
-                        {
-                            var normalized = MathUtil.NormalizeVariable(timeInMS);
-                            nerf += MathUtil.ReduceWithExponentialCurve(2, 0, 1, normalized);
+                            if (timeInMS > MinNerfMS)
+                            {
+                                var normalized = MathUtil.NormalizeVariable(timeInMS);
+                                nerf += MathUtil.ReduceWithExponentialCurve(2, 0, 1, normalized);
+                                continue;
+                            }
                         }
-                        else if (timeInMS > MaxNerfMS) 
-                        {
-                            nerf++;
-                        }
+
+                        nerf++;
                     }
-                    tech *= 1 - nerf / 1.5 / cube.Count();
+                    tech *= nerf / cube.Where(c => !c.Pattern || c.Head).Count();
                 }
                 tech -= 0.5;
                 if (tech < 0)

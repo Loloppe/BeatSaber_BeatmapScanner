@@ -130,6 +130,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithm\LackWiz\MathWiz.cs" />
     <Compile Include="Algorithm\Loloppe\BeatmapScanner.cs" />
     <Compile Include="Algorithm\Loloppe\Cube.cs" />
     <Compile Include="Algorithm\LackWiz\Method.cs" />
