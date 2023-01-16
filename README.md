@@ -2,7 +2,7 @@
 This plugin display new values on the image cover of the selected song
 
 💪 represent how hard it is to pass a map  
-📐 represent % chance to badcut (tech)  
+📐 represent % chance to bad cut (tech)  
 🔥 represent the average intensity + peak EBPM on hover
 
 Configuration include:
