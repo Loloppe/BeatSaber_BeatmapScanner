@@ -10,7 +10,6 @@ namespace BeatmapScanner
     internal class Config
     {
         public static Config Instance;
-        public virtual bool Enabled { get; set; } = true;
         public virtual bool ImageCoverExpander { get; set; } = true;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color A { get; set; } = new Color(0.62f, 0.62f, 0.62f);

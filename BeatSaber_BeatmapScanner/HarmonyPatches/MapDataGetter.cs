@@ -15,12 +15,6 @@ namespace BeatmapScanner.Patches
     static class MapDataGetter
     {
         // Yeeted from https://github.com/kinsi55/BeatSaber_BetterSongList/blob/master/HarmonyPatches/UI/ExtraLevelParams.cs
-        static GameObject extraUI = null;
-        static HoverHintController hhc = null;
-        static TextMeshProUGUI[] fields = null;
-        static List<CurvedTextMeshPro> icons = new();
-        static List<HoverHint> hoverTexts = new();
-
         static IEnumerator ProcessFields()
         {
             yield return new WaitForEndOfFrame();
@@ -36,36 +30,36 @@ namespace BeatmapScanner.Patches
                     if (hhint == null)
                         return;
 
-                    if (hhc == null)
-                        hhc = UnityEngine.Object.FindObjectOfType<HoverHintController>();
+                    if (Plugin.hhc == null)
+                        Plugin.hhc = UnityEngine.Object.FindObjectOfType<HoverHintController>();
 
-                    ReflectionUtil.SetField(hhint, "_hoverHintController", hhc);
+                    ReflectionUtil.SetField(hhint, "_hoverHintController", Plugin.hhc);
 
                     hhint.text = hoverHint;
-                    hoverTexts.Add(hhint);
+                    Plugin.hoverTexts.Add(hhint);
                 }
 
-                fields[0].text = "";
-                fields[1].text = "";
-                fields[2].text = "";
-                fields[3].text = "";
+                Plugin.fields[0].text = "";
+                Plugin.fields[1].text = "";
+                Plugin.fields[2].text = "";
+                Plugin.fields[3].text = "";
 
-                ModifyValue(fields[0], "How hard it is to pass");
-                ModifyValue(fields[1], "% chance to badcut");
-                ModifyValue(fields[2], "Average intensity");
-                ModifyValue(fields[3], "");
+                ModifyValue(Plugin.fields[0], "How hard it is to pass");
+                ModifyValue(Plugin.fields[1], "% chance to badcut");
+                ModifyValue(Plugin.fields[2], "Average intensity");
+                ModifyValue(Plugin.fields[3], "");
 
-                icons.Add(CreateText(fields[0].rectTransform, "💪", fields[0].transform.localPosition + new Vector3(-7.5f, 6f, -0.5f)));
-                icons.Add(CreateText(fields[1].rectTransform, "📐", fields[1].transform.localPosition + new Vector3(-7.5f, 6f, -3f)));
-                icons.Add(CreateText(fields[2].rectTransform, "🔥", fields[2].transform.localPosition + new Vector3(-7.5f, 6f, -6.5f)));
+                Plugin.icons.Add(CreateText(Plugin.fields[0].rectTransform, "💪", Plugin.fields[0].transform.localPosition + new Vector3(-7.4f, 5.4f, -0.5f)));
+                Plugin.icons.Add(CreateText(Plugin.fields[1].rectTransform, "📐", Plugin.fields[1].transform.localPosition + new Vector3(-7.4f, 5.4f, -3f)));
+                Plugin.icons.Add(CreateText(Plugin.fields[2].rectTransform, "🔥", Plugin.fields[2].transform.localPosition + new Vector3(-7.6f, 5.4f, -7.5f)));
 
-                icons[0].transform.Rotate(new Vector3(0, 0f));
-                icons[1].transform.Rotate(new Vector3(0, 10f));
-                icons[2].transform.Rotate(new Vector3(0, 20f));
+                Plugin.icons[0].transform.Rotate(new Vector3(0, 0f));
+                Plugin.icons[1].transform.Rotate(new Vector3(0, 12.5f));
+                Plugin.icons[2].transform.Rotate(new Vector3(0, 25f));
 
-                icons[0].fontSize = 3f;
-                icons[1].fontSize = 3f;
-                icons[2].fontSize = 3f;
+                Plugin.icons[0].fontSize = 3f;
+                Plugin.icons[1].fontSize = 3f;
+                Plugin.icons[2].fontSize = 3f;
             }
             catch(Exception e)
             {
@@ -97,123 +91,111 @@ namespace BeatmapScanner.Patches
 
         static void Postfix(IDifficultyBeatmap ____selectedDifficultyBeatmap, LevelParamsPanel ____levelParamsPanel)
         {
-            if(Config.Instance.Enabled)
+            try
             {
-                try
+                if (Plugin.extraUI == null)
                 {
-                    if (extraUI == null)
-                    {
-                        extraUI = GameObject.Instantiate(____levelParamsPanel, ____levelParamsPanel.transform.parent).gameObject;
-                        GameObject.DestroyImmediate(extraUI.GetComponent<LevelParamsPanel>());
+                    Plugin.extraUI = GameObject.Instantiate(____levelParamsPanel, ____levelParamsPanel.transform.parent).gameObject;
+                    GameObject.DestroyImmediate(Plugin.extraUI.GetComponent<LevelParamsPanel>());
 
-                        extraUI.transform.localPosition += new Vector3(0, 8f);
+                    Plugin.extraUI.transform.localPosition += new Vector3(0, 8f);
 
-                        fields = extraUI.GetComponentsInChildren<CurvedTextMeshPro>();
-  
-                        SharedCoroutineStarter.instance.StartCoroutine(ProcessFields());
-                    }
+                    Plugin.fields = Plugin.extraUI.GetComponentsInChildren<CurvedTextMeshPro>();
 
-                    // Not sure if that actually work, I don't use those plugins
-                    var hasRequirement = SongCore.Collections.RetrieveDifficultyData(____selectedDifficultyBeatmap)?
-                        .additionalDifficultyData?
-                        ._requirements?.Any(x => x == "Noodle Extensions" || x == "Mapping Extensions") == true;
-
-                    if (!hasRequirement && ____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && hoverTexts.Count() >= 3 && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
-                    {
-                        var (diff, tech, intensity, ebpm) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute);
-
-                        #region Apply text
-
-                        if (fields.Count() > 2)
-                        {
-                            fields[0].text = diff.ToString();
-                            fields[1].text = tech.ToString();
-                            fields[2].text = intensity.ToString();
-                            hoverTexts[2].text = "Peak BPM is " + ebpm.ToString();
-
-                            icons[0].text = "💪";
-                            icons[1].text = "📐";
-                            icons[2].text = "🔥";
-                        }
-
-                        #endregion
-
-                        #region Apply color
-
-                        if (diff > 9f)
-                        {
-                            fields[0].color = Config.Instance.D;
-                        }
-                        else if (diff >= 7f)
-                        {
-                            fields[0].color = Config.Instance.C;
-                        }
-                        else if (diff >= 5f)
-                        {
-                            fields[0].color = Config.Instance.B;
-                        }
-                        else
-                        {
-                            fields[0].color = Config.Instance.A;
-                        }
-
-                        if (tech > 0.4f)
-                        {
-                            fields[1].color = Config.Instance.D;
-                        }
-                        else if (tech >= 0.3f)
-                        {
-                            fields[1].color = Config.Instance.C;
-                        }
-                        else if (tech >= 0.2f)
-                        {
-                            fields[1].color = Config.Instance.B;
-                        }
-                        else
-                        {
-                            fields[1].color = Config.Instance.A;
-                        }
-
-                        if (intensity > 0.5f)
-                        {
-                            fields[2].color = Config.Instance.D;
-                        }
-                        else if (intensity >= 0.4f)
-                        {
-                            fields[2].color = Config.Instance.C;
-                        }
-                        else if (intensity >= 0.3f)
-                        {
-                            fields[2].color = Config.Instance.B;
-                        }
-                        else
-                        {
-                            fields[2].color = Config.Instance.A;
-                        }
-
-                        #endregion
-                    
-                    }
-                    else if(fields.Count() > 2)
-                    {
-                        fields[0].text = "";
-                        fields[1].text = "";
-                        fields[2].text = "";
-                    }
+                    SharedCoroutineStarter.instance.StartCoroutine(ProcessFields());
                 }
-                catch(Exception e)
+
+                // Not sure if that actually work, I don't use those plugins
+                var hasRequirement = SongCore.Collections.RetrieveDifficultyData(____selectedDifficultyBeatmap)?
+                    .additionalDifficultyData?
+                    ._requirements?.Any(x => x == "Noodle Extensions" || x == "Mapping Extensions") == true;
+
+                if (!hasRequirement && ____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && Plugin.hoverTexts.Count() >= 3 && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
                 {
-                    Plugin.Log.Error(e.Message);
+                    var (diff, tech, intensity, ebpm) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute);
+
+                    #region Apply text
+
+                    if (Plugin.fields.Count() > 2)
+                    {
+                        Plugin.fields[0].text = diff.ToString();
+                        Plugin.fields[1].text = tech.ToString();
+                        Plugin.fields[2].text = intensity.ToString();
+                        Plugin.hoverTexts[2].text = "Peak BPM is " + ebpm.ToString();
+
+                        Plugin.icons[0].text = "💪";
+                        Plugin.icons[1].text = "📐";
+                        Plugin.icons[2].text = "🔥";
+                    }
+
+                    #endregion
+
+                    #region Apply color
+
+                    if (diff > 9f)
+                    {
+                        Plugin.fields[0].color = Config.Instance.D;
+                    }
+                    else if (diff >= 7f)
+                    {
+                        Plugin.fields[0].color = Config.Instance.C;
+                    }
+                    else if (diff >= 5f)
+                    {
+                        Plugin.fields[0].color = Config.Instance.B;
+                    }
+                    else
+                    {
+                        Plugin.fields[0].color = Config.Instance.A;
+                    }
+
+                    if (tech > 0.4f)
+                    {
+                        Plugin.fields[1].color = Config.Instance.D;
+                    }
+                    else if (tech >= 0.3f)
+                    {
+                        Plugin.fields[1].color = Config.Instance.C;
+                    }
+                    else if (tech >= 0.2f)
+                    {
+                        Plugin.fields[1].color = Config.Instance.B;
+                    }
+                    else
+                    {
+                        Plugin.fields[1].color = Config.Instance.A;
+                    }
+
+                    if (intensity > 0.5f)
+                    {
+                        Plugin.fields[2].color = Config.Instance.D;
+                    }
+                    else if (intensity >= 0.4f)
+                    {
+                        Plugin.fields[2].color = Config.Instance.C;
+                    }
+                    else if (intensity >= 0.3f)
+                    {
+                        Plugin.fields[2].color = Config.Instance.B;
+                    }
+                    else
+                    {
+                        Plugin.fields[2].color = Config.Instance.A;
+                    }
+
+                    #endregion
+
+                }
+                else if (Plugin.fields.Count() > 2)
+                {
+                    Plugin.fields[0].text = "";
+                    Plugin.fields[1].text = "";
+                    Plugin.fields[2].text = "";
                 }
             }
-            else if(icons.Count() > 2)
+            catch (Exception e)
             {
-                fields[0].text = "";
-                fields[1].text = "";
-                fields[2].text = "";
-                icons[0].text = "";
-                icons[1].text = "";
-                icons[2].text = "";
+                Plugin.Log.Error(e.Message);
             }
         }
     }
@@ -226,14 +208,14 @@ namespace BeatmapScanner.Patches
     {
         static readonly Vector3 ModifiedSizeDelta = new(70.5f, 58);
         static readonly Vector3 ModifiedPositon = new(-34.4f, -56f, 0f);
-        static Vector3 OldSizeDelta = new();
-        static Vector3 OldPosition = new();
+        static Vector3 LocalSizeDelta = new();
+        static Vector3 LocalPosition = new();
         static readonly float ModifiedSkew = 0;
         static bool ImageCover = false;
 
         static void Prefix(StandardLevelDetailViewController __instance)
         {
-            if((ImageCover && !Config.Instance.ImageCoverExpander) || (!ImageCover && Config.Instance.ImageCoverExpander))
+            if ((ImageCover && !Config.Instance.ImageCoverExpander) || (!ImageCover && Config.Instance.ImageCoverExpander))
             {
                 try
                 {
@@ -241,10 +223,10 @@ namespace BeatmapScanner.Patches
                     if (!levelBarTranform) { return; }
                     var imageTransform = levelBarTranform.Find("SongArtwork").GetComponent<RectTransform>();
 
-                    if (OldSizeDelta == new Vector3())
+                    if (LocalSizeDelta == new Vector3())
                     {
-                        OldSizeDelta = imageTransform.sizeDelta;
-                        OldPosition = imageTransform.localPosition;
+                        LocalSizeDelta = imageTransform.sizeDelta;
+                        LocalPosition = imageTransform.localPosition;
                     }
 
                     if (Config.Instance.ImageCoverExpander)
@@ -271,8 +253,8 @@ namespace BeatmapScanner.Patches
                     }
                     else
                     {
-                        imageTransform.sizeDelta = OldSizeDelta;
-                        imageTransform.localPosition = OldPosition;
+                        imageTransform.sizeDelta = LocalSizeDelta;
+                        imageTransform.localPosition = LocalPosition;
 
                         ImageCover = false;
                     }
