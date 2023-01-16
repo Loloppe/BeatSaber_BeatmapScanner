@@ -2,12 +2,30 @@
 using System.Collections.Generic;
 using System.Linq;
 using static BeatmapSaveDataVersion3.BeatmapSaveData;
-using static BeatmapScanner.Algorithm.BeatmapScanner;
 
 namespace BeatmapScanner.Algorithm
 {
     internal class Helper
     {
+        #region Array
+
+        public static int[] VerticalSwing = { 0, 1, 4, 5, 6, 7 };
+        public static int[] HorizontalSwing = { 2, 3, 4, 5, 6, 7 };
+        public static int[] DiagonalSwing = { 4, 5, 6, 7 };
+        public static int[] PureVerticalSwing = { 0, 1 };
+        public static int[] PureHorizontalSwing = { 2, 3 };
+
+        public static int[] UpSwing = { 0, 4, 5 };
+        public static int[] DownSwing = { 1, 6, 7 };
+        public static int[] LeftSwing = { 2, 4, 6 };
+        public static int[] RightSwing = { 3, 5, 7 };
+        public static int[] UpLeftSwing = { 0, 2, 4 };
+        public static int[] DownLeftSwing = { 1, 2, 6 };
+        public static int[] UpRightSwing = { 0, 3, 5 };
+        public static int[] DownRightSwing = { 1, 3, 7 };
+
+        #endregion
+
         public static void Swap<T>(IList<T> list, int indexA, int indexB)
         {
             (list[indexB], list[indexA]) = (list[indexA], list[indexB]);
@@ -208,8 +226,8 @@ namespace BeatmapScanner.Algorithm
             for (int i = 1; i < cubes.Count(); i++)
             {
                 // Here we try to find if notes are part of the same swing
-                if (cubes[i].Beat - cubes[i - 1].Beat <= 0.15 && (cubes[i].Note.cutDirection == cubes[i - 1].Note.cutDirection || // A bit faster than 1/8 and same direction
-                    cubes[i].Assumed || SameDirection(cubes[i - 1].Direction, (int)cubes[i].Note.cutDirection))) // Or if the next note is a dot, or if parity break
+                if (cubes[i].Beat - cubes[i - 1].Beat < 0.26 && (cubes[i].Note.cutDirection == cubes[i - 1].Note.cutDirection || // Faster than 1/4 (one-handed) and same direction
+                    cubes[i].Assumed || cubes[i - 1].Assumed || SameDirection(cubes[i - 1].Direction, (int)cubes[i].Note.cutDirection))) // Or if the previous/next note is a dot, or if parity break
                 {
                     if (!pattern)
                     {

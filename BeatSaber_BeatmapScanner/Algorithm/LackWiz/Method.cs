@@ -7,6 +7,8 @@ namespace BeatmapScanner.Algorithm.LackWiz
 {
     internal class Method
     {
+        public static int[] CutDirectionIndex = { 90, 270, 180, 0, 135, 45, 225, 315, 270 };
+
         public static (double tech, double diff, List<SwingData> data) UseLackWizAlgorithm(List<ColorNoteData> red, List<ColorNoteData> blue, double bpm)
         {
             double diff = 0;
@@ -59,7 +61,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 double sliderTime = 0;
                 double guideAngle;
                 var currentBeat = notes[i].beat;
-                var currentAngle = (double)(BeatmapScanner.CutDirectionIndex[(int)notes[i].cutDirection] + notes[i].angleOffset);
+                var currentAngle = (double)(CutDirectionIndex[(int)notes[i].cutDirection] + notes[i].angleOffset);
                 (double x, double y) currentPosition = (notes[i].line, notes[i].layer);
                 if(i > 0)
                 {
@@ -178,7 +180,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                             }
                             if ((int)notes[blockIndex].cutDirection != 8)
                             {
-                                guideAngle = BeatmapScanner.CutDirectionIndex[(int)notes[blockIndex].cutDirection];
+                                guideAngle = CutDirectionIndex[(int)notes[blockIndex].cutDirection];
                                 break;
                             }
                         }

@@ -1,11 +1,7 @@
-﻿using BeatmapScanner.Installers;
-using HarmonyLib;
-using HMUI;
+﻿using HarmonyLib;
 using IPA;
 using System.Reflection;
-using SiraUtil.Zenject;
 using IPALogger = IPA.Logging.Logger;
-using BeatSaberMarkupLanguage.Settings;
 using IPA.Config.Stores;
 using BeatSaberMarkupLanguage.GameplaySetup;
 
@@ -17,12 +13,6 @@ namespace BeatmapScanner
         internal static Plugin Instance;
         internal static IPALogger Log;
         internal static Harmony harmony;
-        internal static CurvedTextMeshPro star;
-        internal static CurvedTextMeshPro difficulty;
-        internal static CurvedTextMeshPro t;
-        internal static CurvedTextMeshPro tech;
-        internal static CurvedTextMeshPro i;
-        internal static CurvedTextMeshPro intensity;
 
         static class BsmlWrapper
         {
@@ -30,49 +20,31 @@ namespace BeatmapScanner
 
             public static void EnableUI()
             {
-                static void wrap() => BSMLSettings.instance.AddSettingsMenu("BeatmapScanner", "BeatmapScanner.Views.settings.bsml", Config.Instance);
-                void wrap2() => GameplaySetup.instance.AddTab("BeatmapScanner", "BeatmapScanner.Views.settings.bsml", Config.Instance, MenuType.All);
+                static void wrap() => GameplaySetup.instance.AddTab("BeatmapScanner", "BeatmapScanner.Views.settings.bsml", Config.Instance, MenuType.All);
 
                 if (hasBsml)
                 {
                     wrap();
-                    wrap2();
                 }
             }
             public static void DisableUI()
             {
-                static void wrap() => BSMLSettings.instance.RemoveSettingsMenu(Config.Instance);
-                void wrap2() => GameplaySetup.instance.RemoveTab("BeatmapScanner");
+                static void wrap() => GameplaySetup.instance.RemoveTab("BeatmapScanner");
 
                 if (hasBsml)
                 {
                     wrap();
-                    wrap2();
                 }
             }
         }
 
-        public static void ClearUI()
-        {
-            if(!Config.Instance.Enabled)
-            {
-                star.text = "";
-                t.text = "";
-                i.text = "";
-            }
-            difficulty.text = "";
-            tech.text = "";
-            intensity.text = "";
-        }
-
         [Init]
-        public Plugin(IPALogger logger, IPA.Config.Config conf, Zenjector zenjector)
+        public Plugin(IPALogger logger, IPA.Config.Config conf)
         {
             Instance = this;
             Log = logger;
             Config.Instance = conf.Generated<Config>();
             harmony = new Harmony("Loloppe.BeatSaber.BeatmapScanner");
-            zenjector.Install<BeatmapScannerMenuInstaller>(Location.Menu);
         }
 
         [OnEnable]

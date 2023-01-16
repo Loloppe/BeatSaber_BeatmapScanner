@@ -99,35 +99,20 @@
       <HintPath>$(BeatSaberDir)\Libs\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Zenject, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <Private>False</Private>
-      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="Zenject-usage, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <Private>False</Private>
-      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="BeatSaberMarkupLanguage">
       <HintPath>$(BeatSaberDir)\Plugins\BSML.dll</HintPath>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="SiraUtil">
-      <HintPath>$(BeatSaberDir)\Plugins\SiraUtil.dll</HintPath>
-      <Private>False</Private>
-      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="SongCore">
       <HintPath>$(BeatSaberDir)\Plugins\SongCore.dll</HintPath>
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Polyglot">
-      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Polyglot.dll</HintPath>
-      <Private>False</Private>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
+	<Reference Include="Polyglot">
+	  <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Polyglot.dll</HintPath>
+	  <Private>False</Private>
+	  <SpecificVersion>False</SpecificVersion>
+	</Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm\LackWiz\MathWiz.cs" />
@@ -141,10 +126,8 @@
     <Compile Include="Helper\MathUtil.cs" />
     <Compile Include="Config\Config.cs" />
     <Compile Include="HarmonyPatches\MapDataGetter.cs" />
-    <Compile Include="Installers\BeatmapScannerMenuInstaller.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Views\ArtworkViewManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="manifest.json" />

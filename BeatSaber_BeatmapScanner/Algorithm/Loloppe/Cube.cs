@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using static BeatmapSaveDataVersion3.BeatmapSaveData;
+﻿using static BeatmapSaveDataVersion3.BeatmapSaveData;
 
 namespace BeatmapScanner.Algorithm.Loloppe
 {
@@ -14,8 +13,6 @@ namespace BeatmapScanner.Algorithm.Loloppe
         public bool Reset { get; set; } = false;
         public bool SoftReset { get; set; } = false;
         public bool Bomb { get; set; } = false;
-        public bool Forehand { get; set; } = true;
-        public bool PalmUp { get; set; } = false;
         public bool Head { get; set; } = false;
         public bool Pattern { get; set; } = false;
         

@@ -19,12 +19,12 @@ namespace BeatmapScanner
         [UseConverter(typeof(ColorConverter))]
         public virtual Color C { get; set; } = Color.green;
         [UseConverter(typeof(ColorConverter))]
-        public virtual Color D { get; set; } = Color.red;
-        
+        public virtual Color D { get; set; } = new Color(1f, 0f, 1f);
+
         /// <summary>
-		/// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
-		/// </summary>
-		public virtual void OnReload()
+        /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
+        /// </summary>
+        public virtual void OnReload()
         {
             // Do stuff after config is read from disk.
         }

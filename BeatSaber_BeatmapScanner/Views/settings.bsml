@@ -1,8 +1,5 @@
 ﻿<settings-container>
 	<checkbox-setting apply-on-change="true" value="Enabled" text="Enable Plugin"/>
-	<horizontal>
-		<text text='Need to reload/apply to apply this feature' align='Center'/>
-	</horizontal>
 	<checkbox-setting apply-on-change="true" value="ImageCoverExpander" text="Use ImageCoverExpander"/>
 	<horizontal>
 		<text text='Colors' align='Center'/>

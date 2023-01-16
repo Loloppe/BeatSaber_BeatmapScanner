@@ -8,8 +8,6 @@ namespace BeatmapScanner.Algorithm
 {
     internal class MathUtil
     {
-        
-
         public static float ReduceWithExponentialCurve(float currentValue, float lowerBound, float upperBound, float curve)
         {
             float mappedValue = (currentValue - lowerBound) / (upperBound - lowerBound);
@@ -20,18 +18,6 @@ namespace BeatmapScanner.Algorithm
         {
             float OldMax = MaxNerfMS;
             float OldMin = MinNerfMS;
-            float NewMax = -NormalizedMax;
-            float NewMin = NormalizedMin;
-            float OldRange = (OldMax - OldMin);
-            float NewRange = (NewMax - NewMin);
-            float NewValue = (((variable - OldMin) * NewRange) / OldRange) + NewMin;
-            return NewValue;
-        }
-
-        public static float NormalizeVariable2(float variable)
-        {
-            float OldMax = MaxNote;
-            float OldMin = MinNote;
             float NewMax = -NormalizedMax;
             float NewMin = NormalizedMin;
             float OldRange = (OldMax - OldMin);

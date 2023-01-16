@@ -13,25 +13,6 @@ namespace BeatmapScanner.Algorithm
 {
     internal class BeatmapScanner
     {
-        #region Array
-        public static int[] VerticalSwing = { 0, 1, 4, 5, 6, 7 };
-        public static int[] HorizontalSwing = { 2, 3, 4, 5, 6, 7 };
-        public static int[] DiagonalSwing = { 4, 5, 6, 7 };
-        public static int[] PureVerticalSwing = { 0, 1 };
-        public static int[] PureHorizontalSwing = { 2, 3 };
-
-        public static int[] UpSwing = { 0, 4, 5 };
-        public static int[] DownSwing = { 1, 6, 7 };
-        public static int[] LeftSwing = { 2, 4, 6 };
-        public static int[] RightSwing = { 3, 5, 7 };
-        public static int[] UpLeftSwing = { 0, 2, 4 };
-        public static int[] DownLeftSwing = { 1, 2, 6 };
-        public static int[] UpRightSwing = { 0, 3, 5 };
-        public static int[] DownRightSwing = { 1, 3, 7 };
-
-        public static int[] CutDirectionIndex = { 90, 270, 180, 0, 135, 45, 225, 315, 270 };
-        #endregion
-
         #region Algorithm value
 
         // Nerf T and M algorithm using an exponential curve
@@ -40,9 +21,8 @@ namespace BeatmapScanner.Algorithm
         public static float NormalizedMax = 5f;   
         public static float NormalizedMin = 0f;
 
-        // Nerf/buff map based on notes count
+        // Nerf map based on notes count
         public static float MinNote = 80f;
-        public static float MaxNote = 10000f;
 
         // I multipler
         public static float Speed = 0.00125f;
@@ -52,13 +32,14 @@ namespace BeatmapScanner.Algorithm
 
         #region Analyzer
 
-        public static (float star, float tech, float intensity) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm)
+        public static (float star, float tech, float intensity, float ebpm) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm)
         {
             #region Prep
 
             var diff = 0d;
             var tech = 0d;
             var intensity = 0d;
+            var ebpm = 0d;
 
             List<Cube> cube = new();
             List<SwingData> data = new();
@@ -80,7 +61,7 @@ namespace BeatmapScanner.Algorithm
                 Helper.FindNoteDirection(red, bombs);
                 Helper.FixPatternHead(red);
                 Helper.FindReset(red);
-                intensity += GetIntensity(red, bpm);
+                (intensity, ebpm) = GetIntensity(red, bpm);
             }
 
             if (blue.Count() > 0)
@@ -88,7 +69,11 @@ namespace BeatmapScanner.Algorithm
                 Helper.FindNoteDirection(blue, bombs);
                 Helper.FixPatternHead(blue);
                 Helper.FindReset(blue);
-                intensity += GetIntensity(blue, bpm);
+                var temp = 0f;
+                var temp2 = 0f;
+                (temp, temp2) = GetIntensity(blue, bpm);
+                ebpm = Math.Max(ebpm, temp2);
+                intensity += temp;
             }
 
             // LackWiz algorithm
@@ -102,13 +87,6 @@ namespace BeatmapScanner.Algorithm
             if (notes.Count() < MinNote)
             {
                 intensity *= notes.Count() / MinNote;
-            }
-            else
-            {
-                var normalized = MathUtil.NormalizeVariable2(MaxNote / Math.Max(notes.Count(), MaxNote));
-                var buff = MathUtil.ReduceWithExponentialCurve(2, 0, 1, normalized);
-
-                intensity *= buff;
             }
 
             intensity /= 2;
@@ -158,19 +136,20 @@ namespace BeatmapScanner.Algorithm
 
             #endregion
 
-            return ((float)Math.Round(diff, 2), (float)Math.Round(tech, 2), (float)Math.Round(intensity, 2));
+            return ((float)Math.Round(diff, 2), (float)Math.Round(tech, 2), (float)Math.Round(intensity, 2), (float)Math.Round(ebpm, 0));
         }
 
         #endregion
 
         #region Intensity
 
-        public static float GetIntensity(List<Cube> cubes, float bpm)
+        public static (float, float) GetIntensity(List<Cube> cubes, float bpm)
         {
             #region Prep
 
             var intensity = 1f;
             var speed = (Speed * bpm);
+            var ebpm = 1f;
 
             #endregion
 
@@ -184,6 +163,14 @@ namespace BeatmapScanner.Algorithm
                 }
 
                 var time = (cubes[i].Beat - cubes[i - 1].Beat);
+
+                if(ebpm < (500 / time)) // Calc EBPM
+                {
+                    if (time > 0)
+                    {
+                        ebpm = (500 / time);
+                    }
+                }
 
                 if (cubes[i].Reset || cubes[i].Head) // Reset and head of pattern
                 {
@@ -204,7 +191,9 @@ namespace BeatmapScanner.Algorithm
 
             #endregion
 
-            return intensity / cubes.Where(c => !c.Pattern || c.Head).Count();
+            ebpm *= bpm / 1000;
+
+            return (intensity / cubes.Where(c => !c.Pattern || c.Head).Count(), ebpm);
         }
 
         #endregion
