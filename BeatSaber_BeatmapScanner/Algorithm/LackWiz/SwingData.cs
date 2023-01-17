@@ -1,7 +1,10 @@
-﻿namespace BeatmapScanner.Algorithm
+﻿using static BeatmapSaveDataVersion3.BeatmapSaveData;
+
+namespace BeatmapScanner.Algorithm
 {
     internal class SwingData
     {
+        public ColorNoteData Note { get; set; }
         public double Time { get; set; } = 0;
         public double Angle { get; set; } = 0;
         public (double x, double y) EntryPosition { get; set; } = (0, 0);
@@ -20,8 +23,9 @@
             
         }
 
-        public SwingData(double beat, double angle)
+        public SwingData(ColorNoteData note, double beat, double angle)
         {
+            Note = note;
             Time = beat;
             Angle = angle;
         }

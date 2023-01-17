@@ -121,7 +121,7 @@ namespace BeatmapScanner.Patches
                         Plugin.fields[0].text = diff.ToString();
                         Plugin.fields[1].text = tech.ToString();
                         Plugin.fields[2].text = intensity.ToString();
-                        Plugin.hoverTexts[2].text = "Peak BPM is " + ebpm.ToString();
+                        Plugin.hoverTexts[2].text = "Peak EBPM is " + ebpm.ToString();
 
                         Plugin.icons[0].text = "💪";
                         Plugin.icons[1].text = "📐";
@@ -206,16 +206,12 @@ namespace BeatmapScanner.Patches
     [HarmonyPatch(typeof(StandardLevelDetailViewController), nameof(StandardLevelDetailViewController.ShowContent))]
     public class ImageCoverExpander
     {
-        static readonly Vector3 ModifiedSizeDelta = new(70.5f, 58);
-        static readonly Vector3 ModifiedPositon = new(-34.4f, -56f, 0f);
-        static Vector3 LocalSizeDelta = new();
-        static Vector3 LocalPosition = new();
-        static readonly float ModifiedSkew = 0;
+        static bool FirstRun = true;
         static bool ImageCover = false;
 
         static void Prefix(StandardLevelDetailViewController __instance)
         {
-            if ((ImageCover && !Config.Instance.ImageCoverExpander) || (!ImageCover && Config.Instance.ImageCoverExpander))
+            if ((ImageCover && !Config.Instance.ImageCoverExpander) || (!ImageCover && Config.Instance.ImageCoverExpander) || FirstRun)
             {
                 try
                 {
@@ -223,41 +219,36 @@ namespace BeatmapScanner.Patches
                     if (!levelBarTranform) { return; }
                     var imageTransform = levelBarTranform.Find("SongArtwork").GetComponent<RectTransform>();
 
-                    if (LocalSizeDelta == new Vector3())
-                    {
-                        LocalSizeDelta = imageTransform.sizeDelta;
-                        LocalPosition = imageTransform.localPosition;
-                    }
+                    var imageView = imageTransform.GetComponent<ImageView>();
 
                     if (Config.Instance.ImageCoverExpander)
                     {
-                        imageTransform.sizeDelta = ModifiedSizeDelta;
-                        imageTransform.localPosition = ModifiedPositon;
-
-                        imageTransform.SetAsFirstSibling();
-
-                        var imageView = imageTransform.GetComponent<ImageView>();
-                        imageView.color = new Color(0.5f, 0.5f, 0.5f, 1);
-                        imageView.preserveAspect = false;
-                        FieldAccessor<ImageView, float>.Set(ref imageView, "_skew", ModifiedSkew);
-
-                        // DiTails
-                        var clickableImage = imageTransform.GetComponent<ClickableImage>();
-                        if (clickableImage != null)
-                        {
-                            clickableImage.DefaultColor = new Color(0.5f, 0.5f, 0.5f, 1);
-                            clickableImage.HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1);
-                        }
-
                         ImageCover = true;
+                        imageTransform.sizeDelta = new(70.5f, 58);
+                        imageTransform.localPosition = new(-34.4f, -56f, 0f);
+                        imageView.color = new Color(0.5f, 0.5f, 0.5f, 1);
                     }
                     else
                     {
-                        imageTransform.sizeDelta = LocalSizeDelta;
-                        imageTransform.localPosition = LocalPosition;
-
                         ImageCover = false;
+                        imageTransform.sizeDelta = new(10f, 10f);
+                        imageTransform.localPosition = new(-30.65f, -12f);
+                        imageView.color = new Color(1f, 1f, 1f, 1);
                     }
+                    imageTransform.SetAsFirstSibling();
+
+                    imageView.preserveAspect = false;
+                    FieldAccessor<ImageView, float>.Set(ref imageView, "_skew", 0);
+
+                    // DiTails
+                    var clickableImage = imageTransform.GetComponent<ClickableImage>();
+                    if (clickableImage != null)
+                    {
+                        clickableImage.DefaultColor = new Color(0.5f, 0.5f, 0.5f, 1);
+                        clickableImage.HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1);
+                    }
+
+                    FirstRun = false;
                 }
                 catch(Exception e)
                 {

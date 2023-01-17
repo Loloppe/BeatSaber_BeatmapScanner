@@ -9,6 +9,8 @@ namespace BeatmapScanner.Algorithm.LackWiz
     {
         public static int[] CutDirectionIndex = { 90, 270, 180, 0, 135, 45, 225, 315, 270 };
 
+        #region Main
+
         public static (double tech, double diff, List<SwingData> data) UseLackWizAlgorithm(List<ColorNoteData> red, List<ColorNoteData> blue, double bpm)
         {
             double diff = 0;
@@ -22,21 +24,21 @@ namespace BeatmapScanner.Algorithm.LackWiz
             if (red.Count() > 0)
             {
 
-                redSwingData = Method.SwingProcesser(red);
-                redPatternData = Method.PatternSplitter(redSwingData);
-                redSwingData = Method.ParityPredictor(redPatternData, false);
-                Method.SwingCurveCalc(redSwingData, false);
-                diff = Method.DiffToPass(redSwingData, bpm);
+                redSwingData = SwingProcesser(red);
+                redPatternData = PatternSplitter(redSwingData);
+                redSwingData = ParityPredictor(redPatternData, false);
+                SwingCurveCalc(redSwingData, false);
+                diff = DiffToPass(redSwingData, bpm);
                 data.AddRange(redSwingData);
             }
 
             if (blue.Count() > 0)
             {
-                blueSwingData = Method.SwingProcesser(blue);
-                bluePatternData = Method.PatternSplitter(blueSwingData);
-                blueSwingData = Method.ParityPredictor(bluePatternData, true);
-                Method.SwingCurveCalc(blueSwingData, true);
-                diff = Math.Max(diff, Method.DiffToPass(blueSwingData, bpm));
+                blueSwingData = SwingProcesser(blue);
+                bluePatternData = PatternSplitter(blueSwingData);
+                blueSwingData = ParityPredictor(bluePatternData, true);
+                SwingCurveCalc(blueSwingData, true);
+                diff = Math.Max(diff, DiffToPass(blueSwingData, bpm));
                 data.AddRange(blueSwingData);
             }
 
@@ -49,6 +51,10 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
             return (tech, diff, data);
         }
+
+        #endregion
+
+        #region SwingProcesser
 
         // Swing angle, entry/exit and timestamps
         public static List<SwingData> SwingProcesser(List<ColorNoteData> notes)
@@ -70,17 +76,16 @@ namespace BeatmapScanner.Algorithm.LackWiz
                     var previousAngle = swingData.Last().Angle;
                     (double x, double y) previousPosition = (notes[i - 1].line, notes[i - 1].layer);
                     if((int)notes[i].cutDirection == 8)
-                    { 
-                        previousAngle = swingData.Last().Angle;
+                    {
                         if (currentBeat - previousBeat <= 0.03125)
                         {
                             currentAngle = previousAngle;
                         }
                         else
                         {
-                            if(previousAngle >= 180)
+                            if (previousAngle >= 180)
                             {
-                                currentAngle = previousAngle - 180; 
+                                currentAngle = previousAngle - 180;
                             }
                             else
                             {
@@ -88,6 +93,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                             }
                         }
                     }
+
                     #endregion
 
                     if(currentBeat - previousBeat >= 0.03125)
@@ -96,7 +102,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                         {
                             if(currentBeat - previousBeat > 0.5)
                             {
-                                swingData.Add(new SwingData(currentBeat, currentAngle));
+                                swingData.Add(new SwingData(notes[i], currentBeat, currentAngle));
                                 (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = MathWiz.CalculateBaseEntryExit(currentPosition, currentAngle);
                             }
                             else
@@ -112,13 +118,13 @@ namespace BeatmapScanner.Algorithm.LackWiz
                                     }
                                     else
                                     {
-                                        swingData.Add(new SwingData(currentBeat, currentAngle));
+                                        swingData.Add(new SwingData(notes[i], currentBeat, currentAngle));
                                         (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = MathWiz.CalculateBaseEntryExit(currentPosition, currentAngle);
                                     }
                                 }
                                 else
                                 {
-                                    swingData.Add(new SwingData(currentBeat, currentAngle));
+                                    swingData.Add(new SwingData(notes[i], currentBeat, currentAngle));
                                     (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = MathWiz.CalculateBaseEntryExit(currentPosition, currentAngle);
                                 }
                             }
@@ -132,7 +138,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                             }
                             else
                             {
-                                swingData.Add(new SwingData(currentBeat, currentAngle));
+                                swingData.Add(new SwingData(notes[i], currentBeat, currentAngle));
                                 (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = MathWiz.CalculateBaseEntryExit(currentPosition, currentAngle);
                             }
                         }
@@ -222,13 +228,17 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 }
                 else
                 {
-                    swingData.Add(new SwingData(currentBeat, currentAngle));
+                    swingData.Add(new SwingData(notes[i], currentBeat, currentAngle));
                     (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = MathWiz.CalculateBaseEntryExit(currentPosition, currentAngle);
                 }
             }
 
             return swingData;
         }
+
+        #endregion
+
+        #region PatternSplitter
 
         // Swing speed and pattern list
         public static List<List<SwingData>> PatternSplitter(List<SwingData> data)
@@ -251,11 +261,11 @@ namespace BeatmapScanner.Algorithm.LackWiz
             List<List<SwingData>> patternList = new();
             List<SwingData> tempPList = new();
 
-            for(int i = 0; i < data.Count(); i++)
+            for (int i = 0; i < data.Count(); i++)
             {
-                if(i > 0)
-                { 
-                    if(1 / (data[i].Time - data[i - 1].Time) - data[i].SwingFrequency <= SFMargin)
+                if (i > 0)
+                {
+                    if (1 / (data[i].Time - data[i - 1].Time) - data[i].SwingFrequency <= SFMargin)
                     {
                         if (!patternFound)
                         {
@@ -265,8 +275,10 @@ namespace BeatmapScanner.Algorithm.LackWiz
                             {
                                 patternList.Add(tempPList);
                             }
-                            tempPList = new();
-                            tempPList.Add(data[i - 1]);
+                            tempPList = new()
+                            {
+                                data[i - 1]
+                            };
                         }
                         tempPList.Add(data[i]);
                     }
@@ -291,11 +303,11 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 }
             }
 
-            if(tempPList.Count > 0 && patternList.Count() == 0)
+            if (tempPList.Count > 0 && patternList.Count() == 0)
             {
                 patternList.Add(tempPList);
             }
-            
+
             return patternList;
         }
 
@@ -324,6 +336,10 @@ namespace BeatmapScanner.Algorithm.LackWiz
             return cloneList;
         }
 
+        #endregion
+
+        #region ParityPredictor
+
         // Forehand, Reset and AngleStrain
         public static List<SwingData> ParityPredictor(List<List<SwingData>> patternData, bool leftOrRight)
         {
@@ -333,9 +349,8 @@ namespace BeatmapScanner.Algorithm.LackWiz
             {
                 var testData1 = patternData[p];
                 var testData2 = DeepCopy(patternData[p]);
-                for(int i = 0; i < testData1.Count(); i++)
+                for (int i = 0; i < testData1.Count(); i++)
                 {
-                    // Build Forehand TestData
                     if (i > 0)
                     {
                         if (Math.Abs(testData1[i].Angle - testData1[i - 1].Angle) > 45)
@@ -352,7 +367,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                         testData1[0].Forehand = true;
                     }
                 }
-                for(int i = 0; i < testData2.Count(); i++)
+                for (int i = 0; i < testData2.Count(); i++)
                 {
                     if (i > 0)
                     {
@@ -382,7 +397,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                     newPatternData.AddRange(testData2);
                 }
             }
-            for(int i = 0; i < newPatternData.Count(); i++)
+            for (int i = 0; i < newPatternData.Count(); i++)
             {
                 newPatternData[i].AngleStrain = MathWiz.SwingAngleStrainCalc(new List<SwingData> { newPatternData[i] }, leftOrRight);
                 if (i > 0)
@@ -404,6 +419,10 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
             return newPatternData;
         }
+
+        #endregion
+
+        #region SwingCurveCalc
 
         // Position Complexity, Curve Complexity, Angle Path Strain and Path Strain
         public static void SwingCurveCalc(List<SwingData> swingData, bool leftOrRight)
@@ -495,6 +514,10 @@ namespace BeatmapScanner.Algorithm.LackWiz
             }
         }
 
+        #endregion
+
+        #region DiffToPass
+
         public static double DiffToPass(List<SwingData> swingData, double bpm)
         {
             var difficulty = 0d;
@@ -510,8 +533,8 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
             for (int i = 1; i < swingData.Count(); i++) 
             {
-                var xDist = swingData[i].EntryPosition.x - swingData[i - 1].ExitPosition.x;
-                var yDist = swingData[i].EntryPosition.y - swingData[i - 1].ExitPosition.y;
+                var xDist = swingData[i].ExitPosition.x - swingData[i - 1].ExitPosition.x;
+                var yDist = swingData[i].ExitPosition.y - swingData[i - 1].ExitPosition.y;
                 data.Add(new SData((double)Math.Sqrt(Math.Pow(xDist, 2) + Math.Pow(yDist, 2))));
                 if (i > smoothing) 
                 {
@@ -526,7 +549,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 SSStress += qST.Last();
                 data.Last().AverageStress = SSStress / smoothing;
 
-                difficulty = data.Last().AverageSwingSpeed * (data.Last().AverageStress + 0.6667) * 1.5;
+                difficulty = data.Last().AverageSwingSpeed * (data.Last().AverageStress + 0.6667);
                 data.Last().Difficulty = difficulty;
 
                 difficultyIndex.Add(difficulty);
@@ -535,11 +558,15 @@ namespace BeatmapScanner.Algorithm.LackWiz
             if (difficultyIndex.Count() > 1)
             {
                 difficultyIndex.Sort();
-                difficultyIndex.Reverse(); 
-                difficulty = difficultyIndex.Take(Math.Min(smoothing * 8, difficultyIndex.Count())).Average();
+                difficultyIndex.Reverse();
+                difficulty = difficultyIndex.Take(difficultyIndex.Count() / 16).Average();
+                // difficulty = difficultyIndex.Take(Math.Min(smoothing * 8, difficultyIndex.Count())).Average();
             }
 
             return difficulty;
         }
+
+        #endregion
+
     }
 }

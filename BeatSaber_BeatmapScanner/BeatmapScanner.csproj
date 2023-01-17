@@ -108,11 +108,11 @@
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-	<Reference Include="Polyglot">
-	  <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Polyglot.dll</HintPath>
-	  <Private>False</Private>
-	  <SpecificVersion>False</SpecificVersion>
-	</Reference>
+    <Reference Include="Polyglot">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Polyglot.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithm\LackWiz\MathWiz.cs" />
@@ -120,6 +120,7 @@
     <Compile Include="Algorithm\Loloppe\Cube.cs" />
     <Compile Include="Algorithm\LackWiz\Method.cs" />
     <Compile Include="Algorithm\LackWiz\SwingData.cs" />
+    <Compile Include="Algorithm\Loloppe\Test.cs" />
     <Compile Include="Helper\ColorConverter.cs" />
     <Compile Include="Helper\FloatConverter.cs" />
     <Compile Include="Helper\Helper.cs" />
