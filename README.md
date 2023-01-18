@@ -1,14 +1,16 @@
 # BeatSaber_BeatmapScanner
 This plugin display new values on the image cover of the selected song
 
-💪 represent how hard it is to pass a map  
+🔥 represent how hard it is to pass a map  
 📐 represent % chance to bad cut (tech)  
-🔥 represent the average intensity + peak EBPM on hover
+Average intensity + peak BPM are displayed when you hover 🔥
 
 Configuration include:
 - Build-in ImageCoverExpander
+- Old/new difficulty value trigger
 - Colors filters  
 
 To do:
 - Port the plugin to ChroMapper as an overlay
+- Make an actual UI for this plugin
 - Better algorithm
