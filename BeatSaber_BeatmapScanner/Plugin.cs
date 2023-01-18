@@ -4,10 +4,6 @@ using System.Reflection;
 using IPALogger = IPA.Logging.Logger;
 using IPA.Config.Stores;
 using BeatSaberMarkupLanguage.GameplaySetup;
-using System.Collections.Generic;
-using HMUI;
-using TMPro;
-using UnityEngine;
 
 namespace BeatmapScanner
 {
@@ -17,12 +13,6 @@ namespace BeatmapScanner
         internal static Plugin Instance;
         internal static IPALogger Log;
         internal static Harmony harmony;
-
-        internal static GameObject extraUI = null;
-        internal static HoverHintController hhc = null;
-        internal static TextMeshProUGUI[] fields = null;
-        internal static List<CurvedTextMeshPro> icons = new();
-        internal static List<HoverHint> hoverTexts = new();
 
         static class BsmlWrapper
         {

@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using BeatmapScanner.Algorithm;
+using BeatmapScanner.Patches;
 using IPA.Config.Stores;
 using IPA.Config.Stores.Attributes;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace BeatmapScanner
     {
         public static Config Instance;
         public virtual bool ImageCoverExpander { get; set; } = true;
+        public virtual bool OldValue { get; set; } = false;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color A { get; set; } = new Color(0.62f, 0.62f, 0.62f);
         [UseConverter(typeof(ColorConverter))]

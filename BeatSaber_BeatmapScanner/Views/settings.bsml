@@ -1,7 +1,8 @@
 ﻿<settings-container>
 	<checkbox-setting apply-on-change="true" value="ImageCoverExpander" text="Use ImageCoverExpander"/>
+	<checkbox-setting apply-on-change="true" value="OldValue" text="Use old difficulty value"/>
 	<horizontal>
-		<text text='Colors' align='Center'/>
+		<text text='Color' align='Center'/>
 	</horizontal>
 	<color-setting text='Low value' value='A' apply-on-change='true' bind-value='true' />
 	<color-setting text='Mid value' value='B' apply-on-change='true' bind-value='true' />

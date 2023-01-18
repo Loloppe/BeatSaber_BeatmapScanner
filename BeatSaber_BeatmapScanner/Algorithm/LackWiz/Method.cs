@@ -17,28 +17,45 @@ namespace BeatmapScanner.Algorithm.LackWiz
             double tech = 0;
             List<SwingData> redSwingData;
             List<SwingData> blueSwingData;
-            List<List<SwingData>> redPatternData;
-            List<List<SwingData>> bluePatternData;
+            List<List<SwingData>> redPatternData = new();
+            List<List<SwingData>> bluePatternData = new();
             List<SwingData> data = new();
 
-            if (red.Count() > 0)
+            if (red.Count() > 2)
             {
-
                 redSwingData = SwingProcesser(red);
-                redPatternData = PatternSplitter(redSwingData);
-                redSwingData = ParityPredictor(redPatternData, false);
-                SwingCurveCalc(redSwingData, false);
-                diff = DiffToPass(redSwingData, bpm);
+                if(redSwingData != null)
+                {
+                    redPatternData = PatternSplitter(redSwingData);
+                }
+                if(redPatternData != null)
+                {
+                    redSwingData = ParityPredictor(redPatternData, false);
+                }
+                if (redSwingData != null)
+                {
+                    SwingCurveCalc(redSwingData, false);
+                    diff = DiffToPass(redSwingData, bpm);
+                }
                 data.AddRange(redSwingData);
             }
 
-            if (blue.Count() > 0)
+            if (blue.Count() > 2)
             {
                 blueSwingData = SwingProcesser(blue);
-                bluePatternData = PatternSplitter(blueSwingData);
-                blueSwingData = ParityPredictor(bluePatternData, true);
-                SwingCurveCalc(blueSwingData, true);
-                diff = Math.Max(diff, DiffToPass(blueSwingData, bpm));
+                if (blueSwingData != null)
+                {
+                    bluePatternData = PatternSplitter(blueSwingData);
+                }
+                if (bluePatternData != null)
+                {
+                    blueSwingData = ParityPredictor(bluePatternData, true);
+                }
+                if (blueSwingData != null)
+                {
+                    SwingCurveCalc(blueSwingData, true);
+                    diff = DiffToPass(blueSwingData, bpm);
+                }
                 data.AddRange(blueSwingData);
             }
 
@@ -241,31 +258,36 @@ namespace BeatmapScanner.Algorithm.LackWiz
         #region PatternSplitter
 
         // Swing speed and pattern list
-        public static List<List<SwingData>> PatternSplitter(List<SwingData> data)
+        public static List<List<SwingData>> PatternSplitter(List<SwingData> swingData)
         {
-            for (int i = 0; i < data.Count(); i++)
+            if (swingData.Count() < 2)
             {
-                if (i > 0 && i + 1 < data.Count())
+                return null;
+            }
+
+            for (int i = 0; i < swingData.Count(); i++)
+            {
+                if (i > 0 && i + 1 < swingData.Count())
                 {
-                    data[i].SwingFrequency = 2 / (data[i + 1].Time - data[i - 1].Time);
+                    swingData[i].SwingFrequency = 2 / (swingData[i + 1].Time - swingData[i - 1].Time);
                 }
                 else
                 {
-                    data[i].SwingFrequency = 0;
+                    swingData[i].SwingFrequency = 0;
                 }
             }
 
             var patternFound = false;
-            var SFList = data.Select(s => s.SwingFrequency);
+            var SFList = swingData.Select(s => s.SwingFrequency);
             var SFMargin = SFList.Average() / 32;
             List<List<SwingData>> patternList = new();
             List<SwingData> tempPList = new();
 
-            for (int i = 0; i < data.Count(); i++)
+            for (int i = 0; i < swingData.Count(); i++)
             {
                 if (i > 0)
                 {
-                    if (1 / (data[i].Time - data[i - 1].Time) - data[i].SwingFrequency <= SFMargin)
+                    if (1 / (swingData[i].Time - swingData[i - 1].Time) - swingData[i].SwingFrequency <= SFMargin)
                     {
                         if (!patternFound)
                         {
@@ -277,29 +299,29 @@ namespace BeatmapScanner.Algorithm.LackWiz
                             }
                             tempPList = new()
                             {
-                                data[i - 1]
+                                swingData[i - 1]
                             };
                         }
-                        tempPList.Add(data[i]);
+                        tempPList.Add(swingData[i]);
                     }
                     else
                     {
                         if (tempPList.Count() > 0 && patternFound)
                         {
-                            tempPList.Add(data[i]);
+                            tempPList.Add(swingData[i]);
                             patternList.Add(tempPList);
                             tempPList = new();
                         }
                         else
                         {
                             patternFound = false;
-                            tempPList.Add(data[i]);
+                            tempPList.Add(swingData[i]);
                         }
                     }
                 }
                 else
                 {
-                    tempPList.Add(data[0]);
+                    tempPList.Add(swingData[0]);
                 }
             }
 
@@ -343,6 +365,11 @@ namespace BeatmapScanner.Algorithm.LackWiz
         // Forehand, Reset and AngleStrain
         public static List<SwingData> ParityPredictor(List<List<SwingData>> patternData, bool leftOrRight)
         {
+            if (patternData.Count() < 1)
+            {
+                return null;
+            }
+
             var newPatternData = new List<SwingData>();
 
             for (int p = 0; p < patternData.Count(); p++)
@@ -427,6 +454,11 @@ namespace BeatmapScanner.Algorithm.LackWiz
         // Position Complexity, Curve Complexity, Angle Path Strain and Path Strain
         public static void SwingCurveCalc(List<SwingData> swingData, bool leftOrRight)
         {
+            if (swingData.Count() < 2)
+            {
+                return;
+            }
+
             double lookback;
             (double x, double y) simHandCurPos;
             (double x, double y) simHandPrePos;
@@ -520,6 +552,11 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
         public static double DiffToPass(List<SwingData> swingData, double bpm)
         {
+            if(swingData == null)
+            {
+                return -1;
+            }
+
             var difficulty = 0d;
 
             var bps = bpm / 60;
@@ -555,12 +592,25 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 difficultyIndex.Add(difficulty);
             }
 
-            if (difficultyIndex.Count() > 1)
+            if (difficultyIndex.Count() > 4)
             {
                 difficultyIndex.Sort();
                 difficultyIndex.Reverse();
-                difficulty = difficultyIndex.Take(difficultyIndex.Count() / 16).Average();
-                // difficulty = difficultyIndex.Take(Math.Min(smoothing * 8, difficultyIndex.Count())).Average();
+                if(Config.Instance.OldValue)
+                {
+                    difficulty = difficultyIndex.Take(Math.Min(smoothing * 8, difficultyIndex.Count())).Average();
+                }
+                else
+                {
+                    if (difficultyIndex.Count() >= 32)
+                    {
+                        difficulty = difficultyIndex.Take(difficultyIndex.Count() / 16).Average();
+                    }
+                    else
+                    {
+                        difficulty = difficultyIndex.Take(Math.Min(smoothing * 8, difficultyIndex.Count())).Average();
+                    }
+                }
             }
 
             return difficulty;
