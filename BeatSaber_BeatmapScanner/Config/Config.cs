@@ -1,8 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
+using IPA.Config.Stores.Attributes;
 using BeatmapScanner.Algorithm;
 using BeatmapScanner.Patches;
 using IPA.Config.Stores;
-using IPA.Config.Stores.Attributes;
 using UnityEngine;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
@@ -33,8 +33,12 @@ namespace BeatmapScanner
         /// <summary>
         /// Call this to force BSIPA to update the config file. This is also called by BSIPA if it detects the file was modified.
         /// </summary>
-        public virtual void Changed()
+        public virtual void Changed() // Reload cover
         {
+            if(SoloMenuPatch.Instance != null && ((ImageCoverExpander && !SoloMenuPatch.ImageCover) || (!ImageCoverExpander && SoloMenuPatch.ImageCover)))
+            {
+                SoloMenuPatch.Instance.ShowContent((StandardLevelDetailViewController.ContentType)1); // This reload SS leaderboard for some reason, probably no cache for that (yet)
+            }
             // Do stuff when the config is changed.
         }
 

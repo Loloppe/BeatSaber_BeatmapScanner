@@ -1,7 +1,7 @@
-﻿using System;
+﻿using static BeatmapSaveDataVersion3.BeatmapSaveData;
 using System.Collections.Generic;
 using System.Linq;
-using static BeatmapSaveDataVersion3.BeatmapSaveData;
+using System;
 
 namespace BeatmapScanner.Algorithm.LackWiz
 {

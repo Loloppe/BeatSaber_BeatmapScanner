@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using static BeatmapScanner.Algorithm.BeatmapScanner;
+﻿using static BeatmapScanner.Algorithm.BeatmapScanner;
+using System;
 
 namespace BeatmapScanner.Algorithm
 {

@@ -131,7 +131,7 @@
     <Compile Include="Helper\Helper.cs" />
     <Compile Include="Helper\MathUtil.cs" />
     <Compile Include="Config\Config.cs" />
-    <Compile Include="HarmonyPatches\MapDataGetter.cs" />
+    <Compile Include="HarmonyPatches\SoloMenuPatch.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,11 +1,11 @@
 ﻿#region Import
 
+using static BeatmapSaveDataVersion3.BeatmapSaveData;
 using BeatmapScanner.Algorithm.LackWiz;
 using BeatmapScanner.Algorithm.Loloppe;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using static BeatmapSaveDataVersion3.BeatmapSaveData;
+using System;
 
 #endregion
 

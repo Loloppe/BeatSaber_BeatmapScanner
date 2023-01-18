@@ -1,9 +1,9 @@
-﻿using HarmonyLib;
-using IPA;
-using System.Reflection;
+﻿using BeatSaberMarkupLanguage.GameplaySetup;
 using IPALogger = IPA.Logging.Logger;
 using IPA.Config.Stores;
-using BeatSaberMarkupLanguage.GameplaySetup;
+using System.Reflection;
+using HarmonyLib;
+using IPA;
 
 namespace BeatmapScanner
 {
@@ -14,7 +14,7 @@ namespace BeatmapScanner
         internal static IPALogger Log;
         internal static Harmony harmony;
 
-        static class BsmlWrapper
+        public static class BsmlWrapper
         {
             static readonly bool hasBsml = IPA.Loader.PluginManager.GetPluginFromId("BeatSaberMarkupLanguage") != null;
 
