@@ -12,5 +12,6 @@ Configuration include:
 
 To do:
 - Port the plugin to ChroMapper as an overlay
-- Make an actual UI for this plugin
+- Make color from config dynamic and rerun algorithm on trigger if necessary
+- Make an actual good UI for this plugin
 - Better algorithm
