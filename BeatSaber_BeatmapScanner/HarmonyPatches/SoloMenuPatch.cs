@@ -31,6 +31,7 @@ namespace BeatmapScanner.Patches
         public static double OldDiff { get; set; } = 0;
         public static double NewDiff { get; set; } = 0;
         public static double Tech { get; set; } = 0;
+        public static double BalancedTech { get; set; } = 0;
         public static double Intensity { get; set; } = 0;
         public static double EBPM { get; set; } = 0;
 
@@ -121,7 +122,7 @@ namespace BeatmapScanner.Patches
             Fields[3].text = "";
 
             ModifyValue(Fields[0], "", "fire");
-            ModifyValue(Fields[1], "% chance to badcut", "ruler");
+            ModifyValue(Fields[1], "", "ruler");
             ModifyValue(Fields[2], "", "");
             ModifyValue(Fields[3], "", "");
 
@@ -140,19 +141,19 @@ namespace BeatmapScanner.Patches
 
         #region Apply Data
 
-        public static void ApplyColor() // TODO: Make those "step" configurable from the menu I guess
+        public static void ApplyColor()
         {
             if (!Config.Instance.OldValue) // Diff
             {
-                if (NewDiff > 9f)
+                if (NewDiff >= Config.Instance.DColorC)
                 {
                     Fields[0].color = Config.Instance.D;
                 }
-                else if (NewDiff >= 7f)
+                else if (NewDiff >= Config.Instance.DColorB)
                 {
                     Fields[0].color = Config.Instance.C;
                 }
-                else if (NewDiff >= 5f)
+                else if (NewDiff >= Config.Instance.DColorA)
                 {
                     Fields[0].color = Config.Instance.B;
                 }
@@ -163,15 +164,15 @@ namespace BeatmapScanner.Patches
             }
             else // Old diff
             {
-                if (OldDiff > 9f)
+                if (OldDiff >= Config.Instance.DColorC)
                 {
                     Fields[0].color = Config.Instance.D;
                 }
-                else if (OldDiff >= 7f)
+                else if (OldDiff >= Config.Instance.DColorB)
                 {
                     Fields[0].color = Config.Instance.C;
                 }
-                else if (OldDiff >= 5f)
+                else if (OldDiff >= Config.Instance.DColorA)
                 {
                     Fields[0].color = Config.Instance.B;
                 }
@@ -182,15 +183,15 @@ namespace BeatmapScanner.Patches
             }
 
             // Tech
-            if (Tech > 0.4f)
+            if (Tech >= Config.Instance.TColorC)
             {
                 Fields[1].color = Config.Instance.D;
             }
-            else if (Tech >= 0.3f)
+            else if (Tech >= Config.Instance.TColorB)
             {
                 Fields[1].color = Config.Instance.C;
             }
-            else if (Tech >= 0.2f)
+            else if (Tech >= Config.Instance.TColorA)
             {
                 Fields[1].color = Config.Instance.B;
             }
@@ -212,7 +213,8 @@ namespace BeatmapScanner.Patches
             }
 
             Fields[1].text = Math.Round(Tech, 2).ToString();
-            HoverTXT[0].text = "Intensity: " + Math.Round(Intensity, 2).ToString() + " Peak BPM: " + Math.Round(EBPM).ToString();
+            HoverTXT[0].text = "Intensity:" + Math.Round(Intensity, 2).ToString() + " Peak BPM:" + Math.Round(EBPM).ToString();
+            HoverTXT[1].text = "Balanced tech:" + Math.Round(BalancedTech, 2).ToString();
         }
 
         #endregion
@@ -241,6 +243,8 @@ namespace BeatmapScanner.Patches
             if (!hasRequirement && ____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0 && !FirstRun)
             {
                 (NewDiff, OldDiff, Tech, Intensity, EBPM) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute);
+
+                BalancedTech = Tech * (-1 * Math.Pow(1.4, -NewDiff) +1);
 
                 ApplyText();
 

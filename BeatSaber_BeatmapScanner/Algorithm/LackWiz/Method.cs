@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.IO;
+using System.Text;
 
 namespace BeatmapScanner.Algorithm.LackWiz
 {
@@ -29,7 +31,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 {
                     redPatternData = PatternSplitter(redSwingData);
                 }
-                if(redPatternData != null)
+                if(redSwingData != null && redPatternData != null)
                 {
                     redSwingData = ParityPredictor(redPatternData, false);
                 }
@@ -48,7 +50,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 {
                     bluePatternData = PatternSplitter(blueSwingData);
                 }
-                if (bluePatternData != null)
+                if (blueSwingData != null && bluePatternData != null)
                 {
                     blueSwingData = ParityPredictor(bluePatternData, true);
                 }
@@ -87,9 +89,11 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 var isSlider = false;
                 double sliderTime = 0;
                 double guideAngle;
+
                 var currentBeat = notes[i].beat;
                 var currentAngle = (double)(CutDirectionIndex[(int)notes[i].cutDirection] + notes[i].angleOffset);
                 (double x, double y) currentPosition = (notes[i].line, notes[i].layer);
+
                 if(i > 0)
                 {
                     #region Pre-caching
@@ -123,14 +127,14 @@ namespace BeatmapScanner.Algorithm.LackWiz
                         {
                             if(currentBeat - previousBeat > 0.5)
                             {
-                                swingData.Add(new SwingData(notes[i], currentBeat, currentAngle));
+                                swingData.Add(new SwingData(currentBeat, currentAngle));
                                 (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = MathWiz.CalculateBaseEntryExit(currentPosition, currentAngle);
                             }
                             else
                             {
                                 if(Math.Abs(currentAngle - previousAngle) < 112.5)
                                 {
-                                    var testAngleFromPosition = MathWiz.ConvertRadiansToDegrees((double)Math.Atan2(previousPosition.y - currentPosition.y, previousPosition.x - currentPosition.x)) % 360;
+                                    var testAngleFromPosition = MathWiz.ConvertRadiansToDegrees(Math.Atan2(previousPosition.y - currentPosition.y, previousPosition.x - currentPosition.x)) % 360;
                                     var averageAngleOfBlocks = (currentAngle + previousAngle) / 2;
                                     if(Math.Abs(testAngleFromPosition - averageAngleOfBlocks) <= 56.25)
                                     {
@@ -139,13 +143,13 @@ namespace BeatmapScanner.Algorithm.LackWiz
                                     }
                                     else
                                     {
-                                        swingData.Add(new SwingData(notes[i], currentBeat, currentAngle));
+                                        swingData.Add(new SwingData(currentBeat, currentAngle));
                                         (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = MathWiz.CalculateBaseEntryExit(currentPosition, currentAngle);
                                     }
                                 }
                                 else
                                 {
-                                    swingData.Add(new SwingData(notes[i], currentBeat, currentAngle));
+                                    swingData.Add(new SwingData(currentBeat, currentAngle));
                                     (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = MathWiz.CalculateBaseEntryExit(currentPosition, currentAngle);
                                 }
                             }
@@ -159,7 +163,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                             }
                             else
                             {
-                                swingData.Add(new SwingData(notes[i], currentBeat, currentAngle));
+                                swingData.Add(new SwingData(currentBeat, currentAngle));
                                 (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = MathWiz.CalculateBaseEntryExit(currentPosition, currentAngle);
                             }
                         }
@@ -169,22 +173,19 @@ namespace BeatmapScanner.Algorithm.LackWiz
                         sliderTime = 0.03125;
                         isSlider = true;
                     }
+                    
                     if(isSlider)
                     {
-                        for (int f = 1; f < notes.Count(); f++)
+                        for (int f = i; f > 0; f--)
                         {
-                            var blockIndex = i - f; 
-                            if(blockIndex < 1)
+                            if (notes[f].beat - notes[f - 1].beat > 2 * sliderTime)
                             {
-                                break;  
-                            }
-                            if (notes[blockIndex].beat - notes[blockIndex - 1].beat > 2 * sliderTime)
-                            {
-                                previousBeat = notes[blockIndex].beat;
-                                previousPosition = (notes[blockIndex].line, notes[blockIndex].layer);
+                                previousBeat = notes[f].beat;
+                                previousPosition = (notes[f].line, notes[f].layer);
                                 break;
                             }
                         }
+
                         currentAngle = MathWiz.ConvertRadiansToDegrees(Math.Atan2(previousPosition.y - currentPosition.y, previousPosition.x - currentPosition.x)) % 360;
                         if(swingData.Count() > 1)
                         {
@@ -194,20 +195,15 @@ namespace BeatmapScanner.Algorithm.LackWiz
                         {
                             guideAngle = 270;
                         }
-                        for(int f = 1; f < notes.Count(); f++)
+                        for (int f = i; f > 0; f--)
                         {
-                            var blockIndex = i - f;
-                            if(blockIndex < 0)
+                            if (notes[f].beat < previousBeat)
                             {
                                 break;
                             }
-                            if (notes[blockIndex].beat < previousBeat)
+                            if ((int)notes[f].cutDirection != 8)
                             {
-                                break;
-                            }
-                            if ((int)notes[blockIndex].cutDirection != 8)
-                            {
-                                guideAngle = CutDirectionIndex[(int)notes[blockIndex].cutDirection];
+                                guideAngle = CutDirectionIndex[(int)notes[f].cutDirection];
                                 break;
                             }
                         }
@@ -223,15 +219,6 @@ namespace BeatmapScanner.Algorithm.LackWiz
                             }
                         }
 
-                        if(currentAngle < 0)
-                        {
-                            currentAngle += 180;
-                        }
-                        else if(currentAngle > 360)
-                        {
-                            currentAngle -= 180;
-                        }
-
                         swingData.Last().Angle = currentAngle;
 
                         var xtest = (swingData.Last().EntryPosition.x - (currentPosition.x * 0.333333 - Math.Cos(MathWiz.ConvertDegreesToRadians(currentAngle)) * 0.166667 + 0.166667)) * Math.Cos(MathWiz.ConvertDegreesToRadians(currentAngle));
@@ -239,17 +226,17 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
                         if (xtest <= 0.001 && ytest >= 0.001)
                         {
-                            swingData.Last().EntryPosition = (currentPosition.x * 0.333333 - Math.Cos(MathWiz.ConvertDegreesToRadians(currentAngle)) * 0.166667 + 0.166667, currentPosition.y * 0.333333 - Math.Sin(MathWiz.ConvertDegreesToRadians(currentAngle)) * 0.166667 + 0.16667);
+                            swingData.Last().EntryPosition = (currentPosition.x * 0.333333 - Math.Cos(MathWiz.ConvertDegreesToRadians(currentAngle)) * 0.166667 + 0.166667, currentPosition.y * 0.333333 - Math.Sin(MathWiz.ConvertDegreesToRadians(currentAngle)) * 0.166667 + 0.166667);
                         }
                         else
                         {
-                            swingData.Last().ExitPosition =  (currentPosition.x * 0.333333 + Math.Cos(MathWiz.ConvertDegreesToRadians(currentAngle)) * 0.166667 + 0.166667, currentPosition.y * 0.333333 + Math.Sin(MathWiz.ConvertDegreesToRadians(currentAngle)) * 0.166667 + 0.16667);
+                            swingData.Last().ExitPosition =  (currentPosition.x * 0.333333 + Math.Cos(MathWiz.ConvertDegreesToRadians(currentAngle)) * 0.166667 + 0.166667, currentPosition.y * 0.333333 + Math.Sin(MathWiz.ConvertDegreesToRadians(currentAngle)) * 0.166667 + 0.166667);
                         }
                     }
                 }
                 else
                 {
-                    swingData.Add(new SwingData(notes[i], currentBeat, currentAngle));
+                    swingData.Add(new SwingData(currentBeat, currentAngle));
                     (swingData.Last().EntryPosition, swingData.Last().ExitPosition) = MathWiz.CalculateBaseEntryExit(currentPosition, currentAngle);
                 }
             }
@@ -296,7 +283,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                         if (!patternFound)
                         {
                             patternFound = true;
-                            tempPList.RemoveAt(tempPList.Count() - 1);
+                            tempPList.Remove(tempPList.Last());
                             if (tempPList.Count() > 0)
                             {
                                 patternList.Add(tempPList);
@@ -337,6 +324,10 @@ namespace BeatmapScanner.Algorithm.LackWiz
             return patternList;
         }
 
+        #endregion
+
+        #region ParityPredictor
+
         public static List<SwingData> DeepCopy(List<SwingData> data)
         {
             List<SwingData> cloneList = new();
@@ -350,6 +341,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                     Angle = d.Angle,
                     SwingFrequency = d.SwingFrequency,
                     Forehand = d.Forehand,
+                    Reset = d.Reset,
                     PathStrain = d.PathStrain,
                     AngleStrain = d.AngleStrain,
                     AnglePathStrain = d.AnglePathStrain,
@@ -361,10 +353,6 @@ namespace BeatmapScanner.Algorithm.LackWiz
             }
             return cloneList;
         }
-
-        #endregion
-
-        #region ParityPredictor
 
         // Forehand, Reset and AngleStrain
         public static List<SwingData> ParityPredictor(List<List<SwingData>> patternData, bool leftOrRight)
@@ -471,14 +459,9 @@ namespace BeatmapScanner.Algorithm.LackWiz
             double pathAngleStrain;
             double positionComplexity;
 
-            if (swingData.Count() == 0)
-            {
-                return;
-            }
-
             swingData[0].PathStrain = 0;
 
-            for (int i = 1; i < swingData.Count() - 1; i++)
+            for (int i = 1; i < swingData.Count(); i++)
             {
                 var point0 = swingData[i - 1].ExitPosition; 
                 (double x, double y) point1;
@@ -497,7 +480,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                     point3
                 };
 
-                var point = MathWiz.PointList2(points, 0.04);
+                var point = MathWiz.PointList2(points, 0.04); // This is quite different from the python one
 
                 List<double> angleChangeList = new();
                 List<double> angleList = new();
@@ -540,7 +523,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 {
                     positionComplexity = 0;
                 }
-                curveComplexity = Math.Abs((angleChangeList.Count() * angleChangeList.Average() - 180) / 180);
+                curveComplexity = Math.Abs((angleChangeList.Count() * angleChangeList.Average() - 180) / 180) / 1.5; // The 1.5 fix the data for the ratio to match the python algorithm
                 pathAngleStrain = MathWiz.BezierAngleStrainCalc(angleList.Skip((int)(angleList.Count() * lookback)).ToList(), swingData[i].Forehand, leftOrRight) / angleList.Count() * 2;
 
                 swingData[i].PositionComplexity = positionComplexity;
@@ -577,13 +560,16 @@ namespace BeatmapScanner.Algorithm.LackWiz
             {
                 var xDist = swingData[i].ExitPosition.x - swingData[i - 1].ExitPosition.x;
                 var yDist = swingData[i].ExitPosition.y - swingData[i - 1].ExitPosition.y;
-                data.Add(new SData((double)Math.Sqrt(Math.Pow(xDist, 2) + Math.Pow(yDist, 2))));
+                data.Add(new SData(Math.Sqrt(Math.Pow(xDist, 2) + Math.Pow(yDist, 2))));
+
                 if (i > smoothing) 
                 {
                     SSSpeed -= qSS.Dequeue();
                     SSStress -= qST.Dequeue();
                 }
-                qSS.Enqueue(swingData[i].SwingFrequency * data.Last().PreDistance * bps);
+
+                var distanceDiff = 1.5 * data.Last().PreDistance / (data.Last().PreDistance + 1);
+                qSS.Enqueue(swingData[i].SwingFrequency * distanceDiff * bps);
                 SSSpeed += qSS.Last();
                 data.Last().AverageSwingSpeed = SSSpeed / smoothing;
 
@@ -591,9 +577,9 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 SSStress += qST.Last();
                 data.Last().AverageStress = SSStress / smoothing;
 
-                difficulty = data.Last().AverageSwingSpeed * (data.Last().AverageStress + 0.6667);
-                data.Last().Difficulty = difficulty;
+                difficulty = data.Last().AverageSwingSpeed * 1.6 * Math.Min(Math.Pow(1.2, -data.Last().AverageSwingSpeed) + 0.75, 1);
 
+                data.Last().Difficulty = difficulty;
                 difficultyIndex.Add(difficulty);
             }
 
@@ -601,7 +587,16 @@ namespace BeatmapScanner.Algorithm.LackWiz
             {
                 difficultyIndex.Sort();
                 difficultyIndex.Reverse();
-                difficulty = difficultyIndex.Take(Math.Min(Math.Max(difficultyIndex.Count() / 16, 2), difficultyIndex.Count())).Average();
+                var temp = difficultyIndex.Take(difficultyIndex.Count() / 16);
+                if(temp.Count() > 0)
+                {
+                    difficulty = temp.Average();
+                }
+                else
+                {
+                    difficulty = 0;
+                }
+                
                 olddifficulty = difficultyIndex.Take(Math.Min(smoothing * 8, difficultyIndex.Count())).Average();
             }
 

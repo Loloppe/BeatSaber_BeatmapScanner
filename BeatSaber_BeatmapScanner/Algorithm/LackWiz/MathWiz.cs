@@ -86,24 +86,22 @@ namespace BeatmapScanner.Algorithm.LackWiz
         public static ((double, double), (double, double)) CalculateBaseEntryExit((double x, double y) position, double angle)
         {
             (double, double) entry = (position.x * 0.333333 - Math.Cos(ConvertDegreesToRadians(angle)) * 0.166667 + 0.166667,
-                position.y * 0.333333 - Math.Sin(ConvertDegreesToRadians(angle)) * 0.166667 + 0.16667);
+                position.y * 0.333333 - Math.Sin(ConvertDegreesToRadians(angle)) * 0.166667 + 0.166667);
 
             (double, double) exit = (position.x * 0.333333 + Math.Cos(ConvertDegreesToRadians(angle)) * 0.166667f + 0.166667,
-                position.y * 0.333333 + Math.Sin(ConvertDegreesToRadians(angle)) * 0.166667 + 0.16667);
+                position.y * 0.333333 + Math.Sin(ConvertDegreesToRadians(angle)) * 0.166667 + 0.166667);
 
             return (entry, exit);
         }
 
         public static double SwingAngleStrainCalc(List<SwingData> swingData, bool leftOrRight)
         {
-            // False or 0 = Left, True or 1 = Right
             var strainAmount = 0d;
-            // TODO calculate strain from angle based on left or right hand
+
             for (int i = 0; i < swingData.Count(); i++)
             {
                 if (swingData[i].Forehand)
                 {
-                    // The Formula firse calculates by first normalizing the angle difference (/180) then using
                     if (leftOrRight)
                     {
                         strainAmount += 2 * Math.Pow((180 - Math.Abs(Math.Abs(247.5 - swingData[i].Angle) - 180)) / 180, 2);
@@ -113,13 +111,16 @@ namespace BeatmapScanner.Algorithm.LackWiz
                         strainAmount += 2 * Math.Pow((180 - Math.Abs(Math.Abs(292.5 - swingData[i].Angle) - 180)) / 180, 2);
                     }
                 }
-                else if (leftOrRight)
-                {
-                    strainAmount += 2 * Math.Pow((180 - Math.Abs(Math.Abs(247.5 - 180 - swingData[i].Angle) - 180)) / 180, 2);
-                }
                 else
                 {
-                    strainAmount += 2 * Math.Pow((180 - Math.Abs(Math.Abs(292.5 - 180 - swingData[i].Angle) - 180)) / 180, 2);
+                    if (leftOrRight)
+                    {
+                        strainAmount += 2 * Math.Pow((180 - Math.Abs(Math.Abs(247.5 - 180 - swingData[i].Angle) - 180)) / 180, 2);
+                    }
+                    else
+                    {
+                        strainAmount += 2 * Math.Pow((180 - Math.Abs(Math.Abs(292.5 - 180 - swingData[i].Angle) - 180)) / 180, 2);
+                    }
                 }
             }
 

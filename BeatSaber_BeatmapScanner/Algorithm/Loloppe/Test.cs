@@ -1,4 +1,6 @@
-﻿using static BeatmapSaveDataVersion3.BeatmapSaveData;
+﻿/*
+
+using static BeatmapSaveDataVersion3.BeatmapSaveData;
 using BeatmapScanner.Algorithm.LackWiz;
 using System.Collections.Generic;
 using System.Linq;
@@ -366,3 +368,5 @@ namespace BeatmapScanner.Algorithm.Loloppe
         #endregion
     }
 }
+
+*/

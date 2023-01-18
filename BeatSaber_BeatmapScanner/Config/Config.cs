@@ -21,6 +21,14 @@ namespace BeatmapScanner
         public virtual Color C { get; set; } = Color.green;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color D { get; set; } = new Color(1f, 0f, 1f);
+        public virtual float DColorA { get; set; } = 5f;
+        public virtual float DColorB { get; set; } = 7f;
+        public virtual float DColorC { get; set; } = 9f;
+        public virtual float TColorA { get; set; } = 0.2f;
+        public virtual float TColorB { get; set; } = 0.3f;
+        public virtual float TColorC { get; set; } = 0.4f;
+        
+        
 
         /// <summary>
         /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
