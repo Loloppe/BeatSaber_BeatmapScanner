@@ -32,11 +32,12 @@ namespace BeatmapScanner.Algorithm
 
         #region Analyzer
 
-        public static (float star, float tech, float intensity, float ebpm) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm)
+        public static (double diff, double odiff, double tech, double intensity, double ebpm) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm)
         {
             #region Prep
 
             var diff = 0d;
+            var odiff = 0d;
             var tech = 0d;
             var intensity = 0d;
             var ebpm = 0d;
@@ -77,7 +78,7 @@ namespace BeatmapScanner.Algorithm
             }
 
             // LackWiz algorithm
-            (tech, diff, data) = Method.UseLackWizAlgorithm(red.Select(c => c.Note).ToList(), blue.Select(c => c.Note).ToList(), bpm);
+            (diff, odiff, tech, data) = Method.UseLackWizAlgorithm(red.Select(c => c.Note).ToList(), blue.Select(c => c.Note).ToList(), bpm);
 
             #endregion
 
@@ -136,7 +137,7 @@ namespace BeatmapScanner.Algorithm
 
             #endregion
 
-            return ((float)Math.Round(diff, 2), (float)Math.Round(tech, 2), (float)Math.Round(intensity, 2), (float)Math.Round(ebpm, 0));
+            return (diff, odiff, tech, intensity, ebpm);
         }
 
         #endregion

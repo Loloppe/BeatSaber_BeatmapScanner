@@ -1,4 +1,6 @@
-﻿using BeatSaberMarkupLanguage.Components;
+﻿#region Import
+
+using BeatSaberMarkupLanguage.Components;
 using System.Collections.Generic;
 using System.Collections;
 using System.Reflection;
@@ -11,25 +13,40 @@ using System;
 using TMPro;
 using HMUI;
 
+#endregion
+
 namespace BeatmapScanner.Patches
 {
+    #region RefreshContent
+
     [HarmonyPatch(typeof(StandardLevelDetailView), nameof(StandardLevelDetailView.RefreshContent))]
     public static class SoloMenuPatch
     {
+        
+        public static bool FirstRun { get; set; } = true;
+        public static bool OldVal { get; set; } = false;
+
+        #region Output
+
+        public static double OldDiff { get; set; } = 0;
+        public static double NewDiff { get; set; } = 0;
+        public static double Tech { get; set; } = 0;
+        public static double Intensity { get; set; } = 0;
+        public static double EBPM { get; set; } = 0;
+
+        #endregion
+
         #region UI
 
-        // Values for the UI
-        public static GameObject ExtraUI { get; set; } = null;
-        public static HoverHintController HHC { get; set; } = null;
+        public static StandardLevelDetailViewController Instance { get; set; } = null;
         public static List<TextMeshProUGUI> Fields { get; set; } = new();
         public static List<HoverHint> HoverTXT { get; set; } = new();
-        public static bool FirstRun { get; set; } = true;
+        public static HoverHintController HHC { get; set; } = null;
+        public static GameObject ExtraUI { get; set; } = null;
         public static bool ImageCover { get; set; } = false;
-        public static bool OldVal { get; set; } = false;
-        public static StandardLevelDetailViewController Instance { get; set; } = null;
 
         // Read images from embedded files as string and then convert to bytes.
-        static byte[] YEET(string name)
+        internal static byte[] YEET(string name)
         {
             try
             {
@@ -49,7 +66,7 @@ namespace BeatmapScanner.Patches
 
         // Yeeted from https://github.com/kinsi55/BeatSaber_BetterSongList/blob/master/HarmonyPatches/UI/ExtraLevelParams.cs
         // All the check are for if the user reload from settings menu. I'm not sure why, but the objects don't stay active and everything need to be redone pretty much.
-        static IEnumerator Process()
+        internal static IEnumerator Process()
         {
             yield return new WaitForEndOfFrame();
 
@@ -121,6 +138,85 @@ namespace BeatmapScanner.Patches
 
         #endregion
 
+        #region Apply Data
+
+        public static void ApplyColor() // TODO: Make those "step" configurable from the menu I guess
+        {
+            if (!Config.Instance.OldValue) // Diff
+            {
+                if (NewDiff > 9f)
+                {
+                    Fields[0].color = Config.Instance.D;
+                }
+                else if (NewDiff >= 7f)
+                {
+                    Fields[0].color = Config.Instance.C;
+                }
+                else if (NewDiff >= 5f)
+                {
+                    Fields[0].color = Config.Instance.B;
+                }
+                else
+                {
+                    Fields[0].color = Config.Instance.A;
+                }
+            }
+            else // Old diff
+            {
+                if (OldDiff > 9f)
+                {
+                    Fields[0].color = Config.Instance.D;
+                }
+                else if (OldDiff >= 7f)
+                {
+                    Fields[0].color = Config.Instance.C;
+                }
+                else if (OldDiff >= 5f)
+                {
+                    Fields[0].color = Config.Instance.B;
+                }
+                else
+                {
+                    Fields[0].color = Config.Instance.A;
+                }
+            }
+
+            // Tech
+            if (Tech > 0.4f)
+            {
+                Fields[1].color = Config.Instance.D;
+            }
+            else if (Tech >= 0.3f)
+            {
+                Fields[1].color = Config.Instance.C;
+            }
+            else if (Tech >= 0.2f)
+            {
+                Fields[1].color = Config.Instance.B;
+            }
+            else
+            {
+                Fields[1].color = Config.Instance.A;
+            }
+        }
+
+        public static void ApplyText()
+        {
+            if (!Config.Instance.OldValue)
+            {
+                Fields[0].text = Math.Round(NewDiff, 2).ToString();
+            }
+            else
+            {
+                Fields[0].text = Math.Round(OldDiff, 2).ToString();
+            }
+
+            Fields[1].text = Math.Round(Tech, 2).ToString();
+            HoverTXT[0].text = "Intensity: " + Math.Round(Intensity, 2).ToString() + " Peak BPM: " + Math.Round(EBPM).ToString();
+        }
+
+        #endregion
+
         static void Postfix(IDifficultyBeatmap ____selectedDifficultyBeatmap, LevelParamsPanel ____levelParamsPanel)
         {
             if (ExtraUI == null)
@@ -144,53 +240,11 @@ namespace BeatmapScanner.Patches
 
             if (!hasRequirement && ____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0 && !FirstRun)
             {
-                var (diff, tech, intensity, ebpm) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute);
+                (NewDiff, OldDiff, Tech, Intensity, EBPM) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute);
 
-                #region Apply text
+                ApplyText();
 
-                Fields[0].text = diff.ToString();
-                Fields[1].text = tech.ToString();
-                HoverTXT[0].text = "Intensity: " + intensity.ToString() + " Peak BPM: " + ebpm.ToString();
-
-                #endregion
-
-                #region Apply color
-
-                if (diff > 9f)
-                {
-                    Fields[0].color = Config.Instance.D;
-                }
-                else if (diff >= 7f)
-                {
-                    Fields[0].color = Config.Instance.C;
-                }
-                else if (diff >= 5f)
-                {
-                    Fields[0].color = Config.Instance.B;
-                }
-                else
-                {
-                    Fields[0].color = Config.Instance.A;
-                }
-
-                if (tech > 0.4f)
-                {
-                    Fields[1].color = Config.Instance.D;
-                }
-                else if (tech >= 0.3f)
-                {
-                    Fields[1].color = Config.Instance.C;
-                }
-                else if (tech >= 0.2f)
-                {
-                    Fields[1].color = Config.Instance.B;
-                }
-                else
-                {
-                    Fields[1].color = Config.Instance.A;
-                }
-
-                #endregion
+                ApplyColor();
             }
             else if (Fields.Count() > 1)
             {
@@ -199,6 +253,8 @@ namespace BeatmapScanner.Patches
             }
         }
     }
+
+    #endregion
 
     #region ImageCoverExpander
 

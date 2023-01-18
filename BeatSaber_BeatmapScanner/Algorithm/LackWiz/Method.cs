@@ -11,9 +11,10 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
         #region Main
 
-        public static (double tech, double diff, List<SwingData> data) UseLackWizAlgorithm(List<ColorNoteData> red, List<ColorNoteData> blue, double bpm)
+        public static (double diff, double odiff, double tech, List<SwingData> data) UseLackWizAlgorithm(List<ColorNoteData> red, List<ColorNoteData> blue, double bpm)
         {
             double diff = 0;
+            double odiff = 0;
             double tech = 0;
             List<SwingData> redSwingData;
             List<SwingData> blueSwingData;
@@ -35,7 +36,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 if (redSwingData != null)
                 {
                     SwingCurveCalc(redSwingData, false);
-                    diff = DiffToPass(redSwingData, bpm);
+                    (diff, odiff) = DiffToPass(redSwingData, bpm);
                 }
                 data.AddRange(redSwingData);
             }
@@ -54,19 +55,22 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 if (blueSwingData != null)
                 {
                     SwingCurveCalc(blueSwingData, true);
-                    diff = DiffToPass(blueSwingData, bpm);
+                    double temp, temp2;
+                    (temp, temp2) = DiffToPass(blueSwingData, bpm);
+                    diff = Math.Max(diff, temp);
+                    odiff = Math.Max(odiff, temp2);
                 }
                 data.AddRange(blueSwingData);
             }
 
-            if(data.Count() > 0)
+            if(data.Count() > 2)
             {
                 var test = data.Select(c => c.AngleStrain + c.PathStrain).ToList();
                 test.Sort();
                 tech = Math.Round(test.Skip((int)(data.Count() * 0.25)).Average(), 3);
             }
 
-            return (tech, diff, data);
+            return (diff, odiff, tech, data);
         }
 
         #endregion
@@ -550,14 +554,15 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
         #region DiffToPass
 
-        public static double DiffToPass(List<SwingData> swingData, double bpm)
+        public static (double diff, double odiff) DiffToPass(List<SwingData> swingData, double bpm)
         {
             if(swingData == null)
             {
-                return -1;
+                return (0, 0);
             }
 
             var difficulty = 0d;
+            var olddifficulty = 0d;
 
             var bps = bpm / 60;
             var SSSpeed = 0d; 
@@ -592,28 +597,15 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 difficultyIndex.Add(difficulty);
             }
 
-            if (difficultyIndex.Count() > 4)
+            if (difficultyIndex.Count() > 1)
             {
                 difficultyIndex.Sort();
                 difficultyIndex.Reverse();
-                if(Config.Instance.OldValue)
-                {
-                    difficulty = difficultyIndex.Take(Math.Min(smoothing * 8, difficultyIndex.Count())).Average();
-                }
-                else
-                {
-                    if (difficultyIndex.Count() >= 32)
-                    {
-                        difficulty = difficultyIndex.Take(difficultyIndex.Count() / 16).Average();
-                    }
-                    else
-                    {
-                        difficulty = difficultyIndex.Take(Math.Min(smoothing * 8, difficultyIndex.Count())).Average();
-                    }
-                }
+                difficulty = difficultyIndex.Take(Math.Min(Math.Max(difficultyIndex.Count() / 16, 2), difficultyIndex.Count())).Average();
+                olddifficulty = difficultyIndex.Take(Math.Min(smoothing * 8, difficultyIndex.Count())).Average();
             }
 
-            return difficulty;
+            return (difficulty, olddifficulty);
         }
 
         #endregion
