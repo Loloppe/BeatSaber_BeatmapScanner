@@ -32,7 +32,7 @@ namespace BeatmapScanner.Algorithm
 
         #region Analyzer
 
-        public static (double diff, double odiff, double tech, double intensity, double ebpm) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm)
+        public static (double diff, double odiff, double tech, double ebpm) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm)
         {
             #region Prep
 
@@ -137,7 +137,7 @@ namespace BeatmapScanner.Algorithm
 
             #endregion
 
-            return (diff, odiff, tech, intensity, ebpm);
+            return (diff, odiff, tech, ebpm);
         }
 
         #endregion

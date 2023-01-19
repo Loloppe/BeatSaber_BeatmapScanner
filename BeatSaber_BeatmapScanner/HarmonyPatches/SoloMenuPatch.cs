@@ -31,8 +31,8 @@ namespace BeatmapScanner.Patches
         public static double OldDiff { get; set; } = 0;
         public static double NewDiff { get; set; } = 0;
         public static double Tech { get; set; } = 0;
-        public static double BalancedTech { get; set; } = 0;
-        public static double Intensity { get; set; } = 0;
+        //public static double BalancedTech { get; set; } = 0;
+        //public static double Intensity { get; set; } = 0;
         public static double EBPM { get; set; } = 0;
 
         #endregion
@@ -213,8 +213,8 @@ namespace BeatmapScanner.Patches
             }
 
             Fields[1].text = Math.Round(Tech, 2).ToString();
-            HoverTXT[0].text = "Intensity:" + Math.Round(Intensity, 2).ToString() + " Peak BPM:" + Math.Round(EBPM).ToString();
-            HoverTXT[1].text = "Balanced tech:" + Math.Round(BalancedTech, 2).ToString();
+            HoverTXT[0].text = "Peak BPM:" + Math.Round(EBPM).ToString();
+            HoverTXT[1].text = "% chance to bad cut";
         }
 
         #endregion
@@ -242,9 +242,9 @@ namespace BeatmapScanner.Patches
 
             if (!hasRequirement && ____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0 && !FirstRun)
             {
-                (NewDiff, OldDiff, Tech, Intensity, EBPM) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute);
+                (NewDiff, OldDiff, Tech, EBPM) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.level.beatsPerMinute);
 
-                BalancedTech = Tech * (-1 * Math.Pow(1.4, -NewDiff) +1);
+                //BalancedTech = Tech * (-1 * Math.Pow(1.4, -NewDiff) +1);
 
                 ApplyText();
 
