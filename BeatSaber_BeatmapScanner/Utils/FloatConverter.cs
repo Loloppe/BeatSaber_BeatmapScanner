@@ -1,6 +1,4 @@
-﻿// Source: https://github.com/m1el/BeatSaber-SliceVisualizer
-
-using IPA.Config.Data;
+﻿using IPA.Config.Data;
 
 namespace BeatmapScanner.Algorithm
 {

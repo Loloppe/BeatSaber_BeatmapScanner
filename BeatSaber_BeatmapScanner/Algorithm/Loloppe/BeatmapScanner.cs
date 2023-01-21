@@ -4,6 +4,7 @@ using static BeatmapSaveDataVersion3.BeatmapSaveData;
 using BeatmapScanner.Algorithm.LackWiz;
 using BeatmapScanner.Algorithm.Loloppe;
 using System.Collections.Generic;
+using BeatmapSaveDataVersion3;
 using System.Linq;
 using System;
 
@@ -15,16 +16,13 @@ namespace BeatmapScanner.Algorithm
     {
         #region Algorithm value
 
-        // Nerf T and M algorithm using an exponential curve
         public static float MaxNerfMS = 500f;
         public static float MinNerfMS = 250f;
         public static float NormalizedMax = 5f;   
         public static float NormalizedMin = 0f;
 
-        // Nerf map based on notes count
         public static float MinNote = 80f;
 
-        // I multipler
         public static float Speed = 0.00125f;
         public static float Reset = 1.1f;
 
@@ -32,15 +30,17 @@ namespace BeatmapScanner.Algorithm
 
         #region Analyzer
 
-        public static (double diff, double odiff, double tech, double ebpm) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, float bpm)
+        public static (double diff, double tech, double ebpm, int slider, int reset, int crouch) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, List<BeatmapSaveData.ObstacleData> obstacles, float bpm)
         {
             #region Prep
 
             var diff = 0d;
-            var odiff = 0d;
             var tech = 0d;
             var intensity = 0d;
             var ebpm = 0d;
+            var reset = 0;
+            var slider = 0;
+            var crouch = 0;
 
             List<Cube> cube = new();
             List<SwingData> data = new();
@@ -77,14 +77,99 @@ namespace BeatmapScanner.Algorithm
                 intensity += temp;
             }
 
-            // LackWiz algorithm
-            (diff, odiff, tech, data) = Method.UseLackWizAlgorithm(red.Select(c => c.Note).ToList(), blue.Select(c => c.Note).ToList(), bpm);
+            (diff, tech, data) = Method.UseLackWizAlgorithm(red.Select(c => c.Note).ToList(), blue.Select(c => c.Note).ToList(), bpm);
 
             #endregion
 
             #region Calculator
 
-            // Nerf if the amount of notes is too low
+            foreach(var c in cube)
+            {
+                if(c.Reset)
+                {
+                    reset++;
+                }
+                if(c.Head && c.Slider)
+                {
+                    slider++;
+                }
+            }
+
+            for (int i = 1; i < obstacles.Count(); i++)
+            {
+                var obs = obstacles[i];
+                var obs2 = obstacles[i - 1];
+
+                if(obs2.layer >= 2)
+                {
+                    if (obs2.width > 2)
+                    {
+                        crouch++;
+                        continue;
+                    }
+                    else if (obs2.width > 1 && obs2.line == 1)
+                    {
+                        crouch++;
+                        continue;
+                    }
+                }
+
+                if (obs.beat - (obs2.beat + obs2.duration) <= 0.25)
+                {
+                    if (((obs.line == 1 && obs2.line == 2) || (obs.line == 2 && obs2.line == 1)) && (obs.layer >= 2 || obs2.layer == 2))
+                    {
+                        crouch++;
+                        continue;
+                    }
+                    if(obs.layer >= 2)
+                    {
+                        if (obs.line == 0 && obs2.line == 2 && obs.width == 2)
+                        {
+                            crouch++;
+                            continue;
+                        }
+                        else if (obs.line == 0 && obs2.line == 3 && obs.width == 3)
+                        {
+                            crouch++;
+                            continue;
+                        }
+                        else if (obs.line == 1 && obs2.line == 3 && obs.width == 2)
+                        {
+                            crouch++;
+                            continue;
+                        }
+                        else if (obs.line == 0 && obs2.line == 1 && obs2.width == 2 && obs2.layer >= 2)
+                        {
+                            crouch++;
+                            continue;
+                        }
+                    }
+                    if(obs2.layer >= 1)
+                    {
+                        if (obs2.line == 0 && obs.line == 2 && obs2.width == 2)
+                        {
+                            crouch++;
+                            continue;
+                        }
+                        else if (obs2.line == 0 && obs.line == 3 && obs2.width == 3)
+                        {
+                            crouch++;
+                            continue;
+                        }
+                        else if (obs2.line == 1 && obs.line == 3 && obs2.width == 2)
+                        {
+                            crouch++;
+                            continue;
+                        }
+                        else if (obs2.line == 3 && obs.line == 1 && obs2.width == 2 && obs.layer >= 2)
+                        {
+                            crouch++;
+                            continue;
+                        }
+                    }
+                }
+            }
+
             if (notes.Count() < MinNote)
             {
                 intensity *= notes.Count() / MinNote;
@@ -98,17 +183,15 @@ namespace BeatmapScanner.Algorithm
 
             if(data.Count() > 0)
             {
-                // Remove tech from DD map
                 var temp = 1 - cube.Where(c => c.Reset).Count() * 1.25 / cube.Count();
                 if(temp < 0)
                 {
                     temp = 0;
                 }
                 tech *= temp;
-                // Nerf tech based on speed (mostly to remove slow DD)
                 if (cube.Count() > 0)
                 {
-                    var nerf = 1d; // The higher number, the less it will be nerfed.
+                    var nerf = 1d; 
 
                     for (int i = 1; i < cube.Count(); i++) 
                     {
@@ -137,7 +220,7 @@ namespace BeatmapScanner.Algorithm
 
             #endregion
 
-            return (diff, odiff, tech, ebpm);
+            return (diff, tech, ebpm, slider, reset, crouch);
         }
 
         #endregion
@@ -158,14 +241,14 @@ namespace BeatmapScanner.Algorithm
 
             for (int i = 1; i < cubes.Count(); i++)
             {
-                if (cubes[i].Pattern && !cubes[i].Head) // Skip rest of pattern
+                if (cubes[i].Pattern && !cubes[i].Head)
                 {
                     continue;
                 }
 
                 var time = (cubes[i].Beat - cubes[i - 1].Beat);
 
-                if(ebpm < (500 / time)) // Calc EBPM
+                if(ebpm < (500 / time))
                 {
                     if (time > 0)
                     {
@@ -173,14 +256,14 @@ namespace BeatmapScanner.Algorithm
                     }
                 }
 
-                if (cubes[i].Reset || cubes[i].Head) // Reset and head of pattern
+                if (cubes[i].Reset || cubes[i].Head)
                 {
                     if(time != 0f)
                     {
                         intensity += (speed / time) * Reset;
                     }
                 }
-                else // Other note
+                else
                 {
                     if (time != 0f)
                     {

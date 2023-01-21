@@ -1,9 +1,14 @@
 ﻿using BeatSaberMarkupLanguage.GameplaySetup;
 using IPALogger = IPA.Logging.Logger;
+using BeatmapScanner.HarmonyPatches;
+using UnityEngine.SceneManagement;
+using BeatmapScanner.Installers;
 using IPA.Config.Stores;
 using System.Reflection;
+using SiraUtil.Zenject;
 using HarmonyLib;
 using IPA;
+using BeatmapScanner.UI;
 
 namespace BeatmapScanner
 {
@@ -20,7 +25,7 @@ namespace BeatmapScanner
 
             public static void EnableUI()
             {
-                static void wrap() => GameplaySetup.instance.AddTab("BeatmapScanner", "BeatmapScanner.Views.settings.bsml", Config.Instance, MenuType.All);
+                static void wrap() => GameplaySetup.instance.AddTab("BeatmapScanner", "BeatmapScanner.UI.Views.settings.bsml", Settings.Instance, MenuType.All);
 
                 if (hasBsml)
                 {
@@ -39,24 +44,35 @@ namespace BeatmapScanner
         }
 
         [Init]
-        public Plugin(IPALogger logger, IPA.Config.Config conf)
+        public Plugin(IPALogger logger, IPA.Config.Config conf, Zenjector zenject)
         {
             Instance = this;
             Log = logger;
-            Config.Instance = conf.Generated<Config>();
+            Settings.Instance = conf.Generated<Settings>();
             harmony = new Harmony("Loloppe.BeatSaber.BeatmapScanner");
+
+            zenject.UseLogger(logger);
+
+            zenject.Install<MenuInstaller>(Location.Menu);
         }
 
         [OnEnable]
         public void OnEnable()
         {
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             BsmlWrapper.EnableUI();
+        }
+
+        public void OnActiveSceneChanged(Scene prev, Scene next)
+        {
+            BSPatch.ResetValues();
         }
 
         [OnDisable]
         public void OnDisable()
         {
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             harmony.UnpatchSelf();
             BsmlWrapper.DisableUI();
         }

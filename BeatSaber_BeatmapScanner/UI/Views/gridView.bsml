@@ -1,0 +1,24 @@
+﻿<bg>
+	<vertical child-control-height='false'>
+		<horizontal>
+			<vertical id='tile-grid'>
+				<horizontal id='tile-row'>
+				</horizontal>
+			</vertical>
+			<clickable-image id='tile' bg='round-rect-panel' default-color='#000000' highlight-color='#000000' preferred-width='16' preferred-height='16'>
+				<vertical pad='1'>
+					<horizontal pad='1' preferred-width='16' preferred-height='7'>
+						<bg bg='round-rect-panel'>
+							<text text='' font-size='4' face-color='#ffffff' font-align='Center'></text>
+						</bg>
+					</horizontal>
+					<horizontal pad='1' preferred-width='16' preferred-height='7'>
+						<bg bg='round-rect-panel'>
+							<text text='' font-size='4' face-color='#ffffff' font-align='Center'></text>
+						</bg>
+					</horizontal>
+				</vertical>
+			</clickable-image>
+		</horizontal>
+	</vertical>
+</bg>

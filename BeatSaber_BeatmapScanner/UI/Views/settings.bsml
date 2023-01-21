@@ -1,0 +1,34 @@
+﻿<settings-container>
+	    <checkbox-setting apply-on-change="true" value="Enabled" text="Enable"/>
+	    <checkbox-setting apply-on-change="true" value="ShowHandle" text="Show Handle"/>
+		<checkbox-setting apply-on-change="true" value="ImageCoverExpander" text="Use ImageCoverExpander"/>
+		<horizontal>
+			<text text='Colors' align='Center'/>
+		</horizontal>
+	    <color-setting text='Title' value='TitleColor' apply-on-change='true' bind-value='true' />
+		<horizontal>
+			<text text='Step colors' align='Center'/>
+		</horizontal>
+	    <color-setting text='Low value' value='A' apply-on-change='true' bind-value='true' />
+		<color-setting text='Mid value' value='B' apply-on-change='true' bind-value='true' />
+		<color-setting text='High value' value='C' apply-on-change='true' bind-value='true' />
+		<color-setting text='Extreme value' value='D' apply-on-change='true' bind-value='true' />
+		<horizontal>
+			<text text='Difficulty color steps' align='Center'/>
+		</horizontal>
+		<slider-setting apply-on-change="true" value="DColorA" text="Mid value"
+						min="0" max="20" increment="0.5"/>
+		<slider-setting apply-on-change="true" value="DColorB" text="High value"
+						min="0" max="20" increment="0.5"/>
+		<slider-setting apply-on-change="true" value="DColorC" text="Extreme value"
+						min="0" max="20" increment="0.5"/>
+		<horizontal>
+			<text text='Tech color steps' align='Center'/>
+		</horizontal>
+		<slider-setting apply-on-change="true" value="TColorA" text="Mid value"
+						min="0" max="2" increment="0.05"/>
+		<slider-setting apply-on-change="true" value="TColorB" text="High value"
+						min="0" max="2" increment="0.05"/>
+		<slider-setting apply-on-change="true" value="TColorC" text="Extreme value"
+						min="0" max="2" increment="0.05"/>
+	</settings-container>
