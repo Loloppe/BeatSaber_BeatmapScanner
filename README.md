@@ -1,15 +1,27 @@
 # BeatSaber_BeatmapScanner
-This plugin display new values on the image cover of the selected song
-
-🔥 represent how hard it is to pass a map  
-📐 represent % chance to bad cut (tech)  
-Peak BPM is displayed when you hover 🔥  
-
+This plugin display new values on a mobile UI:
+- Difficulty algorithm (LackWiz)
+- Tech algorithm (LackWiz)
+- ScoreSaber star rating
+- BeatLeader star rating
+- Peak BPM (one-hand)
+- Slider count
+- Crouch wall count
+- Reset count (can be misleading)
+- If the map got any V3 element (arc and/or chain)  
+  
 Configuration include:
+- Turning on/off the UI and the handle
 - Build-in ImageCoverExpander
-- Old/new difficulty value trigger
-- Color steps + filters
-
+- Color steps + filters  
+  
 To do:
 - Port the plugin to ChroMapper as an overlay
-- Better algorithm
+- Better algorithm  
+  
+License linked to this project:
+- BetterSongList
+- ImageCoverExpander
+- ppCurve
+- SliceDetails
+- SliceVisualizer
