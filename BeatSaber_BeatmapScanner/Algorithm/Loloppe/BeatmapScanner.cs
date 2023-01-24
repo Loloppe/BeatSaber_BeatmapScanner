@@ -59,7 +59,7 @@ namespace BeatmapScanner.Algorithm
 
             if (red.Count() > 0)
             {
-                Helper.FindNoteDirection(red, bombs);
+                Helper.FindNoteDirection(red, bombs, bpm);
                 Helper.FixPatternHead(red);
                 Helper.FindReset(red);
                 (intensity, ebpm) = GetIntensity(red, bpm);
@@ -67,7 +67,7 @@ namespace BeatmapScanner.Algorithm
 
             if (blue.Count() > 0)
             {
-                Helper.FindNoteDirection(blue, bombs);
+                Helper.FindNoteDirection(blue, bombs, bpm);
                 Helper.FixPatternHead(blue);
                 Helper.FindReset(blue);
                 var temp = 0f;
@@ -234,6 +234,7 @@ namespace BeatmapScanner.Algorithm
             var intensity = 1f;
             var speed = (Speed * bpm);
             var ebpm = 1f;
+            var prev = cubes[0].Beat;
 
             #endregion
 
@@ -246,7 +247,7 @@ namespace BeatmapScanner.Algorithm
                     continue;
                 }
 
-                var time = (cubes[i].Beat - cubes[i - 1].Beat);
+                var time = (cubes[i].Beat - prev);
 
                 if(ebpm < (500 / time))
                 {
@@ -271,6 +272,7 @@ namespace BeatmapScanner.Algorithm
                     }
                 }
 
+                prev = cubes[i].Beat;
             }
 
             #endregion

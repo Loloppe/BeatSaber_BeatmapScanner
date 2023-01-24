@@ -44,7 +44,7 @@ namespace BeatmapScanner.HarmonyPatches
 					.additionalDifficultyData?
 					._requirements?.Any(x => x == "Noodle Extensions" || x == "Mapping Extensions") == true;
 
-				if (!hasRequirement && ____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
+				if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
 				{
 					if (beatmap.beatmapSaveData.burstSliders.Any() || beatmap.beatmapSaveData.sliders.Any())
 					{
@@ -52,6 +52,12 @@ namespace BeatmapScanner.HarmonyPatches
 					}
 
 					(Diff, Tech, EBPM, Slider, Reset, Crouch) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.beatmapSaveData.obstacles, beatmap.level.beatsPerMinute);
+
+					if(hasRequirement)
+                    {
+						Reset = -1;
+						Crouch = -1;
+                    }
 
 					if (!SongDetailsUtil.IsAvailable)
 					{

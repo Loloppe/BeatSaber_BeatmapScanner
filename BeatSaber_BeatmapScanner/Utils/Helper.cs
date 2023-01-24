@@ -185,7 +185,7 @@ namespace BeatmapScanner.Algorithm
             return false;
         }
 
-        public static void FindNoteDirection(List<Cube> cubes, List<BombNoteData> bombs)
+        public static void FindNoteDirection(List<Cube> cubes, List<BombNoteData> bombs, float bpm)
         {
             if (((int)cubes[0].Note.cutDirection) == 8) 
             {
@@ -222,7 +222,7 @@ namespace BeatmapScanner.Algorithm
 
             for (int i = 1; i < cubes.Count(); i++)
             {
-                if (cubes[i].Beat - cubes[i - 1].Beat < 0.26 && (cubes[i].Note.cutDirection == cubes[i - 1].Note.cutDirection ||
+                if (cubes[i].Beat - cubes[i - 1].Beat <= (0.25 / 200 * bpm) && (cubes[i].Note.cutDirection == cubes[i - 1].Note.cutDirection ||
                     cubes[i].Assumed || cubes[i - 1].Assumed || SameDirection((int)cubes[i - 1].Note.cutDirection, (int)cubes[i].Note.cutDirection))) 
                 {
                     if (!pattern)

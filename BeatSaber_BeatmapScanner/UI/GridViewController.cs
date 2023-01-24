@@ -85,11 +85,25 @@ namespace BeatmapScanner.UI
 				switch (i)
                 {
 					case 0: // Crouch
-						texts[1].text = Crouch.ToString();
+						if (Crouch == -1)
+						{
+							texts[1].text = "X";
+						}
+						else
+						{
+							texts[1].text = Crouch.ToString();
+						}
 
 						continue;
 					case 1: // Reset
-						texts[1].text = Reset.ToString();
+						if (Reset == -1)
+						{
+							texts[1].text = "X";
+						}
+						else
+						{
+							texts[1].text = Reset.ToString();
+						}
 
 						continue;
 					case 2: // V3
