@@ -95,77 +95,79 @@ namespace BeatmapScanner.Algorithm
                 }
             }
 
-            for (int i = 1; i < obstacles.Count(); i++)
+            // Find group of walls and list them together
+            List<List<BeatmapSaveData.ObstacleData>> wallsGroup = new()
             {
-                var obs = obstacles[i];
-                var obs2 = obstacles[i - 1];
+                new List<BeatmapSaveData.ObstacleData>()
+            };
 
-                if(obs2.layer >= 2)
+            for (int i = 0; i < obstacles.Count(); i++)
+            {
+                wallsGroup.Last().Add(obstacles[i]);
+
+                for (int j = i + 1; j < obstacles.Count(); j++)
                 {
-                    if (obs2.width > 2)
+                    if (obstacles[j].beat >= obstacles[i].beat && obstacles[j].beat <= obstacles[i].beat + obstacles[i].duration)
                     {
-                        crouch++;
-                        continue;
+                        wallsGroup.Last().Add(obstacles[j]);
                     }
-                    else if (obs2.width > 1 && obs2.line == 1)
+                    else
                     {
-                        crouch++;
-                        continue;
+                        wallsGroup.Add(new List<BeatmapSaveData.ObstacleData>());
+                        i = j - 1;
+                        break;
                     }
                 }
+            }
 
-                if (obs.beat - (obs2.beat + obs2.duration) <= 0.25)
+            // Find how many time the player has to crouch
+            List<int> wallsFound = new();
+
+            foreach(var group in wallsGroup)
+            {
+                for(int j = 0; j < group.Count(); j++)
                 {
-                    if (((obs.line == 1 && obs2.line == 2) || (obs.line == 2 && obs2.line == 1)) && (obs.layer >= 2 || obs2.layer == 2))
+                    bool found = false;
+                    var wall = group[j];
+
+                    // Individual
+                    if(wall.layer >= 2 && wall.width >= 3)
                     {
                         crouch++;
-                        continue;
+                        break;
                     }
-                    if(obs.layer >= 2)
+                    if (wall.layer >= 2 && wall.width >= 2 && wall.line == 1)
                     {
-                        if (obs.line == 0 && obs2.line == 2 && obs.width == 2)
+                        crouch++;
+                        break;
+                    }
+
+                    // Multiple
+                    if (group.Count() > 1)
+                    {
+                        for (int k = j + 1; k < group.Count(); k++)
                         {
-                            crouch++;
-                            continue;
-                        }
-                        else if (obs.line == 0 && obs2.line == 3 && obs.width == 3)
-                        {
-                            crouch++;
-                            continue;
-                        }
-                        else if (obs.line == 1 && obs2.line == 3 && obs.width == 2)
-                        {
-                            crouch++;
-                            continue;
-                        }
-                        else if (obs.line == 0 && obs2.line == 1 && obs2.width == 2 && obs2.layer >= 2)
-                        {
-                            crouch++;
-                            continue;
+                            var other = group[k];
+
+                            if ((wall.layer >= 2 || other.layer >= 2) && wall.width >= 2 && wall.line == 0 && other.line == 2)
+                            {
+                                found = true;
+                            }
+                            else if ((wall.layer >= 2 || other.layer >= 2) && other.width >= 2 && wall.line == 2 && other.line == 0)
+                            {
+                                found = true;
+                            }
+                            else if ((wall.layer >= 2 || other.layer >= 2) && wall.line == 1 && other.line == 2)
+                            {
+                                found = true;
+                            }
                         }
                     }
-                    if(obs2.layer >= 1)
+
+                    if(found)
                     {
-                        if (obs2.line == 0 && obs.line == 2 && obs2.width == 2)
-                        {
-                            crouch++;
-                            continue;
-                        }
-                        else if (obs2.line == 0 && obs.line == 3 && obs2.width == 3)
-                        {
-                            crouch++;
-                            continue;
-                        }
-                        else if (obs2.line == 1 && obs.line == 3 && obs2.width == 2)
-                        {
-                            crouch++;
-                            continue;
-                        }
-                        else if (obs2.line == 3 && obs.line == 1 && obs2.width == 2 && obs.layer >= 2)
-                        {
-                            crouch++;
-                            continue;
-                        }
+                        crouch++;
+                        break;
                     }
                 }
             }

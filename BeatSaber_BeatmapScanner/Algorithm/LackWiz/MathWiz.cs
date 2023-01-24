@@ -6,7 +6,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
 {
     internal class MathWiz
     {
-        public static List<(double x, double y)> PointList2(List<(double x, double y)> controlPoints, double interval = 0.01)
+        public static List<(double x, double y)> PointList2(List<(double x, double y)> controlPoints, double interval)
         {
             int N = controlPoints.Count() - 1;
             if (N > 16)
@@ -16,14 +16,14 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
             List<(double x, double y)> p = new();
 
-            for (double t = 0.0; t <= 1.0 + interval - 0.0001; t += interval)
+            for (double t = 0.0; t <= 1.0; t += interval)
             {
                 (double x, double y) point = new();
                 for (int i = 0; i < controlPoints.Count; ++i)
                 {
                     double bn = Bernstein(N, i, t);
-                    point.x += (bn * controlPoints[i].x);
-                    point.y += (bn * controlPoints[i].y);
+                    point.x += bn * controlPoints[i].x;
+                    point.y += bn * controlPoints[i].y;
                 }
                 p.Add(point);
             }
@@ -73,13 +73,13 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
         public static double ConvertDegreesToRadians(double degrees)
         {
-            double radians = Math.PI / 180f * degrees;
+            double radians = degrees * (Math.PI / 180f);
             return (radians);
         }
 
         public static double ConvertRadiansToDegrees(double radians)
         {
-            double degrees = 180f / Math.PI * radians;
+            double degrees = radians * (180f / Math.PI);
             return (degrees);
         }
 

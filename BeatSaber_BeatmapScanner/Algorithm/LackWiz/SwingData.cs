@@ -14,6 +14,7 @@ namespace BeatmapScanner.Algorithm
         public double PathStrain { get; set; } = 0;
         public double AngleStrain { get; set; } = 0;
         public double AnglePathStrain { get; set; } = 0;
+        public double PreviousDistance { get; set; } = 0;
         public double PositionComplexity { get; set; } = 0;
         public double CurveComplexity { get; set; } = 0;
 
@@ -31,14 +32,15 @@ namespace BeatmapScanner.Algorithm
 
     internal class SData
     {
-        public double PreDistance { get; set; } = 0;
-        public double AverageStress { get; set; } = 0;
-        public double AverageSwingSpeed { get; set; } = 0;
-        public double Difficulty { get; set; } = 0;
+        public double HitDistance { get; set; } = 0;
+        public double HitDiff { get; set; } = 0;
+        public double Stress { get; set; } = 0;
+        public double SwingSpeed { get; set; } = 0;
+        public double SwingDiff { get; set; } = 0;
 
-        public SData(double pre)
+        public SData(double ss)
         {
-            PreDistance = pre;
+            SwingSpeed = ss;
         }
     }
 }
