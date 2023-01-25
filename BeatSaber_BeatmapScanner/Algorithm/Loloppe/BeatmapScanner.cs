@@ -105,16 +105,16 @@ namespace BeatmapScanner.Algorithm
             {
                 wallsGroup.Last().Add(obstacles[i]);
 
-                for (int j = i + 1; j < obstacles.Count(); j++)
+                for (int j = i; j < obstacles.Count() - 1; j++)
                 {
-                    if (obstacles[j].beat >= obstacles[i].beat && obstacles[j].beat <= obstacles[i].beat + obstacles[i].duration)
+                    if (obstacles[j + 1].beat >= obstacles[j].beat && obstacles[j + 1].beat <= obstacles[j].beat + obstacles[j].duration)
                     {
-                        wallsGroup.Last().Add(obstacles[j]);
+                        wallsGroup.Last().Add(obstacles[j + 1]);
                     }
                     else
                     {
+                        i = j;
                         wallsGroup.Add(new List<BeatmapSaveData.ObstacleData>());
-                        i = j - 1;
                         break;
                     }
                 }
@@ -122,28 +122,38 @@ namespace BeatmapScanner.Algorithm
 
             // Find how many time the player has to crouch
             List<int> wallsFound = new();
+            int count;
 
             foreach(var group in wallsGroup)
             {
-                for(int j = 0; j < group.Count(); j++)
+                float found = 0f;
+                count = 0;
+
+                for (int j = 0; j < group.Count(); j++)
                 {
-                    bool found = false;
                     var wall = group[j];
+
+                    if (found != 0f && wall.beat - found < 1.5) // Skip too close
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        found = 0f;
+                    }
 
                     // Individual
                     if(wall.layer >= 2 && wall.width >= 3)
                     {
-                        crouch++;
-                        break;
+                        count++;
+                        found = wall.beat + wall.duration;
                     }
-                    if (wall.layer >= 2 && wall.width >= 2 && wall.line == 1)
+                    else if (wall.layer >= 2 && wall.width >= 2 && wall.line == 1)
                     {
-                        crouch++;
-                        break;
+                        count++;
+                        found = wall.beat + wall.duration;
                     }
-
-                    // Multiple
-                    if (group.Count() > 1)
+                    else if (group.Count() > 1) // Multiple
                     {
                         for (int k = j + 1; k < group.Count(); k++)
                         {
@@ -151,25 +161,27 @@ namespace BeatmapScanner.Algorithm
 
                             if ((wall.layer >= 2 || other.layer >= 2) && wall.width >= 2 && wall.line == 0 && other.line == 2)
                             {
-                                found = true;
+                                count++;
+                                found = wall.beat + wall.duration;
+                                break;
                             }
                             else if ((wall.layer >= 2 || other.layer >= 2) && other.width >= 2 && wall.line == 2 && other.line == 0)
                             {
-                                found = true;
+                                count++;
+                                found = wall.beat + wall.duration;
+                                break;
                             }
                             else if ((wall.layer >= 2 || other.layer >= 2) && wall.line == 1 && other.line == 2)
                             {
-                                found = true;
+                                count++;
+                                found = wall.beat + wall.duration;
+                                break;
                             }
                         }
                     }
-
-                    if(found)
-                    {
-                        crouch++;
-                        break;
-                    }
                 }
+
+                crouch += count;
             }
 
             if (notes.Count() < MinNote)
