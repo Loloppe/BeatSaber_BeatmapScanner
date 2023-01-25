@@ -4,8 +4,8 @@ using HMUI;
 
 namespace BeatmapScanner.UI
 {
-    internal class UICreator
-    {
+	internal class UICreator
+	{
 		private readonly GridViewController _gridViewController;
 
 		public static FloatingScreen _floatingScreen = null;
@@ -37,9 +37,9 @@ namespace BeatmapScanner.UI
 
 		private void OnHandleReleased(object sender, FloatingScreenHandleEventArgs args)
 		{
-			if(_floatingScreen.handle.transform.position.y < 0)
-            {
-				_floatingScreen.transform.position += new Vector3(0.0f, -_floatingScreen.handle.transform.position.y, 0.0f);
+			if (_floatingScreen.handle.transform.position.y < 0)
+			{
+				_floatingScreen.transform.position += new Vector3(0.0f, -_floatingScreen.handle.transform.position.y + 0.1f, 0.0f);
 			}
 
 			Settings.Instance.UIPosition = _floatingScreen.transform.position;

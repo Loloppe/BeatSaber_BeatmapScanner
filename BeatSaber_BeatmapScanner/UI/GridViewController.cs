@@ -14,10 +14,10 @@ namespace BeatmapScanner.UI
 	internal class GridViewController : BSMLAutomaticViewController
 	{
 #pragma warning disable IDE0052 // Remove unread private members
-        private DiContainer _diContainer;
+		private DiContainer _diContainer;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        private readonly string[] title = { "Crouch", "Reset", "V3", "Peak BPM", "Slider", "BL ⭐", "Difficulty", "Tech", "SS ⭐" };
+		private readonly string[] title = { "Crouch", "Reset", "V3", "Peak BPM", "Slider", "BL ⭐", "Difficulty", "Tech", "SS ⭐" };
 
 		[UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;
@@ -70,7 +70,7 @@ namespace BeatmapScanner.UI
 		}
 
 		public static void Hide()
-        {
+		{
 			UICreator._floatingScreen.gameObject.SetActive(false);
 		}
 
@@ -83,7 +83,7 @@ namespace BeatmapScanner.UI
 				texts[1].text = "";
 
 				switch (i)
-                {
+				{
 					case 0: // Crouch
 						if (Crouch == -1)
 						{
@@ -111,7 +111,7 @@ namespace BeatmapScanner.UI
 
 						continue;
 					case 3: // Peak BPM
-                        texts[1].text = Math.Round(EBPM).ToString();
+						texts[1].text = Math.Round(EBPM).ToString();
 						continue;
 					case 4: // Slider
 						texts[1].text = Slider.ToString();
@@ -185,12 +185,12 @@ namespace BeatmapScanner.UI
 						}
 						continue;
 					case 8: // SS *
-						if(SS == -1)
-                        {
+						if (SS == -1)
+						{
 							texts[1].text = "X";
 						}
 						else
-                        {
+						{
 							texts[1].text = SS.ToString();
 						}
 

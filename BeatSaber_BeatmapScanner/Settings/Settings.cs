@@ -15,6 +15,16 @@ namespace BeatmapScanner
         public virtual bool Enabled { get; set; } = true;
         public virtual bool ShowHandle { get; set; } = false;
         public virtual bool ImageCoverExpander { get; set; } = false;
+        public virtual float EBPM { get; set; } = 4;
+        public virtual bool ShowDiff { get; set; } = true;
+        public virtual bool ShowTech { get; set; } = true;
+        public virtual bool ShowSS { get; set; } = true;
+        public virtual bool ShowEBPM { get; set; } = true;
+        public virtual bool ShowSlider { get; set; } = true;
+        public virtual bool ShowBL { get; set; } = true;
+        public virtual bool ShowCrouch { get; set; } = true;
+        public virtual bool ShowReset { get; set; } = true;
+        public virtual bool ShowV3 { get; set; } = true;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color TitleColor { get; set; } = Color.white;
         [UseConverter(typeof(ColorConverter))]
@@ -59,6 +69,78 @@ namespace BeatmapScanner
                 if (Enabled)
                 {
                     UICreator._floatingScreen.ShowHandle = ShowHandle;
+                    if(ShowCrouch)
+                    {
+                        GridViewController._tiles[0].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[0].rectTransform.gameObject.SetActive(false);
+                    }
+                    if (ShowReset)
+                    {
+                        GridViewController._tiles[1].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[1].rectTransform.gameObject.SetActive(false);
+                    }
+                    if (ShowV3)
+                    {
+                        GridViewController._tiles[2].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[2].rectTransform.gameObject.SetActive(false);
+                    }
+                    if (ShowEBPM)
+                    {
+                        GridViewController._tiles[3].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[3].rectTransform.gameObject.SetActive(false);
+                    }
+                    if (ShowSlider)
+                    {
+                        GridViewController._tiles[4].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[4].rectTransform.gameObject.SetActive(false);
+                    }
+                    if (ShowBL)
+                    {
+                        GridViewController._tiles[5].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[5].rectTransform.gameObject.SetActive(false);
+                    }
+                    if (ShowDiff)
+                    {
+                        GridViewController._tiles[6].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[6].rectTransform.gameObject.SetActive(false);
+                    }
+                    if (ShowTech)
+                    {
+                        GridViewController._tiles[7].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[7].rectTransform.gameObject.SetActive(false);
+                    }
+                    if (ShowSS)
+                    {
+                        GridViewController._tiles[8].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[8].rectTransform.gameObject.SetActive(false);
+                    }
                     GridViewController.Apply(); // Reload text
                     GridViewController.Show(); // Show
                 }

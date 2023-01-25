@@ -55,6 +55,8 @@ namespace BeatmapScanner.HarmonyPatches
 
 					if(hasRequirement)
                     {
+						Diff = -1;
+						Tech = -1;
 						Reset = -1;
 						Crouch = -1;
                     }

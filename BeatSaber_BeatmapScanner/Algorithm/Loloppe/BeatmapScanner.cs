@@ -247,7 +247,10 @@ namespace BeatmapScanner.Algorithm
 
             var intensity = 1f;
             var speed = (Speed * bpm);
-            var ebpm = 1f;
+            var previous = 0f;
+            var ebpm = 0f;
+            var pbpm = 0f;
+            var count = 0;
             var prev = cubes[0].Beat;
 
             #endregion
@@ -263,12 +266,30 @@ namespace BeatmapScanner.Algorithm
 
                 var time = (cubes[i].Beat - prev);
 
-                if(ebpm < (500 / time))
+                if(time > 0)
                 {
-                    if (time > 0)
+                    if(Settings.Instance.EBPM > 1)
                     {
-                        ebpm = (500 / time);
+                        if (previous == (500 / time) && (500 / time) > ebpm)
+                        {
+                            count++;
+                            if (count == Settings.Instance.EBPM - 1)
+                            {
+                                ebpm = previous;
+                            }
+                        }
+                        else
+                        {
+                            count = 0;
+                        }
+                    }    
+
+                    if ((500 / time) > pbpm)
+                    {
+                        pbpm = previous;
                     }
+
+                    previous = (500 / time);
                 }
 
                 if (cubes[i].Reset || cubes[i].Head)
@@ -290,6 +311,11 @@ namespace BeatmapScanner.Algorithm
             }
 
             #endregion
+
+            if(ebpm == 0)
+            {
+                ebpm = pbpm;
+            }
 
             ebpm *= bpm / 1000;
 

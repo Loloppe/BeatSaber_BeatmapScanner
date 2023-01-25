@@ -56,8 +56,16 @@ namespace BeatmapScanner.HarmonyPatches
                     var clickableImage = imageTransform.GetComponent<ClickableImage>();
                     if (clickableImage != null)
                     {
-                        clickableImage.DefaultColor = new Color(0.5f, 0.5f, 0.5f, 1);
-                        clickableImage.HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1);
+                        if (Settings.Instance.ImageCoverExpander)
+                        {
+                            clickableImage.DefaultColor = new Color(0.5f, 0.5f, 0.5f, 1);
+                            clickableImage.HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1);
+                        }
+                        else
+                        {
+                            clickableImage.DefaultColor = new Color(1f, 1f, 1f, 1);
+                            clickableImage.HighlightColor = new Color(0.5f, 0.5f, 0.5f, 1);
+                        }
                     }
                 }
             }

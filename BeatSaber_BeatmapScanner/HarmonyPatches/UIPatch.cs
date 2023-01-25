@@ -1,6 +1,5 @@
 ﻿using SiraUtil.Affinity;
 using BeatmapScanner.UI;
-using UnityEngine;
 
 namespace BeatmapScanner.HarmonyPatches
 {
