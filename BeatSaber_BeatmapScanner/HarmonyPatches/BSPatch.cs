@@ -10,8 +10,6 @@ using Newtonsoft.Json;
 using System.Linq;
 using HarmonyLib;
 using System;
-using UnityEngine;
-using UnityEngine.UI;
 
 #endregion
 
@@ -53,13 +51,13 @@ namespace BeatmapScanner.HarmonyPatches
 
 					(Diff, Tech, EBPM, Slider, Reset, Crouch) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.beatmapSaveData.obstacles, beatmap.level.beatsPerMinute);
 
-					if(hasRequirement)
-                    {
+					if (hasRequirement)
+					{
 						Diff = -1;
 						Tech = -1;
 						Reset = -1;
 						Crouch = -1;
-                    }
+					}
 
 					if (!SongDetailsUtil.IsAvailable)
 					{

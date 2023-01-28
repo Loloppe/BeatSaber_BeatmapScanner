@@ -34,9 +34,8 @@ namespace BeatmapScanner.Algorithm
         {
             #region Prep
 
-            var diff = 0d;
+            var pass = 0d;
             var tech = 0d;
-            var intensity = 0d;
             var ebpm = 0d;
             var reset = 0;
             var slider = 0;
@@ -62,7 +61,7 @@ namespace BeatmapScanner.Algorithm
                 Helper.FindNoteDirection(red, bombs, bpm);
                 Helper.FixPatternHead(red);
                 Helper.FindReset(red);
-                (intensity, ebpm) = GetIntensity(red, bpm);
+                ebpm = GetIntensity(red, bpm);
             }
 
             if (blue.Count() > 0)
@@ -70,14 +69,10 @@ namespace BeatmapScanner.Algorithm
                 Helper.FindNoteDirection(blue, bombs, bpm);
                 Helper.FixPatternHead(blue);
                 Helper.FindReset(blue);
-                var temp = 0f;
-                var temp2 = 0f;
-                (temp, temp2) = GetIntensity(blue, bpm);
-                ebpm = Math.Max(ebpm, temp2);
-                intensity += temp;
+                ebpm = Math.Max(GetIntensity(blue, bpm), ebpm);
             }
 
-            (diff, tech, data) = Method.UseLackWizAlgorithm(red.Select(c => c.Note).ToList(), blue.Select(c => c.Note).ToList(), bpm);
+            (pass, tech, data) = Method.UseLackWizAlgorithm(red.Select(c => c.Note).ToList(), blue.Select(c => c.Note).ToList(), bpm);
 
             #endregion
 
@@ -184,17 +179,6 @@ namespace BeatmapScanner.Algorithm
                 crouch += count;
             }
 
-            if (notes.Count() < MinNote)
-            {
-                intensity *= notes.Count() / MinNote;
-            }
-
-            intensity /= 2;
-            if (intensity < 0)
-            {
-                intensity = 0f;
-            }
-
             if(data.Count() > 0)
             {
                 var temp = 1 - cube.Where(c => c.Reset).Count() * 1.25 / cube.Count();
@@ -234,14 +218,14 @@ namespace BeatmapScanner.Algorithm
 
             #endregion
 
-            return (diff, tech, ebpm, slider, reset, crouch);
+            return (pass, tech, ebpm, slider, reset, crouch);
         }
 
         #endregion
 
         #region Intensity
 
-        public static (float, float) GetIntensity(List<Cube> cubes, float bpm)
+        public static float GetIntensity(List<Cube> cubes, float bpm)
         {
             #region Prep
 
@@ -316,10 +300,10 @@ namespace BeatmapScanner.Algorithm
             {
                 ebpm = pbpm;
             }
-
             ebpm *= bpm / 1000;
+            intensity /= cubes.Where(c => !c.Pattern || c.Head).Count();
 
-            return (intensity / cubes.Where(c => !c.Pattern || c.Head).Count(), ebpm);
+            return ebpm;
         }
 
         #endregion

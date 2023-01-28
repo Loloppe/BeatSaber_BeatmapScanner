@@ -9,6 +9,7 @@ namespace BeatmapScanner.Algorithm
         public (double x, double y) EntryPosition { get; set; } = (0, 0);
         public (double x, double y) ExitPosition { get; set; } = (0, 0);
         public double SwingFrequency { get; set; } = 0;
+        public double SwingDiff { get; set; } = 0;
         public bool Forehand { get; set; } = true;
         public bool Reset { get; set; } = false;
         public double PathStrain { get; set; } = 0;
@@ -36,7 +37,6 @@ namespace BeatmapScanner.Algorithm
         public double HitDiff { get; set; } = 0;
         public double Stress { get; set; } = 0;
         public double SwingSpeed { get; set; } = 0;
-        public double SwingDiff { get; set; } = 0;
 
         public SData(double ss)
         {

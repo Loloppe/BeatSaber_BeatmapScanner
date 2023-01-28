@@ -15,6 +15,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
         {
             double diff = 0;
             double tech = 0;
+            double stamina = 0;
             List<SwingData> redSwingData;
             List<SwingData> blueSwingData;
             List<List<SwingData>> redPatternData = new();
@@ -36,6 +37,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 {
                     SwingCurveCalc(redSwingData, false);
                     diff = DiffToPass(redSwingData, bpm);
+                    stamina = StaminaCalc(redSwingData);
                 }
                 data.AddRange(redSwingData);
             }
@@ -55,6 +57,15 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 {
                     SwingCurveCalc(blueSwingData, true);
                     diff = Math.Max(DiffToPass(blueSwingData, bpm), diff);
+                    if(stamina != 0)
+                    {
+                        stamina += StaminaCalc(blueSwingData);
+                        stamina /= 2;
+                    }
+                    else
+                    {
+                        stamina = StaminaCalc(blueSwingData);
+                    }
                 }
                 data.AddRange(blueSwingData);
             }
@@ -66,7 +77,10 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 tech = Math.Round(test.Skip((int)(data.Count() * 0.25)).Average(), 3);
             }
 
-            return (diff, tech, data);
+            var balanced_tech = tech * (-1 * Math.Pow(1.4, -diff) + 1);
+            var balanced_pass = diff * stamina;
+
+            return (balanced_pass, tech, data);
         }
 
         #endregion
@@ -351,6 +365,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                     Time = d.Time,
                     Angle = d.Angle,
                     SwingFrequency = d.SwingFrequency,
+                    SwingDiff = d.SwingDiff,
                     Forehand = d.Forehand,
                     Reset = d.Reset,
                     PathStrain = d.PathStrain,
@@ -383,7 +398,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 {
                     if (i > 0)
                     {
-                        if (Math.Abs(testData1[i].Angle - testData1[i - 1].Angle) > 45)
+                        if (Math.Abs(testData1[i].Angle - testData1[i - 1].Angle) >= 67.5)
                         {
                             testData1[i].Forehand = !testData1[i - 1].Forehand;
                         }
@@ -401,7 +416,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 {
                     if (i > 0)
                     {
-                        if (Math.Abs(testData2[i].Angle - testData2[i - 1].Angle) > 45)
+                        if (Math.Abs(testData2[i].Angle - testData2[i - 1].Angle) >= 67.5)
                         {
                             testData2[i].Forehand = !testData2[i - 1].Forehand;
                         }
@@ -528,20 +543,27 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 }
 
                 var lengthOfList = angleChangeList.Count() * 0.6;
-                var firstIndex = (int)(angleChangeList.Count() * 0.2);
-                var lastIndex = (int)(angleChangeList.Count() * 0.8);
+                double first;
+                double last;
 
                 if (swingData[i].Reset)
                 {
-                    pathLookback = 0.75;
+                    pathLookback = 0.9;
+                    first = 0.5;
+                    last = 1;
                 }
                 else
                 {
                     pathLookback = 0.5;
+                    first = 0.2;
+                    last = 0.8;
                 }
+                var pathLookbackIndex = (int)(angleList.Count() * pathLookback);
+                var firstIndex = (int)(angleChangeList.Count() * first) - 1;
+                var lastIndex = (int)(angleChangeList.Count() * last) - 1;
 
                 curveComplexity = Math.Abs((lengthOfList * angleChangeList.Take(lastIndex).Skip(firstIndex).Average() - 180) / 180);
-                pathAngleStrain = MathWiz.BezierAngleStrainCalc(angleList.Skip((int)(angleList.Count() * pathLookback)).ToList(), swingData[i].Forehand, leftOrRight) / angleList.Count() * 2;
+                pathAngleStrain = MathWiz.BezierAngleStrainCalc(angleList.Skip(pathLookbackIndex).ToList(), swingData[i].Forehand, leftOrRight) / angleList.Count() * 2;
 
                 swingData[i].PositionComplexity = positionComplexity;
                 swingData[i].PreviousDistance = distance;
@@ -557,7 +579,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
         public static double DiffToPass(List<SwingData> swingData, double bpm)
         {
-            if (swingData == null)
+            if (swingData.Count() < 2)
             {
                 return 0;
             }
@@ -569,6 +591,7 @@ namespace BeatmapScanner.Algorithm.LackWiz
             var difficultyIndex = new List<double>();
             var data = new List<SData>();
 
+            swingData[0].SwingDiff = 0;
             for (int i = 1; i < swingData.Count(); i++)
             {
                 var distanceDiff = swingData[i].PreviousDistance / (swingData[i].PreviousDistance + 3) + 1;
@@ -578,25 +601,25 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 data.Last().HitDistance = Math.Sqrt(Math.Pow(xHitDist, 2) + Math.Pow(yHitDist, 2));
                 data.Last().HitDiff = data.Last().HitDistance / (data.Last().HitDistance + 2) + 1;
                 data.Last().Stress = (swingData[i].AngleStrain + swingData[i].PathStrain) * data.Last().HitDiff;
-                data.Last().SwingDiff = data.Last().SwingSpeed * (-1 * Math.Pow(1.4, -data.Last().SwingSpeed) + 1) * (data.Last().Stress / (data.Last().Stress + 2) + 1);
+                swingData[i].SwingDiff = data.Last().SwingSpeed * (-1 * Math.Pow(1.4, -data.Last().SwingSpeed) + 1) * (data.Last().Stress / (data.Last().Stress + 2) + 1);
 
                 if (i > window)
                 {
                     qDiff.Dequeue();
                 }
-                qDiff.Enqueue(data.Last().SwingDiff);
+                qDiff.Enqueue(swingData[i].SwingDiff);
                 List<double> tempList = qDiff.ToList();
                 tempList.Sort();
                 tempList.Reverse();
 
-                var temp = tempList.Take(Math.Max((int)(tempList.Count() * 15d / window), 1));
+                var temp = tempList.Take((int)(tempList.Count() * 25d / window));
                 if(temp.Count() > 1)
                 {
-                    windowDiff = temp.Average() * 0.8;
+                    windowDiff = temp.Sum() / 25 * 0.8;
                 }
                 else
                 {
-                    windowDiff = temp.First() * 0.8;
+                    windowDiff = 0;
                 }
                 difficultyIndex.Add(windowDiff);
             }
@@ -609,6 +632,30 @@ namespace BeatmapScanner.Algorithm.LackWiz
             {
                 return 0;
             }
+        }
+
+        #endregion
+
+        #region StaminaCalc
+
+        public static double StaminaCalc(List<SwingData> swingData)
+        {
+            if (swingData.Count() < 16)
+            {
+                return 0;
+            }
+
+            var swingDiffList = swingData.Select(s => s.SwingDiff).ToList();
+            swingDiffList.Sort();
+            swingDiffList.Reverse();
+            var averageDiff = swingDiffList.Take((int)(swingDiffList.Count() * 0.5)).Average();
+            var burstDiff = swingDiffList.Take(Math.Min(swingDiffList.Count() / 8, 2)).Average();
+            if(burstDiff == 0)
+            {
+                return 0;
+            }
+            var staminaRatio = averageDiff / burstDiff;
+            return 1 / (10 + Math.Pow(4, -64 * (staminaRatio - 0.875))) + 0.9 + staminaRatio / 20;
         }
 
         #endregion

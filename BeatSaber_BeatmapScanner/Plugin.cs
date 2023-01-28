@@ -8,7 +8,6 @@ using System.Reflection;
 using SiraUtil.Zenject;
 using HarmonyLib;
 using IPA;
-using BeatmapScanner.UI;
 
 namespace BeatmapScanner
 {
@@ -52,7 +51,6 @@ namespace BeatmapScanner
             harmony = new Harmony("Loloppe.BeatSaber.BeatmapScanner");
 
             zenject.UseLogger(logger);
-
             zenject.Install<MenuInstaller>(Location.Menu);
         }
 
