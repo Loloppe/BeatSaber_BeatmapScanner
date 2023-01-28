@@ -12,12 +12,14 @@ This plugin display new values on a mobile UI:
   
 Configuration include:
 - Turning on/off the UI and the handle
+- Turning on/off specific UI element
 - Build-in ImageCoverExpander
+- How many notes for the EBPM
 - Color steps + filters  
   
 To do:
 - Port the plugin to ChroMapper as an overlay
-- Better algorithm  
+- Better dot/reset algorithm  
   
 License linked to this project:
 - BetterSongList
