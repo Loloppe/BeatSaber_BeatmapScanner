@@ -49,6 +49,7 @@ namespace BeatmapScanner.Algorithm
                 cube.Add(new Cube(note));
             }
 
+            cube.OrderBy(c => c.Beat);
             var red = cube.Where(c => (int)c.Note.color == 0).ToList();
             var blue = cube.Where(c => (int)c.Note.color == 1).ToList();
 
@@ -152,6 +153,11 @@ namespace BeatmapScanner.Algorithm
                     {
                         for (int k = j + 1; k < group.Count(); k++)
                         {
+                            if(k == j + 100) // So it doesn't take forever on some maps :(
+                            {
+                                break;
+                            }
+
                             var other = group[k];
 
                             if ((wall.layer >= 2 || other.layer >= 2) && wall.width >= 2 && wall.line == 0 && other.line == 2)
@@ -179,7 +185,7 @@ namespace BeatmapScanner.Algorithm
                 crouch += count;
             }
 
-            if(data.Count() > 0)
+            if (data.Count() > 0)
             {
                 var temp = 1 - cube.Where(c => c.Reset).Count() * 1.25 / cube.Count();
                 if(temp < 0)
