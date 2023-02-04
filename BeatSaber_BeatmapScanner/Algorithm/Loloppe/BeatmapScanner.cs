@@ -86,12 +86,10 @@ namespace BeatmapScanner.Algorithm
                 {
                     if (c.Reset && !c.Bomb)
                     {
-                        Plugin.Log.Error("Reset:" + c.Beat + " " + c.Note.color);
                         reset++;
                     }
                     else if (c.Reset)
                     {
-                        Plugin.Log.Error("Bomb:" + c.Beat + " " + c.Note.color);
                         bomb++;
                     }
                 }
