@@ -17,7 +17,7 @@ namespace BeatmapScanner.UI
 		private DiContainer _diContainer;
 #pragma warning restore IDE0052 // Remove unread private members
 
-		private readonly string[] title = { "Crouch", "Reset", "V3", "Peak BPM", "Slider", "BL ⭐", "Difficulty", "Tech", "SS ⭐" };
+		private readonly string[] title = { "Crouch", "Bomb / R", "V3", "Peak BPM", "Slider", "BL ⭐", "Difficulty", "Tech", "SS ⭐" };
 
 		[UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;
@@ -96,13 +96,21 @@ namespace BeatmapScanner.UI
 
 						continue;
 					case 1: // Reset
-						if (Reset == -1)
+						if (Reset == -1 && Bomb == -1)
 						{
 							texts[1].text = "X";
 						}
-						else
+						else if(Reset == -1)
 						{
-							texts[1].text = Reset.ToString();
+							texts[1].text = Bomb.ToString() + " / X";
+						}
+						else if (Bomb == -1)
+						{
+							texts[1].text = "X / " + Reset.ToString();
+						}
+						else
+                        {
+							texts[1].text = Bomb.ToString() + " / " + Reset.ToString();
 						}
 
 						continue;

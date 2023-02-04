@@ -11,7 +11,6 @@ namespace BeatmapScanner.Algorithm.Loloppe
         public double Direction { get; set; } = 8;
         public bool Assumed { get; set; } = false;
         public bool Reset { get; set; } = false;
-        public bool SoftReset { get; set; } = false;
         public bool Bomb { get; set; } = false;
         public bool Head { get; set; } = false;
         public bool Pattern { get; set; } = false;

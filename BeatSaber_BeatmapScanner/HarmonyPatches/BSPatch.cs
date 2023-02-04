@@ -28,6 +28,7 @@ namespace BeatmapScanner.HarmonyPatches
 		public static double Slider { get; set; } = 0;
 		public static double Crouch { get; set; } = 0;
 		public static double Reset { get; set; } = 0;
+		public static double Bomb { get; set; } = 0;
 		public static bool V3 { get; set; } = false;
 
 		#endregion
@@ -49,13 +50,14 @@ namespace BeatmapScanner.HarmonyPatches
 						V3 = true;
 					}
 
-					(Diff, Tech, EBPM, Slider, Reset, Crouch) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.beatmapSaveData.obstacles, beatmap.level.beatsPerMinute);
+					(Diff, Tech, EBPM, Slider, Reset, Bomb, Crouch) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.beatmapSaveData.obstacles, beatmap.level.beatsPerMinute);
 
 					if (hasRequirement)
 					{
 						Diff = -1;
 						Tech = -1;
 						Reset = -1;
+						Bomb = -1;
 						Crouch = -1;
 					}
 
@@ -123,6 +125,7 @@ namespace BeatmapScanner.HarmonyPatches
 			Slider = 0;
 			Crouch = 0;
 			Reset = 0;
+			Bomb = 0;
 			V3 = false;
 
 			if (UICreator._floatingScreen != null)

@@ -15,14 +15,14 @@ namespace BeatmapScanner.Algorithm
         public static int[] PureVerticalSwing = { 0, 1 };
         public static int[] PureHorizontalSwing = { 2, 3 };
 
-        public static int[] UpSwing = { 0, 4, 5 };
-        public static int[] DownSwing = { 1, 6, 7 };
-        public static int[] LeftSwing = { 2, 4, 6 };
-        public static int[] RightSwing = { 3, 5, 7 };
-        public static int[] UpLeftSwing = { 0, 2, 4 };
-        public static int[] DownLeftSwing = { 1, 2, 6 };
-        public static int[] UpRightSwing = { 0, 3, 5 };
-        public static int[] DownRightSwing = { 1, 3, 7 };
+        public static double[] UpSwing = { 0, 4, 5 };
+        public static double[] DownSwing = { 1, 6, 7 };
+        public static double[] LeftSwing = { 2, 4, 6 };
+        public static double[] RightSwing = { 3, 5, 7 };
+        public static double[] UpLeftSwing = { 0, 2, 4 };
+        public static double[] DownLeftSwing = { 1, 2, 6 };
+        public static double[] UpRightSwing = { 0, 3, 5 };
+        public static double[] DownRightSwing = { 1, 3, 7 };
 
         #endregion
 
@@ -35,7 +35,6 @@ namespace BeatmapScanner.Algorithm
         {
             (list[indexB].Head, list[indexA].Head) = (list[indexA].Head, list[indexB].Head);
             (list[indexB].Reset, list[indexA].Reset) = (list[indexA].Reset, list[indexB].Reset);
-            (list[indexB].SoftReset, list[indexA].SoftReset) = (list[indexA].SoftReset, list[indexB].SoftReset);
         }
 
         public static void FixPatternHead(List<Cube> cubes)
@@ -139,20 +138,15 @@ namespace BeatmapScanner.Algorithm
                     continue; 
                 }
 
-                if (SameDirection((int)cubes[i - 1].Note.cutDirection, (int)cubes[i].Note.cutDirection))
+                if (SameDirection(cubes[i - 1].Direction, cubes[i].Direction))
                 {
                     cubes[i].Reset = true;
                     continue;
                 }
-
-                if (cubes[i].Beat - cubes[i - 1].Beat >= 0.9f) 
-                {
-                    cubes[i].SoftReset = true;
-                }
             }
         }
 
-        public static bool SameDirection(int before, int after)
+        public static bool SameDirection(double before, double after)
         {
             switch(before)
             {
@@ -187,7 +181,7 @@ namespace BeatmapScanner.Algorithm
 
         public static void FindNoteDirection(List<Cube> cubes, List<BombNoteData> bombs, float bpm)
         {
-            if (((int)cubes[0].Note.cutDirection) == 8) 
+            if (cubes[0].Assumed) 
             {
                 var c = cubes.Where(c => !c.Assumed).FirstOrDefault();
                 if (c != null)
@@ -220,6 +214,8 @@ namespace BeatmapScanner.Algorithm
 
             FixPatternHead(cubes);
 
+            BombNoteData bo = null;
+
             for (int i = 1; i < cubes.Count(); i++)
             {
                 if (cubes[i].Beat - cubes[i - 1].Beat <= (0.25 / 200 * bpm) && (cubes[i].Note.cutDirection == cubes[i - 1].Note.cutDirection ||
@@ -243,18 +239,14 @@ namespace BeatmapScanner.Algorithm
                     pattern = false;
                 }
 
-                BombNoteData bo = null;
-                if (i != cubes.Count() - 1)
-                {
-                    bo = bombs.FirstOrDefault(b => cubes[i - 1].Beat < b.beat && cubes[i].Beat >= b.beat && cubes[i].Line == b.line);
-                }
+                bo = bombs.LastOrDefault(b => cubes[i - 1].Beat < b.beat && cubes[i].Beat >= b.beat && cubes[i].Line == b.line);
 
                 if (bo != null)
                 {
                     cubes[i].Bomb = true; 
                 }
 
-                if (cubes[i].Pattern && !cubes[i].Head && cubes[i - 1].Bomb)
+                if (cubes[i].Pattern && cubes[i - 1].Bomb)
                 {
                     cubes[i].Bomb = cubes[i - 1].Bomb;
                 }
@@ -292,17 +284,6 @@ namespace BeatmapScanner.Algorithm
                 else 
                 {
                     cubes[i].Direction = (int)cubes[i].Note.cutDirection;
-                }
-            }
-
-            for (int i = cubes.Count() - 1; i >= 1; i--)
-            {
-                if (cubes[i].Direction != 8 && cubes[i - 1].Direction == 8)
-                {
-                    if (cubes[i].Beat - cubes[i - 1].Beat >= 0.9)
-                    {
-                        cubes[i - 1].Direction = ReverseCutDirection((int)cubes[i].Note.cutDirection);
-                    }
                 }
             }
         }

@@ -30,7 +30,7 @@ namespace BeatmapScanner.Algorithm
 
         #region Analyzer
 
-        public static (double diff, double tech, double ebpm, int slider, int reset, int crouch) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, List<BeatmapSaveData.ObstacleData> obstacles, float bpm)
+        public static (double diff, double tech, double ebpm, int slider, int reset, int bomb, int crouch) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, List<BeatmapSaveData.ObstacleData> obstacles, float bpm)
         {
             #region Prep
 
@@ -38,6 +38,7 @@ namespace BeatmapScanner.Algorithm
             var tech = 0d;
             var ebpm = 0d;
             var reset = 0;
+            var bomb = 0;
             var slider = 0;
             var crouch = 0;
 
@@ -81,10 +82,20 @@ namespace BeatmapScanner.Algorithm
 
             foreach(var c in cube)
             {
-                if(c.Reset)
+                if((c.Pattern && c.Head) || !c.Pattern)
                 {
-                    reset++;
+                    if (c.Reset && !c.Bomb)
+                    {
+                        Plugin.Log.Error("Reset:" + c.Beat + " " + c.Note.color);
+                        reset++;
+                    }
+                    else if (c.Reset)
+                    {
+                        Plugin.Log.Error("Bomb:" + c.Beat + " " + c.Note.color);
+                        bomb++;
+                    }
                 }
+                
                 if(c.Head && c.Slider)
                 {
                     slider++;
@@ -224,7 +235,7 @@ namespace BeatmapScanner.Algorithm
 
             #endregion
 
-            return (pass, tech, ebpm, slider, reset, crouch);
+            return (pass, tech, ebpm, slider, reset, bomb, crouch);
         }
 
         #endregion
