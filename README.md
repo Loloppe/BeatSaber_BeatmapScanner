@@ -7,7 +7,7 @@ This plugin display new values on a mobile UI:
 - Peak BPM (one-hand)
 - Slider count
 - Crouch wall count
-- Reset count (can be misleading)
+- Bomb Reset and Reset count (Can be slightly misleading since tech can be detected as reset. Example: 135 degree wrist roll)
 - If the map got any V3 element (arc and/or chain)  
   
 Configuration include:
