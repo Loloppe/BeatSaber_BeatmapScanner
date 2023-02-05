@@ -153,7 +153,14 @@ namespace BeatmapScanner.UI
 						}
 						continue;
 					case 6: // Diff
-						texts[1].text = Math.Round(Diff, 2).ToString();
+						if(Diff == -1)
+                        {
+							texts[1].text = "X";
+						}
+						else
+                        {
+							texts[1].text = Math.Round(Diff, 2).ToString();
+						}
 
 						if (Diff >= Settings.Instance.DColorC)
 						{
@@ -173,7 +180,14 @@ namespace BeatmapScanner.UI
 						}
 						continue;
 					case 7: // Tech
-						texts[1].text = Math.Round(Tech, 2).ToString();
+						if(Tech == -1)
+                        {
+							texts[1].text = "X";
+						}
+						else
+                        {
+							texts[1].text = Math.Round(Tech, 2).ToString();
+						}
 
 						if (Tech >= Settings.Instance.TColorC)
 						{
