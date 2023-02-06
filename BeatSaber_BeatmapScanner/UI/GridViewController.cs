@@ -61,6 +61,80 @@ namespace BeatmapScanner.UI
 				texts[1].text = "";
 			}
 
+			if (Settings.Instance.ShowCrouch)
+
+			{
+				GridViewController._tiles[0].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				GridViewController._tiles[0].rectTransform.gameObject.SetActive(false);
+			}
+			if (Settings.Instance.ShowReset)
+			{
+				GridViewController._tiles[1].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				GridViewController._tiles[1].rectTransform.gameObject.SetActive(false);
+			}
+			if (Settings.Instance.ShowV3)
+			{
+				GridViewController._tiles[2].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				GridViewController._tiles[2].rectTransform.gameObject.SetActive(false);
+			}
+			if (Settings.Instance.ShowEBPM)
+			{
+				GridViewController._tiles[3].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				GridViewController._tiles[3].rectTransform.gameObject.SetActive(false);
+			}
+			if (Settings.Instance.ShowSlider)
+			{
+				GridViewController._tiles[4].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				GridViewController._tiles[4].rectTransform.gameObject.SetActive(false);
+			}
+			if (Settings.Instance.ShowBL)
+			{
+				GridViewController._tiles[5].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				GridViewController._tiles[5].rectTransform.gameObject.SetActive(false);
+			}
+			if (Settings.Instance.ShowDiff)
+			{
+				GridViewController._tiles[6].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				GridViewController._tiles[6].rectTransform.gameObject.SetActive(false);
+			}
+			if (Settings.Instance.ShowTech)
+			{
+				GridViewController._tiles[7].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				GridViewController._tiles[7].rectTransform.gameObject.SetActive(false);
+			}
+			if (Settings.Instance.ShowSS)
+			{
+				GridViewController._tiles[8].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				GridViewController._tiles[8].rectTransform.gameObject.SetActive(false);
+			}
+
 			DestroyImmediate(_tile.gameObject);
 		}
 

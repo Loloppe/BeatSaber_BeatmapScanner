@@ -39,7 +39,7 @@ namespace BeatmapScanner.Algorithm
 
         public static void FixPatternHead(List<Cube> cubes)
         {
-            for (int j = 1; j < cubes.Count(); j++)
+            for (int j = 0; j < 3; j++)
             {
                 for (int i = 1; i < cubes.Count(); i++)
                 {
