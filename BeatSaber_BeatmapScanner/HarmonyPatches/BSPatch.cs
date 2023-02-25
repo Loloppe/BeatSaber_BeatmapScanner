@@ -136,34 +136,41 @@ namespace BeatmapScanner.HarmonyPatches
 
 		public static async Task<double> GetAsyncData(string hash, string difficulty)
 		{
-			string api = "https://api.beatleader.xyz/map/modinterface/" + hash;
+			try
+            {
+				string api = "https://api.beatleader.xyz/map/modinterface/" + hash;
 
-			using HttpClient client = new();
-			using HttpResponseMessage res = await client.GetAsync(api);
-			using HttpContent content = res.Content;
-			var data = await content.ReadAsStringAsync();
-			if (data != null)
-			{
-				List<BLStruct> obj = JsonConvert.DeserializeObject<List<BLStruct>>(data);
-				foreach (var o in obj)
+				using HttpClient client = new();
+				using HttpResponseMessage res = await client.GetAsync(api);
+				using HttpContent content = res.Content;
+				var data = await content.ReadAsStringAsync();
+				if (data != null)
 				{
-					if (o.difficultyName == difficulty && o.modeName == "Standard")
+					List<BLStruct> obj = JsonConvert.DeserializeObject<List<BLStruct>>(data);
+					foreach (var o in obj)
 					{
-						if (o.stars != null)
+						if (o.difficultyName == difficulty && o.modeName == "Standard")
 						{
-							return (double)o.stars;
-						}
-						else
-						{
-							return -1;
+							if (o.stars != null)
+							{
+								return (double)o.stars;
+							}
+							else
+							{
+								return -1;
+							}
 						}
 					}
-				}
 
-				return -1;
+					return -1;
+				}
+				else
+				{
+					return -1;
+				}
 			}
-			else
-			{
+			catch
+            {
 				return -1;
 			}
 		}
