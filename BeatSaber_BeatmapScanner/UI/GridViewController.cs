@@ -17,7 +17,7 @@ namespace BeatmapScanner.UI
 		private DiContainer _diContainer;
 #pragma warning restore IDE0052 // Remove unread private members
 
-		private readonly string[] title = { "Linear %", "B % / R %", "Crouch", "Peak BPM", "Slider %", "BL ⭐", "Difficulty", "Tech", "SS ⭐" };
+		private readonly string[] title = { "Linear", "B / R", "Crouch", "Peak BPM", "Slider", "BL ⭐", "Difficulty", "Tech", "SS ⭐" };
 
 		[UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;

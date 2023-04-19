@@ -3,7 +3,7 @@
   "id": "BeatmapScanner",
   "name": "BeatmapScanner",
   "author": "Loloppe",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Analyze the difficulty of a beatmap",
   "gameVersion": "1.29.1",
   "dependsOn": {

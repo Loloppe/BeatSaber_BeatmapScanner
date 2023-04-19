@@ -25,6 +25,9 @@ namespace BeatmapScanner
         public virtual bool ShowLinear { get; set; } = true;
         public virtual bool ShowReset { get; set; } = true;
         public virtual bool ShowCrouch { get; set; } = true;
+        public virtual bool LinearPercent { get; set; } = true;
+        public virtual bool SliderPercent { get; set; } = true;
+        public virtual bool ResetPercent { get; set; } = true;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color TitleColor { get; set; } = Color.white;
         [UseConverter(typeof(ColorConverter))]

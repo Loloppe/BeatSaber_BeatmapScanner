@@ -352,8 +352,8 @@ namespace BeatmapScanner.Algorithm
             {
                 if (!cubes[i].Pattern || cubes[i].Head)
                 {
-                    var prev = CalculateBaseEntryExit((pre.Line, pre.Layer), pre.Direction);
-                    var now = CalculateBaseEntryExit((cubes[i].Line, cubes[i].Layer), cubes[i].Direction);
+                    // var prev = CalculateBaseEntryExit((pre.Line, pre.Layer), pre.Direction);
+                    // var now = CalculateBaseEntryExit((cubes[i].Line, cubes[i].Layer), cubes[i].Direction);
                     // var distance = Math.Sqrt(Math.Pow(now.exit.x - prev.entry.x, 2) + Math.Pow(now.exit.y - prev.entry.y, 2));
 
                     if (IsInLinearPath(pre2, pre, cubes[i]))

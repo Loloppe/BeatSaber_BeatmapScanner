@@ -83,10 +83,32 @@ namespace BeatmapScanner.Algorithm
 
             #region Calculator
 
-            reset = Math.Round((double)cube.Where(c => c.Reset && !c.Bomb && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
-            bomb = Math.Round((double)cube.Where(c => c.Reset && c.Bomb && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
-            slider = Math.Round((double)cube.Where(c => c.Slider && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
-            linear = Math.Round((double)cube.Where(c => c.Linear && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
+            if(Settings.Instance.SliderPercent)
+            {
+                slider = Math.Round((double)cube.Where(c => c.Slider && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
+            }
+            else
+            {
+                slider = Math.Round((double)cube.Where(c => c.Slider && (c.Head || !c.Pattern)).Count(), 0);
+            }
+            if (Settings.Instance.LinearPercent)
+            {
+                linear = Math.Round((double)cube.Where(c => c.Linear && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
+            }
+            else
+            {
+                linear = Math.Round((double)cube.Where(c => c.Linear && (c.Head || !c.Pattern)).Count(), 0);
+            }
+            if (Settings.Instance.ResetPercent)
+            {
+                reset = Math.Round((double)cube.Where(c => c.Reset && !c.Bomb && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
+                bomb = Math.Round((double)cube.Where(c => c.Reset && c.Bomb && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
+            }
+            else
+            {
+                reset = Math.Round((double)cube.Where(c => c.Reset && !c.Bomb && (c.Head || !c.Pattern)).Count(), 0);
+                bomb = Math.Round((double)cube.Where(c => c.Reset && c.Bomb && (c.Head || !c.Pattern)).Count(), 0);
+            }
 
             // Find group of walls and list them together
             List<List<BeatmapSaveData.ObstacleData>> wallsGroup = new()
