@@ -2,6 +2,7 @@
 using BeatmapScanner.Algorithm.Loloppe;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace BeatmapScanner.Algorithm
 {
@@ -9,20 +10,7 @@ namespace BeatmapScanner.Algorithm
     {
         #region Array
 
-        public static int[] VerticalSwing = { 0, 1, 4, 5, 6, 7 };
-        public static int[] HorizontalSwing = { 2, 3, 4, 5, 6, 7 };
-        public static int[] DiagonalSwing = { 4, 5, 6, 7 };
-        public static int[] PureVerticalSwing = { 0, 1 };
-        public static int[] PureHorizontalSwing = { 2, 3 };
-
-        public static double[] UpSwing = { 0, 4, 5 };
-        public static double[] DownSwing = { 1, 6, 7 };
-        public static double[] LeftSwing = { 2, 4, 6 };
-        public static double[] RightSwing = { 3, 5, 7 };
-        public static double[] UpLeftSwing = { 0, 2, 4 };
-        public static double[] DownLeftSwing = { 1, 2, 6 };
-        public static double[] UpRightSwing = { 0, 3, 5 };
-        public static double[] DownRightSwing = { 1, 3, 7 };
+        public static double[] DirectionToDegree = { 90, 270, 180, 0, 135, 45, 225, 315, 8 };
 
         #endregion
 
@@ -138,7 +126,7 @@ namespace BeatmapScanner.Algorithm
                     continue; 
                 }
 
-                if (SameDirection(cubes[i - 1].Direction, cubes[i].Direction))
+                if (IsSameDirection(cubes[i - 1].Direction, cubes[i].Direction))
                 {
                     cubes[i].Reset = true;
                     continue;
@@ -146,34 +134,23 @@ namespace BeatmapScanner.Algorithm
             }
         }
 
-        public static bool SameDirection(double before, double after)
+        public static bool IsSameDirection(double before, double after)
         {
-            switch(before)
+            if (before - after <= 180)
             {
-                case 0: 
-                    if (UpSwing.Contains(after)) return true;
-                    break;
-                case 1:
-                    if (DownSwing.Contains(after)) return true;
-                    break;
-                case 2:
-                    if (LeftSwing.Contains(after)) return true;
-                    break;
-                case 3:
-                    if (RightSwing.Contains(after)) return true;
-                    break;
-                case 4:
-                    if (UpLeftSwing.Contains(after)) return true;
-                    break;
-                case 5:
-                    if (UpRightSwing.Contains(after)) return true;
-                    break;
-                case 6:
-                    if (DownLeftSwing.Contains(after)) return true;
-                    break;
-                case 7:
-                    if (DownRightSwing.Contains(after)) return true;
-                    break;
+                var diff = Math.Abs(before - after);
+                if (diff <= 67.5)
+                {
+                    return true;
+                }
+            }
+            else if (before - after > 180)
+            {
+                var diff = 360 - Math.Abs(before - after);
+                if (diff <= 67.5)
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -181,33 +158,43 @@ namespace BeatmapScanner.Algorithm
 
         public static void FindNoteDirection(List<Cube> cubes, List<BombNoteData> bombs, float bpm)
         {
-            if (cubes[0].Assumed) 
+            if (cubes[0].Assumed)
             {
-                var c = cubes.Where(c => !c.Assumed).FirstOrDefault();
+                var c = cubes.Where(ca => !ca.Assumed).FirstOrDefault();
                 if (c != null)
                 {
-                    int temp = 1;
+                    double temp = 270;
                     for (int i = 0; i < cubes.IndexOf(c); i++)
                     {
-                        temp = ReverseCutDirection((int)c.Note.cutDirection);
+                        var a = DirectionToDegree[(int)c.Note.cutDirection] + c.Note.angleOffset;
+                        if (a >= 360)
+                        {
+                            a -= 180;
+                        }
+                        temp = ReverseCutDirection(a);
                     }
                     cubes[0].Direction = temp;
                 }
-                else 
+                else
                 {
                     if (cubes[0].Note.layer == 2)
                     {
-                        cubes[0].Direction = 0;
+                        cubes[0].Direction = 90;
                     }
                     else
                     {
-                        cubes[0].Direction = 1;
+                        cubes[0].Direction = 270;
                     }
                 }
             }
             else
             {
-                cubes[0].Direction = (int)cubes[0].Note.cutDirection;
+                var a = DirectionToDegree[(int)cubes[0].Note.cutDirection] + cubes[0].Note.angleOffset;
+                if (a >= 360)
+                {
+                    a -= 180;
+                }
+                cubes[0].Direction = a;
             }
 
             bool pattern = false;
@@ -219,12 +206,12 @@ namespace BeatmapScanner.Algorithm
             for (int i = 1; i < cubes.Count(); i++)
             {
                 if (cubes[i].Beat - cubes[i - 1].Beat <= (0.25 / 200 * bpm) && (cubes[i].Note.cutDirection == cubes[i - 1].Note.cutDirection ||
-                    cubes[i].Assumed || cubes[i - 1].Assumed || SameDirection((int)cubes[i - 1].Note.cutDirection, (int)cubes[i].Note.cutDirection))) 
+                    cubes[i].Assumed || cubes[i - 1].Assumed || IsSameDirection(cubes[i - 1].Direction, DirectionToDegree[(int)cubes[i].Note.cutDirection] + cubes[i].Note.angleOffset)))
                 {
                     if (!pattern)
                     {
                         cubes[i - 1].Head = true;
-                        if(cubes[i].Beat - cubes[i - 1].Beat < 0.26 && cubes[i].Beat - cubes[i - 1].Beat >= 0.01)
+                        if (cubes[i].Beat - cubes[i - 1].Beat < 0.26 && cubes[i].Beat - cubes[i - 1].Beat >= 0.01)
                         {
                             cubes[i - 1].Slider = true;
                         }
@@ -243,7 +230,7 @@ namespace BeatmapScanner.Algorithm
 
                 if (bo != null)
                 {
-                    cubes[i].Bomb = true; 
+                    cubes[i].Bomb = true;
                 }
 
                 if (cubes[i].Pattern && cubes[i - 1].Bomb)
@@ -251,57 +238,133 @@ namespace BeatmapScanner.Algorithm
                     cubes[i].Bomb = cubes[i - 1].Bomb;
                 }
 
-                if (cubes[i].Assumed && !cubes[i].Pattern && !cubes[i].Bomb) 
+                if (cubes[i].Assumed && !cubes[i].Pattern && !cubes[i].Bomb)
                 {
-                    cubes[i].Direction = ReverseCutDirection((int)cubes[i - 1].Note.cutDirection);
+                    cubes[i].Direction = ReverseCutDirection((int)cubes[i - 1].Direction);
                 }
                 else if (cubes[i].Assumed && cubes[i].Pattern)
                 {
                     cubes[i].Direction = cubes[i - 1].Direction;
                 }
-                else if (cubes[i].Assumed && cubes[i].Bomb) 
+                else if (cubes[i].Assumed && cubes[i].Bomb)
                 {
                     if (bo.layer == 0)
                     {
-                        cubes[i].Direction = 1;
+                        cubes[i].Direction = 270;
                     }
                     else if (bo.layer == 1)
                     {
                         if (cubes[i].Layer == 0)
                         {
-                            cubes[i].Direction = 0;
+                            cubes[i].Direction = 90;
                         }
                         else
                         {
-                            cubes[i].Direction = 1;
+                            cubes[i].Direction = 270;
                         }
                     }
                     else if (bo.layer == 2)
                     {
-                        cubes[i].Direction = 0;
+                        cubes[i].Direction = 90;
                     }
                 }
-                else 
+                else
                 {
-                    cubes[i].Direction = (int)cubes[i].Note.cutDirection;
+                    var a = DirectionToDegree[(int)cubes[i].Note.cutDirection] + cubes[i].Note.angleOffset;
+                    if (a >= 360)
+                    {
+                        a -= 180;
+                    }
+                    cubes[i].Direction = a;
                 }
             }
         }
 
-        public static int ReverseCutDirection(int direction)
+        public static double ReverseCutDirection(double direction)
         {
-            return direction switch
+            if (direction >= 180)
             {
-                0 => 1,
-                1 => 0,
-                2 => 3,
-                3 => 2,
-                4 => 7,
-                5 => 6,
-                6 => 5,
-                7 => 4,
-                _ => 8,
-            };
+                return direction - 180;
+            }
+            else
+            {
+                return direction + 180;
+            }
+        }
+
+        public static double ConvertDegreesToRadians(double degrees)
+        {
+            double radians = degrees * (Math.PI / 180f);
+            return (radians);
+        }
+
+        public static ((double x, double y) entry, (double x, double y) exit) CalculateBaseEntryExit((double x, double y) position, double angle)
+        {
+            (double, double) entry = (position.x * 0.333333 - Math.Cos(ConvertDegreesToRadians(angle)) * 0.166667 + 0.166667,
+                position.y * 0.333333 - Math.Sin(ConvertDegreesToRadians(angle)) * 0.166667 + 0.166667);
+
+            (double, double) exit = (position.x * 0.333333 + Math.Cos(ConvertDegreesToRadians(angle)) * 0.166667f + 0.166667,
+                position.y * 0.333333 + Math.Sin(ConvertDegreesToRadians(angle)) * 0.166667 + 0.166667);
+
+            return (entry, exit);
+        }
+
+        public static bool IsInLinearPath(Cube previous, Cube current, Cube next)
+        {
+            var prev = CalculateBaseEntryExit((previous.Line, previous.Layer), previous.Direction);
+            var curr = CalculateBaseEntryExit((current.Line, current.Layer), current.Direction);
+            ((double x, double y) entry, (double x, double y) exit) nxt;
+            if (IsSameDirection(previous.Direction, next.Direction))
+            {
+                nxt = CalculateBaseEntryExit((next.Line, next.Layer), previous.Direction);
+            }
+            else
+            {
+                nxt = CalculateBaseEntryExit((next.Line, next.Layer), next.Direction);
+            }
+
+            var dxc = nxt.entry.x - prev.entry.x;
+            var dyc = nxt.entry.y - prev.entry.y;
+
+            var dxl = curr.exit.x - prev.entry.x;
+            var dyl = curr.exit.y - prev.entry.y;
+
+            var cross = dxc * dyl - dyc * dxl;
+            if (cross != 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        public static void CalculateDistance(List<Cube> cubes)
+        {
+            Cube pre = cubes[1];
+            Cube pre2 = cubes[0];
+
+            cubes[0].Linear = true;
+            cubes[1].Linear = true;
+
+            for (int i = 1; i < cubes.Count(); i++)
+            {
+                if (!cubes[i].Pattern || cubes[i].Head)
+                {
+                    var prev = CalculateBaseEntryExit((pre.Line, pre.Layer), pre.Direction);
+                    var now = CalculateBaseEntryExit((cubes[i].Line, cubes[i].Layer), cubes[i].Direction);
+                    // var distance = Math.Sqrt(Math.Pow(now.exit.x - prev.entry.x, 2) + Math.Pow(now.exit.y - prev.entry.y, 2));
+
+                    if (IsInLinearPath(pre2, pre, cubes[i]))
+                    {
+                        cubes[i].Linear = true;
+                    }
+
+                    pre2 = pre;
+                    pre = cubes[i];
+                }
+            }
         }
     }
 }

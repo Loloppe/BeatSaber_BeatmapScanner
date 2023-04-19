@@ -1,6 +1,7 @@
 ﻿using BeatSaberMarkupLanguage.FloatingScreen;
 using UnityEngine;
 using HMUI;
+using System.Linq;
 
 namespace BeatmapScanner.UI
 {
@@ -29,10 +30,7 @@ namespace BeatmapScanner.UI
 			_gridViewController.transform.localScale = Vector3.one;
 			_gridViewController.transform.localEulerAngles = Vector3.zero;
 			_gridViewController.gameObject.SetActive(true);
-			if (!Settings.Instance.Enabled)
-			{
-				_floatingScreen.gameObject.SetActive(false);
-			}
+			_floatingScreen.gameObject.SetActive(false);
 		}
 
 		private void OnHandleReleased(object sender, FloatingScreenHandleEventArgs args)

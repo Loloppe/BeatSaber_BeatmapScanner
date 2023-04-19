@@ -29,7 +29,7 @@ namespace BeatmapScanner.HarmonyPatches
 		public static double Crouch { get; set; } = 0;
 		public static double Reset { get; set; } = 0;
 		public static double Bomb { get; set; } = 0;
-		public static bool V3 { get; set; } = false;
+		public static double Linear { get; set; } = 0;
 
 		#endregion
 
@@ -45,12 +45,7 @@ namespace BeatmapScanner.HarmonyPatches
 
 				if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
 				{
-					if (beatmap.beatmapSaveData.burstSliders.Any() || beatmap.beatmapSaveData.sliders.Any())
-					{
-						V3 = true;
-					}
-
-					(Diff, Tech, EBPM, Slider, Reset, Bomb, Crouch) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.beatmapSaveData.obstacles, beatmap.level.beatsPerMinute);
+					(Diff, Tech, EBPM, Slider, Reset, Bomb, Crouch, Linear) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.beatmapSaveData.obstacles, beatmap.level.beatsPerMinute);
 
 					if (hasRequirement)
 					{
@@ -126,10 +121,11 @@ namespace BeatmapScanner.HarmonyPatches
 			Crouch = 0;
 			Reset = 0;
 			Bomb = 0;
-			V3 = false;
+			Linear = 0;
 
 			if (UICreator._floatingScreen != null)
 			{
+				UICreator._floatingScreen.gameObject.SetActive(true);
 				GridViewController.Apply();
 			}
 		}
@@ -137,7 +133,7 @@ namespace BeatmapScanner.HarmonyPatches
 		public static async Task<double> GetAsyncData(string hash, string difficulty)
 		{
 			try
-            {
+			{
 				string api = "https://api.beatleader.xyz/map/modinterface/" + hash;
 
 				using HttpClient client = new();
@@ -170,8 +166,20 @@ namespace BeatmapScanner.HarmonyPatches
 				}
 			}
 			catch
-            {
+			{
 				return -1;
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(SelectLevelCategoryViewController), nameof(SelectLevelCategoryViewController.LevelFilterCategoryIconSegmentedControlDidSelectCell))]
+	public static class BSPatch2
+	{
+		static void Prefix()
+		{
+			if(UICreator._floatingScreen != null)
+            {
+				UICreator._floatingScreen.gameObject.SetActive(false);
 			}
 		}
 	}

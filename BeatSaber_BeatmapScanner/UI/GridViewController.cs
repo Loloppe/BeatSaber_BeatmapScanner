@@ -17,7 +17,7 @@ namespace BeatmapScanner.UI
 		private DiContainer _diContainer;
 #pragma warning restore IDE0052 // Remove unread private members
 
-		private readonly string[] title = { "Crouch", "Bomb / R", "V3", "Peak BPM", "Slider", "BL ⭐", "Difficulty", "Tech", "SS ⭐" };
+		private readonly string[] title = { "Linear %", "B % / R %", "Crouch", "Peak BPM", "Slider %", "BL ⭐", "Difficulty", "Tech", "SS ⭐" };
 
 		[UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;
@@ -61,78 +61,78 @@ namespace BeatmapScanner.UI
 				texts[1].text = "";
 			}
 
-			if (Settings.Instance.ShowCrouch)
+			if (Settings.Instance.ShowLinear)
 
 			{
-				GridViewController._tiles[0].rectTransform.gameObject.SetActive(true);
+				_tiles[0].rectTransform.gameObject.SetActive(true);
 			}
 			else
 			{
-				GridViewController._tiles[0].rectTransform.gameObject.SetActive(false);
+				_tiles[0].rectTransform.gameObject.SetActive(false);
 			}
 			if (Settings.Instance.ShowReset)
 			{
-				GridViewController._tiles[1].rectTransform.gameObject.SetActive(true);
+				_tiles[1].rectTransform.gameObject.SetActive(true);
 			}
 			else
 			{
-				GridViewController._tiles[1].rectTransform.gameObject.SetActive(false);
+				_tiles[1].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowV3)
+			if (Settings.Instance.ShowCrouch)
 			{
-				GridViewController._tiles[2].rectTransform.gameObject.SetActive(true);
+				_tiles[2].rectTransform.gameObject.SetActive(true);
 			}
 			else
 			{
-				GridViewController._tiles[2].rectTransform.gameObject.SetActive(false);
+				_tiles[2].rectTransform.gameObject.SetActive(false);
 			}
 			if (Settings.Instance.ShowEBPM)
 			{
-				GridViewController._tiles[3].rectTransform.gameObject.SetActive(true);
+				_tiles[3].rectTransform.gameObject.SetActive(true);
 			}
 			else
 			{
-				GridViewController._tiles[3].rectTransform.gameObject.SetActive(false);
+				_tiles[3].rectTransform.gameObject.SetActive(false);
 			}
 			if (Settings.Instance.ShowSlider)
 			{
-				GridViewController._tiles[4].rectTransform.gameObject.SetActive(true);
+				_tiles[4].rectTransform.gameObject.SetActive(true);
 			}
 			else
 			{
-				GridViewController._tiles[4].rectTransform.gameObject.SetActive(false);
+				_tiles[4].rectTransform.gameObject.SetActive(false);
 			}
 			if (Settings.Instance.ShowBL)
 			{
-				GridViewController._tiles[5].rectTransform.gameObject.SetActive(true);
+				_tiles[5].rectTransform.gameObject.SetActive(true);
 			}
 			else
 			{
-				GridViewController._tiles[5].rectTransform.gameObject.SetActive(false);
+				_tiles[5].rectTransform.gameObject.SetActive(false);
 			}
 			if (Settings.Instance.ShowDiff)
 			{
-				GridViewController._tiles[6].rectTransform.gameObject.SetActive(true);
+				_tiles[6].rectTransform.gameObject.SetActive(true);
 			}
 			else
 			{
-				GridViewController._tiles[6].rectTransform.gameObject.SetActive(false);
+				_tiles[6].rectTransform.gameObject.SetActive(false);
 			}
 			if (Settings.Instance.ShowTech)
 			{
-				GridViewController._tiles[7].rectTransform.gameObject.SetActive(true);
+				_tiles[7].rectTransform.gameObject.SetActive(true);
 			}
 			else
 			{
-				GridViewController._tiles[7].rectTransform.gameObject.SetActive(false);
+				_tiles[7].rectTransform.gameObject.SetActive(false);
 			}
 			if (Settings.Instance.ShowSS)
 			{
-				GridViewController._tiles[8].rectTransform.gameObject.SetActive(true);
+				_tiles[8].rectTransform.gameObject.SetActive(true);
 			}
 			else
 			{
-				GridViewController._tiles[8].rectTransform.gameObject.SetActive(false);
+				_tiles[8].rectTransform.gameObject.SetActive(false);
 			}
 
 			DestroyImmediate(_tile.gameObject);
@@ -158,14 +158,14 @@ namespace BeatmapScanner.UI
 
 				switch (i)
 				{
-					case 0: // Crouch
-						if (Crouch == -1)
+					case 0: // Linear
+						if (Linear == -1)
 						{
 							texts[1].text = "X";
 						}
 						else
 						{
-							texts[1].text = Crouch.ToString();
+							texts[1].text = Linear.ToString();
 						}
 
 						continue;
@@ -188,8 +188,15 @@ namespace BeatmapScanner.UI
 						}
 
 						continue;
-					case 2: // V3
-						texts[1].text = V3.ToString();
+					case 2: // Crouch
+						if (Crouch == -1)
+						{
+							texts[1].text = "X";
+						}
+						else
+						{
+							texts[1].text = Crouch.ToString();
+						}
 
 						continue;
 					case 3: // Peak BPM

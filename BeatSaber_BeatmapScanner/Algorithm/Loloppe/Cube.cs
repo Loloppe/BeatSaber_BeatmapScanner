@@ -15,7 +15,8 @@ namespace BeatmapScanner.Algorithm.Loloppe
         public bool Head { get; set; } = false;
         public bool Pattern { get; set; } = false;
         public bool Slider { get; set; } = false;
-        
+        public bool Linear { get; set; } = false;
+
 
         public Cube(ColorNoteData note)
         {

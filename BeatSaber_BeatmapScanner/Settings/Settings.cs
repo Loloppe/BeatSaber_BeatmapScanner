@@ -22,9 +22,9 @@ namespace BeatmapScanner
         public virtual bool ShowEBPM { get; set; } = true;
         public virtual bool ShowSlider { get; set; } = true;
         public virtual bool ShowBL { get; set; } = true;
-        public virtual bool ShowCrouch { get; set; } = true;
+        public virtual bool ShowLinear { get; set; } = true;
         public virtual bool ShowReset { get; set; } = true;
-        public virtual bool ShowV3 { get; set; } = true;
+        public virtual bool ShowCrouch { get; set; } = true;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color TitleColor { get; set; } = Color.white;
         [UseConverter(typeof(ColorConverter))]
@@ -69,7 +69,7 @@ namespace BeatmapScanner
                 if (Enabled)
                 {
                     UICreator._floatingScreen.ShowHandle = ShowHandle;
-                    if(ShowCrouch)
+                    if(ShowLinear)
                     {
                         GridViewController._tiles[0].rectTransform.gameObject.SetActive(true);
                     }
@@ -85,7 +85,7 @@ namespace BeatmapScanner
                     {
                         GridViewController._tiles[1].rectTransform.gameObject.SetActive(false);
                     }
-                    if (ShowV3)
+                    if (ShowCrouch)
                     {
                         GridViewController._tiles[2].rectTransform.gameObject.SetActive(true);
                     }

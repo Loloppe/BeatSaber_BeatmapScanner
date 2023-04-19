@@ -30,17 +30,18 @@ namespace BeatmapScanner.Algorithm
 
         #region Analyzer
 
-        public static (double diff, double tech, double ebpm, int slider, int reset, int bomb, int crouch) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, List<BeatmapSaveData.ObstacleData> obstacles, float bpm)
+        public static (double diff, double tech, double ebpm, double slider, double reset, double bomb, int crouch, double linear) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, List<BeatmapSaveData.ObstacleData> obstacles, float bpm)
         {
             #region Prep
 
             var pass = 0d;
             var tech = 0d;
             var ebpm = 0d;
-            var reset = 0;
-            var bomb = 0;
-            var slider = 0;
+            var reset = 0d;
+            var bomb = 0d;
+            var slider = 0d;
             var crouch = 0;
+            var linear = 0d;
 
             List<Cube> cube = new();
             List<SwingData> data = new();
@@ -64,6 +65,7 @@ namespace BeatmapScanner.Algorithm
                 Helper.FixPatternHead(red);
                 Helper.FindReset(red);
                 ebpm = GetIntensity(red, bpm);
+                Helper.CalculateDistance(red);
             }
 
             if (blue.Count() > 0)
@@ -72,6 +74,7 @@ namespace BeatmapScanner.Algorithm
                 Helper.FixPatternHead(blue);
                 Helper.FindReset(blue);
                 ebpm = Math.Max(GetIntensity(blue, bpm), ebpm);
+                Helper.CalculateDistance(blue);
             }
 
             (pass, tech, data) = Method.UseLackWizAlgorithm(red.Select(c => c.Note).ToList(), blue.Select(c => c.Note).ToList(), bpm);
@@ -80,25 +83,10 @@ namespace BeatmapScanner.Algorithm
 
             #region Calculator
 
-            foreach(var c in cube)
-            {
-                if((c.Pattern && c.Head) || !c.Pattern)
-                {
-                    if (c.Reset && !c.Bomb)
-                    {
-                        reset++;
-                    }
-                    else if (c.Reset)
-                    {
-                        bomb++;
-                    }
-                }
-                
-                if(c.Head && c.Slider)
-                {
-                    slider++;
-                }
-            }
+            reset = Math.Round((double)cube.Where(c => c.Reset && !c.Bomb && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
+            bomb = Math.Round((double)cube.Where(c => c.Reset && c.Bomb && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
+            slider = Math.Round((double)cube.Where(c => c.Slider && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
+            linear = Math.Round((double)cube.Where(c => c.Linear && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
 
             // Find group of walls and list them together
             List<List<BeatmapSaveData.ObstacleData>> wallsGroup = new()
@@ -233,7 +221,7 @@ namespace BeatmapScanner.Algorithm
 
             #endregion
 
-            return (pass, tech, ebpm, slider, reset, bomb, crouch);
+            return (pass, tech, ebpm, slider, reset, bomb, crouch, linear);
         }
 
         #endregion
