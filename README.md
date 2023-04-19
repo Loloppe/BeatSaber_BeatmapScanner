@@ -1,14 +1,14 @@
 # BeatSaber_BeatmapScanner
 This plugin display new values on a mobile UI:
-- Difficulty algorithm (LackWiz)
-- Tech algorithm (LackWiz)
+- Difficulty to pass (LackWiz)
+- Tech (LackWiz)
 - ScoreSaber star rating
 - BeatLeader star rating
 - Peak BPM (one-hand)
-- Slider count
-- Crouch wall count
-- Bomb Reset and Reset count (Can be slightly misleading since tech can be detected as reset. Example: 135 degree wrist roll)
-- If the map got any V3 element (arc and/or chain)  
+- Slider %
+- Linear %
+- Bomb Reset and Reset count (Can be slightly misleading since tech can be detected as reset. Example: 135+ degree wrist roll)
+- Crouch wall count 
   
 Configuration include:
 - Turning on/off the UI and the handle
