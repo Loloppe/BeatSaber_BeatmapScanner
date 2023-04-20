@@ -5,9 +5,9 @@ This plugin display new values on a mobile UI:
 - ScoreSaber star rating
 - BeatLeader star rating
 - Peak BPM (one-hand)
-- Slider %
-- Linear %
-- Bomb Reset and Reset count (Can be slightly misleading since tech can be detected as reset. Example: 135+ degree wrist roll)
+- Slider count or %
+- Linear count or %
+- Bomb Reset and Reset count or % (Can be slightly misleading since tech can be detected as reset. Example: 135+ degree wrist roll)
 - Crouch wall count 
   
 Configuration include:
@@ -15,7 +15,8 @@ Configuration include:
 - Turning on/off specific UI element
 - Build-in ImageCoverExpander
 - How many notes for the EBPM
-- Color steps + filters  
+- Color steps + filters
+- % toggle
   
 To do:
 - Port the plugin to ChroMapper as an overlay
