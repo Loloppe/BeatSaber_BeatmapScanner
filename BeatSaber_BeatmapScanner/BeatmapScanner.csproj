@@ -153,7 +153,6 @@
     <Compile Include="Utils\ColorConverter.cs" />
     <Compile Include="Utils\FloatConverter.cs" />
     <Compile Include="Utils\Helper.cs" />
-    <Compile Include="Utils\MathUtil.cs" />
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="HarmonyPatches\BSPatch.cs" />
     <Compile Include="Plugin.cs" />

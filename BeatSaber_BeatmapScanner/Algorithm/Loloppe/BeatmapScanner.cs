@@ -16,16 +16,6 @@ namespace BeatmapScanner.Algorithm
     {
         #region Algorithm value
 
-        public static float MaxNerfMS = 500f;
-        public static float MinNerfMS = 250f;
-        public static float NormalizedMax = 5f;   
-        public static float NormalizedMin = 0f;
-
-        public static float MinNote = 80f;
-
-        public static float Speed = 0.00125f;
-        public static float Reset = 1.1f;
-
         #endregion
 
         #region Analyzer
@@ -64,7 +54,7 @@ namespace BeatmapScanner.Algorithm
                 Helper.FindNoteDirection(red, bombs, bpm);
                 Helper.FixPatternHead(red);
                 Helper.FindReset(red);
-                ebpm = GetIntensity(red, bpm);
+                ebpm = GetEBPM(red, bpm);
                 Helper.CalculateDistance(red);
             }
 
@@ -73,7 +63,7 @@ namespace BeatmapScanner.Algorithm
                 Helper.FindNoteDirection(blue, bombs, bpm);
                 Helper.FixPatternHead(blue);
                 Helper.FindReset(blue);
-                ebpm = Math.Max(GetIntensity(blue, bpm), ebpm);
+                ebpm = Math.Max(GetEBPM(blue, bpm), ebpm);
                 Helper.CalculateDistance(blue);
             }
 
@@ -204,43 +194,6 @@ namespace BeatmapScanner.Algorithm
                 crouch += count;
             }
 
-            if (data.Count() > 0)
-            {
-                var temp = 1 - cube.Where(c => c.Reset).Count() * 1.25 / cube.Count();
-                if(temp < 0)
-                {
-                    temp = 0;
-                }
-                tech *= temp;
-                if (cube.Count() > 0)
-                {
-                    var nerf = 1d; 
-
-                    for (int i = 1; i < cube.Count(); i++) 
-                    {
-                        if (!cube[i].Pattern || cube[i].Head)
-                        {
-                            var timeInMS = MathUtil.ConvertBeatToMS(cube[i].Beat - cube[i - 1].Beat, bpm);
-
-                            if (timeInMS > MinNerfMS)
-                            {
-                                var normalized = MathUtil.NormalizeVariable(timeInMS);
-                                nerf += MathUtil.ReduceWithExponentialCurve(2, 0, 1, normalized);
-                                continue;
-                            }
-                        }
-
-                        nerf++;
-                    }
-                    tech *= nerf / cube.Where(c => !c.Pattern || c.Head).Count();
-                }
-                tech -= 0.5;
-                if (tech < 0)
-                {
-                    tech = 0;
-                }
-            }
-
             #endregion
 
             return (pass, tech, ebpm, slider, reset, bomb, crouch, linear);
@@ -248,14 +201,12 @@ namespace BeatmapScanner.Algorithm
 
         #endregion
 
-        #region Intensity
+        #region EBPM
 
-        public static float GetIntensity(List<Cube> cubes, float bpm)
+        public static float GetEBPM(List<Cube> cubes, float bpm)
         {
             #region Prep
 
-            var intensity = 1f;
-            var speed = (Speed * bpm);
             var previous = 0f;
             var ebpm = 0f;
             var pbpm = 0f;
@@ -301,21 +252,6 @@ namespace BeatmapScanner.Algorithm
                     previous = (500 / time);
                 }
 
-                if (cubes[i].Reset || cubes[i].Head)
-                {
-                    if(time != 0f)
-                    {
-                        intensity += (speed / time) * Reset;
-                    }
-                }
-                else
-                {
-                    if (time != 0f)
-                    {
-                        intensity += speed / time;
-                    }
-                }
-
                 prev = cubes[i].Beat;
             }
 
@@ -326,7 +262,6 @@ namespace BeatmapScanner.Algorithm
                 ebpm = pbpm;
             }
             ebpm *= bpm / 1000;
-            intensity /= cubes.Where(c => !c.Pattern || c.Head).Count();
 
             return ebpm;
         }
