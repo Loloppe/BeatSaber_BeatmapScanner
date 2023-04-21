@@ -208,10 +208,9 @@ namespace BeatmapScanner.Algorithm
             #region Prep
 
             var previous = 0f;
-            var ebpm = 0f;
-            var pbpm = 0f;
+            var effectiveBPM = 10f;
+            var peakBPM = 10f;
             var count = 0;
-            var prev = cubes[0].Beat;
 
             #endregion
 
@@ -224,46 +223,42 @@ namespace BeatmapScanner.Algorithm
                     continue;
                 }
 
-                var time = (cubes[i].Beat - prev);
+                var duration = (cubes[i].Beat - cubes[i - 1].Beat);
 
-                if(time > 0)
+                if(duration > 0)
                 {
-                    if(Settings.Instance.EBPM > 1)
+                    if (previous >= duration - 0.01 && previous <= duration + 0.01 && duration < effectiveBPM)
                     {
-                        if (previous == (500 / time) && (500 / time) > ebpm)
+                        count++;
+                        if (count >= Settings.Instance.EBPM)
                         {
-                            count++;
-                            if (count == Settings.Instance.EBPM - 1)
-                            {
-                                ebpm = previous;
-                            }
+                            effectiveBPM = duration;
                         }
-                        else
-                        {
-                            count = 0;
-                        }
-                    }    
-
-                    if ((500 / time) > pbpm)
+                    }
+                    else
                     {
-                        pbpm = previous;
+                        count = 0;
                     }
 
-                    previous = (500 / time);
-                }
+                    if (duration < peakBPM)
+                    {
+                        peakBPM = duration;
+                    }
 
-                prev = cubes[i].Beat;
+                    previous = duration;
+                }
             }
 
             #endregion
 
-            if(ebpm == 0)
+            if (effectiveBPM == 10)
             {
-                ebpm = pbpm;
+                return bpm;
             }
-            ebpm *= bpm / 1000;
 
-            return ebpm;
+            effectiveBPM = 0.5f / effectiveBPM * bpm;
+
+            return effectiveBPM;
         }
 
         #endregion
