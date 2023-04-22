@@ -41,9 +41,9 @@ namespace BeatmapScanner
         public virtual float DColorA { get; set; } = 5f;
         public virtual float DColorB { get; set; } = 7f;
         public virtual float DColorC { get; set; } = 9f;
-        public virtual float TColorA { get; set; } = 2f;
-        public virtual float TColorB { get; set; } = 3f;
-        public virtual float TColorC { get; set; } = 4f;
+        public virtual float TColorA { get; set; } = 5f;
+        public virtual float TColorB { get; set; } = 7f;
+        public virtual float TColorC { get; set; } = 9f;
         public virtual Vector3 UIPosition { get; set; } = new(2f, 2.9f, 3.7f);
         public virtual Quaternion UIRotation { get; set; } = Quaternion.Euler(new Vector3(350, 28, 360));
 

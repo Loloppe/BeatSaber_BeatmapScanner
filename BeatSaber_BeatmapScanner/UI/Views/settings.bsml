@@ -46,9 +46,9 @@
 			<text text='Tech color steps' align='Center'/>
 		</horizontal>
 		<slider-setting apply-on-change="true" value="TColorA" text="Mid value"
-						min="0" max="2" increment="0.05"/>
+						min="0" max="20" increment="0.5"/>
 		<slider-setting apply-on-change="true" value="TColorB" text="High value"
-						min="0" max="2" increment="0.05"/>
+						min="0" max="20" increment="0.5"/>
 		<slider-setting apply-on-change="true" value="TColorC" text="Extreme value"
-						min="0" max="2" increment="0.05"/>
+						min="0" max="20" increment="0.5"/>
 	</settings-container>

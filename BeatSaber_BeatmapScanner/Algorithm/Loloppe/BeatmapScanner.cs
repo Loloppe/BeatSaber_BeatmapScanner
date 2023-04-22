@@ -51,7 +51,7 @@ namespace BeatmapScanner.Algorithm
 
             if (red.Count() > 0)
             {
-                Helper.FindNoteDirection(red, bombs, bpm);
+                Helper.FindNoteDirection(red, bombs);
                 Helper.FixPatternHead(red);
                 Helper.FindReset(red);
                 ebpm = GetEBPM(red, bpm);
@@ -60,14 +60,14 @@ namespace BeatmapScanner.Algorithm
 
             if (blue.Count() > 0)
             {
-                Helper.FindNoteDirection(blue, bombs, bpm);
+                Helper.FindNoteDirection(blue, bombs);
                 Helper.FixPatternHead(blue);
                 Helper.FindReset(blue);
                 ebpm = Math.Max(GetEBPM(blue, bpm), ebpm);
                 Helper.CalculateDistance(blue);
             }
 
-            (pass, tech, data) = Method.UseLackWizAlgorithm(red.Select(c => c.Note).ToList(), blue.Select(c => c.Note).ToList(), bpm);
+            (pass, tech, data) = Method.UseLackWizAlgorithm(red, blue, bpm);
 
             #endregion
 
