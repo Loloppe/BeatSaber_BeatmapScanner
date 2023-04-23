@@ -14,9 +14,11 @@ namespace BeatmapScanner.Algorithm.LackWiz
 
         public static (double diff, double tech, List<SwingData> data) UseLackWizAlgorithm(List<Cube> red, List<Cube> blue, double bpm)
         {
-            double diff = 0;
+            double leftDiff = 0;
+            double rightDiff = 0;
             double tech = 0;
-            double stamina = 0;
+            double leftStamina = 0;
+            double rightStamina = 0;
             List<SwingData> redSwingData;
             List<SwingData> blueSwingData;
             List<List<SwingData>> redPatternData = new List<List<SwingData>>();
@@ -37,8 +39,8 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 if (redSwingData != null)
                 {
                     SwingCurveCalc(redSwingData, false);
-                    diff = DiffToPass(redSwingData, bpm);
-                    stamina = StaminaCalc(redSwingData);
+                    leftDiff = DiffToPass(redSwingData, bpm);
+                    leftStamina = StaminaCalc(redSwingData);
                 }
                 data.AddRange(redSwingData);
             }
@@ -57,8 +59,8 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 if (blueSwingData != null)
                 {
                     SwingCurveCalc(blueSwingData, true);
-                    diff = Math.Max(DiffToPass(blueSwingData, bpm), diff);
-                    stamina = Math.Max(StaminaCalc(blueSwingData), stamina);
+                    rightDiff = DiffToPass(blueSwingData, bpm);
+                    rightStamina = StaminaCalc(blueSwingData);
                 }
                 data.AddRange(blueSwingData);
             }
@@ -70,8 +72,8 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 tech = test.Skip((int)(data.Count() * 0.25)).Average();
             }
 
-            var balanced_tech = tech * (-1 * Math.Pow(1.4, -diff) + 1) * 10;
-            var balanced_pass = diff * stamina;
+            var balanced_tech = tech * (-1 * Math.Pow(1.4, -Math.Max(leftDiff, rightDiff)) + 1) * 10;
+            var balanced_pass = Math.Max(leftDiff * leftStamina, rightDiff * rightStamina);
 
             return (balanced_pass, balanced_tech, data);
         }
@@ -143,12 +145,17 @@ namespace BeatmapScanner.Algorithm.LackWiz
                 var currentAngle = CutDirectionIndex[(int)cubes[i].Note.cutDirection] + cubes[i].Note.angleOffset;
                 (double x, double y) currentPosition = (cubes[i].Note.line, cubes[i].Note.layer);
 
-                if (currentBeat - previousBeat < 0.245 && (currentAngle == previousAngle || (int)cubes[i].Note.cutDirection == 8
+                if ((int)cubes[i].Note.cutDirection == 8)
+                {
+                    currentAngle = Helper.ReverseCutDirection(previousAngle);
+                }
+
+                if (currentBeat - previousBeat < 0.125 && (currentAngle == previousAngle || (int)cubes[i].Note.cutDirection == 8
                     || (int)cubes[i - 1].Note.cutDirection == 8))
                 {
                     pattern = true;
                 }
-                else if (currentBeat - previousBeat < 0.255 && Helper.IsSameDirection(previousAngle, currentAngle))
+                else if (currentBeat - previousBeat < 0.5 && Helper.IsSameDirection(previousAngle, currentAngle))
                 {
                     pattern = true;
                 }
