@@ -17,7 +17,7 @@ namespace BeatmapScanner.UI
 		private DiContainer _diContainer;
 #pragma warning restore IDE0052 // Remove unread private members
 
-		private readonly string[] title = { "Linear", "B / R", "Crouch", "Peak BPM", "Slider", "BL ⭐", "Difficulty", "Tech", "SS ⭐" };
+		private readonly string[] title = { "Linear", "Crouch", "V3", "Pattern", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐" };
 
 		[UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;
@@ -70,7 +70,7 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[0].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowReset)
+			if (Settings.Instance.ShowCrouch)
 			{
 				_tiles[1].rectTransform.gameObject.SetActive(true);
 			}
@@ -78,7 +78,7 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[1].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowCrouch)
+			if (Settings.Instance.ShowV3)
 			{
 				_tiles[2].rectTransform.gameObject.SetActive(true);
 			}
@@ -86,7 +86,7 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[2].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowEBPM)
+			if (Settings.Instance.ShowPattern)
 			{
 				_tiles[3].rectTransform.gameObject.SetActive(true);
 			}
@@ -94,7 +94,7 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[3].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowSlider)
+			if (Settings.Instance.ShowEBPM)
 			{
 				_tiles[4].rectTransform.gameObject.SetActive(true);
 			}
@@ -110,7 +110,7 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[5].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowDiff)
+			if (Settings.Instance.ShowPass)
 			{
 				_tiles[6].rectTransform.gameObject.SetActive(true);
 			}
@@ -159,55 +159,48 @@ namespace BeatmapScanner.UI
 				switch (i)
 				{
 					case 0: // Linear
-						if (Linear == -1)
+						if (Linear == 0)
 						{
 							texts[1].text = "X";
 						}
 						else
 						{
-							texts[1].text = Linear.ToString();
+							texts[1].text = Math.Round(Linear, 2).ToString();
 						}
 
 						continue;
-					case 1: // Reset
-						if (Reset == -1 && Bomb == -1)
-						{
-							texts[1].text = "X";
-						}
-						else if(Reset == -1)
-						{
-							texts[1].text = Bomb.ToString() + " / X";
-						}
-						else if (Bomb == -1)
-						{
-							texts[1].text = "X / " + Reset.ToString();
-						}
-						else
+					case 1: // Crouch
+                        if (Crouch == 0)
                         {
-							texts[1].text = Bomb.ToString() + " / " + Reset.ToString();
-						}
+                            texts[1].text = "X";
+                        }
+                        else
+                        {
+                            texts[1].text = Crouch.ToString();
+                        }
 
 						continue;
-					case 2: // Crouch
-						if (Crouch == -1)
-						{
-							texts[1].text = "X";
-						}
-						else
-						{
-							texts[1].text = Crouch.ToString();
-						}
+					case 2: // V3
+                        if (V3 == 1)
+                        {
+                            texts[1].text = "O";
+                        }
+                        else
+                        {
+                            texts[1].text = "X";
+                        }
 
+                        continue;
+					case 3: // Pattern
+                        texts[1].text = Math.Round(Pattern, 2).ToString();
+                        
 						continue;
-					case 3: // Peak BPM
-						texts[1].text = Math.Round(EBPM).ToString();
-						continue;
-					case 4: // Slider
-						texts[1].text = Slider.ToString();
+					case 4: // EBPM
+                        texts[1].text = Math.Round(EBPM).ToString();
 
-						continue;
+                        continue;
 					case 5: // BL *
-						if (BL == -1)
+						if (BL == 0)
 						{
 							texts[1].text = "X";
 						}
@@ -234,24 +227,24 @@ namespace BeatmapScanner.UI
 						}
 						continue;
 					case 6: // Diff
-						if(Diff == -1)
+						if(Pass == 0)
                         {
 							texts[1].text = "X";
 						}
 						else
                         {
-							texts[1].text = Math.Round(Diff, 2).ToString();
+							texts[1].text = Math.Round(Pass, 2).ToString();
 						}
 
-						if (Diff >= Settings.Instance.DColorC)
+						if (Pass >= Settings.Instance.DColorC)
 						{
 							texts[1].color = Settings.Instance.D;
 						}
-						else if (Diff >= Settings.Instance.DColorB)
+						else if (Pass >= Settings.Instance.DColorB)
 						{
 							texts[1].color = Settings.Instance.C;
 						}
-						else if (Diff >= Settings.Instance.DColorA)
+						else if (Pass >= Settings.Instance.DColorA)
 						{
 							texts[1].color = Settings.Instance.B;
 						}
@@ -261,7 +254,7 @@ namespace BeatmapScanner.UI
 						}
 						continue;
 					case 7: // Tech
-						if(Tech == -1)
+						if(Tech == 0)
                         {
 							texts[1].text = "X";
 						}
@@ -288,7 +281,7 @@ namespace BeatmapScanner.UI
 						}
 						continue;
 					case 8: // SS *
-						if (SS == -1)
+						if (SS == 0)
 						{
 							texts[1].text = "X";
 						}

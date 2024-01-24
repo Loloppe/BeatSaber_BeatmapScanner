@@ -20,20 +20,19 @@ namespace BeatmapScanner.HarmonyPatches
 	{
 		#region Output
 
-		public static double Diff { get; set; } = 0;
+		public static double Pass { get; set; } = 0;
 		public static double Tech { get; set; } = 0;
-		public static double EBPM { get; set; } = 0;
-		public static double SS { get; set; } = 0;
-		public static double BL { get; set; } = 0;
-		public static double Slider { get; set; } = 0;
-		public static double Crouch { get; set; } = 0;
-		public static double Reset { get; set; } = 0;
-		public static double Bomb { get; set; } = 0;
 		public static double Linear { get; set; } = 0;
+		public static double Pattern { get; set; } = 0;
+        public static double Crouch { get; set; } = 0;
+        public static double EBPM { get; set; } = 0;
+        public static double SS { get; set; } = 0;
+        public static double BL { get; set; } = 0;
+        public static double V3 { get; set; } = 0;
 
-		#endregion
+        #endregion
 
-		static async void Postfix(IDifficultyBeatmap ____selectedDifficultyBeatmap, IBeatmapLevel ____level)
+        static async void Postfix(IDifficultyBeatmap ____selectedDifficultyBeatmap, IBeatmapLevel ____level)
 		{
 			if (Settings.Instance.Enabled)
 			{
@@ -43,22 +42,21 @@ namespace BeatmapScanner.HarmonyPatches
 					.additionalDifficultyData?
 					._requirements?.Any(x => x == "Noodle Extensions" || x == "Mapping Extensions") == true;
 
-				if (____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
+				if (!hasRequirement && ____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
 				{
-					(Diff, Tech, EBPM, Slider, Reset, Bomb, Crouch, Linear) = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.bombNotes, beatmap.beatmapSaveData.obstacles, beatmap.level.beatsPerMinute);
+                    var data = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.burstSliders, beatmap.beatmapSaveData.bombNotes, beatmap.beatmapSaveData.obstacles, beatmap.level.beatsPerMinute, ____selectedDifficultyBeatmap.noteJumpMovementSpeed);
+					Pass = data[0];
+					Tech = data[1] * 10;
+					Linear = data[3];
+                    Pattern = data[4];
+					Crouch = data[5];
+                    EBPM = data[6];
 
-					if (hasRequirement)
-					{
-						Diff = -1;
-						Tech = -1;
-						Reset = -1;
-						Bomb = -1;
-						Crouch = -1;
-					}
+					if(beatmap.beatmapSaveData.burstSliders.Count > 0 || beatmap.beatmapSaveData.sliders.Count > 0) V3 = 1;
 
-					if (!SongDetailsUtil.IsAvailable)
+                    if (!SongDetailsUtil.IsAvailable)
 					{
-						SS = -1;
+						SS = 0;
 					}
 					else if (SongDetailsUtil.songDetails != null)
 					{
@@ -68,7 +66,7 @@ namespace BeatmapScanner.HarmonyPatches
 
 							if (ch != SongDetailsCache.Structs.MapCharacteristic.Standard)
 							{
-								SS = -1;
+								SS = 0;
 							}
 							else
 							{
@@ -76,17 +74,17 @@ namespace BeatmapScanner.HarmonyPatches
 								BL = Math.Round(await GetAsyncData(mh, beatmap.difficulty.ToString()), 2);
 								if (BL == 0)
 								{
-									BL = -1;
+									BL = 0;
 								}
 
 								if (mh == null || !SongDetailsUtil.songDetails.instance.songs.FindByHash(mh, out var song) || !song.GetDifficulty(
 										out var diff, (SongDetailsCache.Structs.MapDifficulty)____selectedDifficultyBeatmap.difficulty, ch))
 								{
-									SS = -1;
+									SS = 0;
 								}
 								else if (!diff.ranked)
 								{
-									SS = -1;
+									SS = 0;
 								}
 								else
 								{
@@ -105,23 +103,34 @@ namespace BeatmapScanner.HarmonyPatches
 						);
 					}
 				}
+				else
+				{
+                    Pass = 0;
+                    Tech = 0;
+                    Linear = 0;
+                    Pattern = 0;
+                    Crouch = 0;
+                    EBPM = 0;
+					SS = 0;
+					BL = 0;
+					V3 = 0;
+                }
 
-				GridViewController.Apply();
+                GridViewController.Apply();
 			}
 		}
 
 		public static void ResetValues()
 		{
-			Diff = 0;
+			Pass = 0;
 			Tech = 0;
+			Linear = 0;
+			Pattern = 0;
+			Crouch = 0;
 			EBPM = 0;
 			SS = 0;
 			BL = 0;
-			Slider = 0;
-			Crouch = 0;
-			Reset = 0;
-			Bomb = 0;
-			Linear = 0;
+			V3 = 0;
 
 			if (UICreator._floatingScreen != null)
 			{
@@ -153,21 +162,21 @@ namespace BeatmapScanner.HarmonyPatches
 							}
 							else
 							{
-								return -1;
+								return 0;
 							}
 						}
 					}
 
-					return -1;
+					return 0;
 				}
 				else
 				{
-					return -1;
+					return 0;
 				}
 			}
 			catch
 			{
-				return -1;
+				return 0;
 			}
 		}
 	}

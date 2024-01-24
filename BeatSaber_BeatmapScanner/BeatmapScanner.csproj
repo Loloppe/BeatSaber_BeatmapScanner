@@ -48,7 +48,7 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Main">
+    <Reference Include="Main" Publicize="true">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Main.dll</HintPath>
       <Private>False</Private>
     </Reference>
@@ -138,11 +138,26 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Algorithm\LackWiz\MathWiz.cs" />
-    <Compile Include="Algorithm\Loloppe\BeatmapScanner.cs" />
-    <Compile Include="Algorithm\Loloppe\Cube.cs" />
-    <Compile Include="Algorithm\LackWiz\Method.cs" />
-    <Compile Include="Algorithm\LackWiz\SwingData.cs" />
+    <Compile Include="Analyzer\Algorithm\Analyze.cs" />
+    <Compile Include="Analyzer\Algorithm\DiffToPass.cs" />
+    <Compile Include="Analyzer\Algorithm\FlowDetector.cs" />
+    <Compile Include="Analyzer\Algorithm\Linear.cs" />
+    <Compile Include="Analyzer\Algorithm\ParityPredictor.cs" />
+    <Compile Include="Analyzer\Algorithm\PatternSplitter.cs" />
+    <Compile Include="Analyzer\Algorithm\SwingCurve.cs" />
+    <Compile Include="Analyzer\Algorithm\SwingProcesser.cs" />
+    <Compile Include="Analyzer\Data\Cube.cs" />
+    <Compile Include="Analyzer\Data\Ratings.cs" />
+    <Compile Include="Analyzer\Data\SwingData.cs" />
+    <Compile Include="Analyzer\Helper\CalculateBaseEntryExit.cs" />
+    <Compile Include="Analyzer\Helper\Curve.cs" />
+    <Compile Include="Analyzer\Helper\FindAngleViaPosition.cs" />
+    <Compile Include="Analyzer\Helper\HandlePatternOrdering.cs" />
+    <Compile Include="Analyzer\Helper\Helper.cs" />
+    <Compile Include="Analyzer\Helper\IsSameDirection.cs" />
+    <Compile Include="Analyzer\Helper\IsSlider.cs" />
+    <Compile Include="Analyzer\Helper\SwingAngleStrain.cs" />
+    <Compile Include="Analyzer\BeatmapScanner.cs" />
     <Compile Include="HarmonyPatches\ICEPatch.cs" />
     <Compile Include="HarmonyPatches\UIPatch.cs" />
     <Compile Include="Installers\MenuInstaller.cs" />
@@ -152,7 +167,6 @@
     <Compile Include="Utils\BLStruct.cs" />
     <Compile Include="Utils\ColorConverter.cs" />
     <Compile Include="Utils\FloatConverter.cs" />
-    <Compile Include="Utils\Helper.cs" />
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="HarmonyPatches\BSPatch.cs" />
     <Compile Include="Plugin.cs" />
@@ -165,6 +179,11 @@
   <ItemGroup>
     <PackageReference Include="BeatSaberModdingTools.Tasks">
       <Version>2.0.0-beta1</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild">
+      <Version>0.4.1</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

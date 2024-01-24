@@ -3,9 +3,9 @@
   "id": "BeatmapScanner",
   "name": "BeatmapScanner",
   "author": "Loloppe",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "description": "Analyze the difficulty of a beatmap",
-  "gameVersion": "1.29.1",
+  "gameVersion": "1.34.2",
   "dependsOn": {
     "BSIPA": "^4.2.0"
   }

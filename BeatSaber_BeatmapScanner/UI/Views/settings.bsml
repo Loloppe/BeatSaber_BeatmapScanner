@@ -5,23 +5,17 @@
 		<slider-setting apply-on-change="true" value="EBPM" text="How many notes to consider? (EBPM)"
 						min="1" max="10" increment="1"/>
 		<horizontal>
-			<text text='Show % instead' align='Center'/>
-		</horizontal>
-		<checkbox-setting apply-on-change="true" value="LinearPercent" text="Linear"/>
-		<checkbox-setting apply-on-change="true" value="SliderPercent" text="Slider"/>
-		<checkbox-setting apply-on-change="true" value="ResetPercent" text="Reset"/>
-		<horizontal>
 			<text text='Elements' align='Center'/>
 		</horizontal>
-		<checkbox-setting apply-on-change="true" value="ShowDiff" text="Show Difficulty"/>
+		<checkbox-setting apply-on-change="true" value="ShowPass" text="Show Pass"/>
 		<checkbox-setting apply-on-change="true" value="ShowTech" text="Show Tech"/>
 		<checkbox-setting apply-on-change="true" value="ShowSS" text="Show SS *"/>
+		<checkbox-setting apply-on-change="true" value="ShowPattern" text="Show Pattern"/>
 		<checkbox-setting apply-on-change="true" value="ShowEBPM" text="Show EBPM"/>
-		<checkbox-setting apply-on-change="true" value="ShowSlider" text="Show Slider"/>
 		<checkbox-setting apply-on-change="true" value="ShowBL" text="Show BL *"/>
 		<checkbox-setting apply-on-change="true" value="ShowLinear" text="Show Linear"/>
-		<checkbox-setting apply-on-change="true" value="ShowReset" text="Show Reset"/>
 		<checkbox-setting apply-on-change="true" value="ShowCrouch" text="Show Crouch"/>
+		<checkbox-setting apply-on-change="true" value="ShowV3" text="Show V3"/>
 		<horizontal>
 			<text text='Colors' align='Center'/>
 		</horizontal>
@@ -34,7 +28,7 @@
 		<color-setting text='High value' value='C' apply-on-change='true' bind-value='true' />
 		<color-setting text='Extreme value' value='D' apply-on-change='true' bind-value='true' />
 		<horizontal>
-			<text text='Difficulty color steps' align='Center'/>
+			<text text='Pass color steps' align='Center'/>
 		</horizontal>
 		<slider-setting apply-on-change="true" value="DColorA" text="Mid value"
 						min="0" max="20" increment="0.5"/>

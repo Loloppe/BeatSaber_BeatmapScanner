@@ -1,14 +1,10 @@
-﻿#region Import
-
-using static BeatmapSaveDataVersion3.BeatmapSaveData;
-using BeatmapScanner.Algorithm.LackWiz;
-using BeatmapScanner.Algorithm.Loloppe;
-using System.Collections.Generic;
+﻿using Analyzer.BeatmapScanner.Algorithm;
+using Analyzer.BeatmapScanner.Data;
 using BeatmapSaveDataVersion3;
-using System.Linq;
 using System;
-
-#endregion
+using System.Collections.Generic;
+using System.Linq;
+using static BeatmapSaveDataVersion3.BeatmapSaveData;
 
 namespace BeatmapScanner.Algorithm
 {
@@ -20,101 +16,54 @@ namespace BeatmapScanner.Algorithm
 
         #region Analyzer
 
-        public static (double diff, double tech, double ebpm, double slider, double reset, double bomb, int crouch, double linear) Analyzer(List<ColorNoteData> notes, List<BombNoteData> bombs, List<BeatmapSaveData.ObstacleData> obstacles, float bpm)
+        public static List<double> Analyzer(List<ColorNoteData> notes, List<BurstSliderData> chains, List<BombNoteData> bombs, List<BeatmapSaveData.ObstacleData> walls, float bpm, float njs)
         {
-            #region Prep
+            List<double> value = new();
+            List<Cube> cubes = new();
 
-            var pass = 0d;
-            var tech = 0d;
-            var ebpm = 0d;
-            var reset = 0d;
-            var bomb = 0d;
-            var slider = 0d;
-            var crouch = 0;
-            var linear = 0d;
-
-            List<Cube> cube = new();
-            List<SwingData> data = new();
-
-            foreach(var note in notes)
+            foreach (var note in notes)
             {
-                cube.Add(new Cube(note));
+                cubes.Add(new Cube(note));
             }
 
-            cube.OrderBy(c => c.Beat);
-            var red = cube.Where(c => (int)c.Note.color == 0).ToList();
-            var blue = cube.Where(c => (int)c.Note.color == 1).ToList();
+            cubes = cubes.OrderBy(c => c.Time).ToList();
 
-            #endregion
-
-            #region Algorithm
-
-            if (red.Count() > 0)
+            foreach (var chain in chains)
             {
-                Helper.FindNoteDirection(red, bombs);
-                Helper.FixPatternHead(red);
-                Helper.FindReset(red);
-                ebpm = GetEBPM(red, bpm);
-                Helper.CalculateDistance(red);
+                var found = cubes.FirstOrDefault(x => x.Time == chain.beat && x.Type == (int)chain.colorType && x.Line == chain.headLine && x.Layer == chain.headLayer && x.CutDirection == (int)chain.headCutDirection);
+                if (found != null)
+                {
+                    found.Chain = true;
+                    found.TailLine = chain.tailLine;
+                    found.TailLayer = chain.tailLayer;
+                    found.Squish = chain.squishAmount;
+                }
             }
 
-            if (blue.Count() > 0)
-            {
-                Helper.FindNoteDirection(blue, bombs);
-                Helper.FixPatternHead(blue);
-                Helper.FindReset(blue);
-                ebpm = Math.Max(GetEBPM(blue, bpm), ebpm);
-                Helper.CalculateDistance(blue);
-            }
+            var red = cubes.Where(c => c.Type == 0).ToList();
+            var blue = cubes.Where(c => c.Type == 1).ToList();
 
-            (pass, tech, data) = Method.UseLackWizAlgorithm(red, blue, bpm);
+            value = Analyze.UseLackWizAlgorithm(red, blue, bpm, njs);
 
-            #endregion
-
-            #region Calculator
-
-            if(Settings.Instance.SliderPercent)
-            {
-                slider = Math.Round((double)cube.Where(c => c.Slider && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
-            }
-            else
-            {
-                slider = Math.Round((double)cube.Where(c => c.Slider && (c.Head || !c.Pattern)).Count(), 0);
-            }
-            if (Settings.Instance.LinearPercent)
-            {
-                linear = Math.Round((double)cube.Where(c => c.Linear && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
-            }
-            else
-            {
-                linear = Math.Round((double)cube.Where(c => c.Linear && (c.Head || !c.Pattern)).Count(), 0);
-            }
-            if (Settings.Instance.ResetPercent)
-            {
-                reset = Math.Round((double)cube.Where(c => c.Reset && !c.Bomb && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
-                bomb = Math.Round((double)cube.Where(c => c.Reset && c.Bomb && (c.Head || !c.Pattern)).Count() / cube.Where(c => c.Head || !c.Pattern).Count() * 100, 2);
-            }
-            else
-            {
-                reset = Math.Round((double)cube.Where(c => c.Reset && !c.Bomb && (c.Head || !c.Pattern)).Count(), 0);
-                bomb = Math.Round((double)cube.Where(c => c.Reset && c.Bomb && (c.Head || !c.Pattern)).Count(), 0);
-            }
+            #region Crouch walls count
+            value.Add(0);
 
             // Find group of walls and list them together
+            var crouch = 0;
             List<List<BeatmapSaveData.ObstacleData>> wallsGroup = new()
             {
                 new List<BeatmapSaveData.ObstacleData>()
             };
 
-            for (int i = 0; i < obstacles.Count(); i++)
+            for (int i = 0; i < walls.Count(); i++)
             {
-                wallsGroup.Last().Add(obstacles[i]);
+                wallsGroup.Last().Add(walls[i]);
 
-                for (int j = i; j < obstacles.Count() - 1; j++)
+                for (int j = i; j < walls.Count() - 1; j++)
                 {
-                    if (obstacles[j + 1].beat >= obstacles[j].beat && obstacles[j + 1].beat <= obstacles[j].beat + obstacles[j].duration)
+                    if (walls[j + 1].beat >= walls[j].beat && walls[j + 1].beat <= walls[j].beat + walls[j].duration)
                     {
-                        wallsGroup.Last().Add(obstacles[j + 1]);
+                        wallsGroup.Last().Add(walls[j + 1]);
                     }
                     else
                     {
@@ -129,7 +78,7 @@ namespace BeatmapScanner.Algorithm
             List<int> wallsFound = new();
             int count;
 
-            foreach(var group in wallsGroup)
+            foreach (var group in wallsGroup)
             {
                 float found = 0f;
                 count = 0;
@@ -148,7 +97,7 @@ namespace BeatmapScanner.Algorithm
                     }
 
                     // Individual
-                    if(wall.layer >= 2 && wall.width >= 3)
+                    if (wall.layer >= 2 && wall.width >= 3)
                     {
                         count++;
                         found = wall.beat + wall.duration;
@@ -162,7 +111,7 @@ namespace BeatmapScanner.Algorithm
                     {
                         for (int k = j + 1; k < group.Count(); k++)
                         {
-                            if(k == j + 100) // So it doesn't take forever on some maps :(
+                            if (k == j + 100) // So it doesn't take forever on some maps :(
                             {
                                 break;
                             }
@@ -193,10 +142,24 @@ namespace BeatmapScanner.Algorithm
 
                 crouch += count;
             }
-
+            value[value.Count - 1] = crouch;
             #endregion
 
-            return (pass, tech, ebpm, slider, reset, bomb, crouch, linear);
+            #region EBPM
+            value.Add(0);
+
+            if (red.Count() > 0)
+            {
+                value[value.Count - 1] = GetEBPM(red, bpm); 
+            }
+
+            if (blue.Count() > 0)
+            {
+                value[value.Count - 1] = Math.Max(GetEBPM(blue, bpm), value.Last());
+            }
+            #endregion
+
+            return value;
         }
 
         #endregion
@@ -223,7 +186,7 @@ namespace BeatmapScanner.Algorithm
                     continue;
                 }
 
-                var duration = (cubes[i].Beat - cubes[i - 1].Beat);
+                var duration = (cubes[i].Time - cubes[i - 1].Time);
 
                 if(duration > 0)
                 {
