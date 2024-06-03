@@ -50,7 +50,6 @@ namespace BeatmapScanner.Algorithm
             foreach (var cube in cubes)
             {
                 cube.Time = scale.ToBeatTime(cube.Time);
-                Plugin.Log.Info(cube.Time.ToString());
             }
 
             var red = cubes.Where(c => c.Type == 0).ToList();
