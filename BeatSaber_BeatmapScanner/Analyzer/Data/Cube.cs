@@ -1,4 +1,4 @@
-﻿using static BeatmapSaveDataVersion3.BeatmapSaveData;
+﻿using BeatmapSaveDataVersion3;
 
 namespace Analyzer.BeatmapScanner.Data
 {
@@ -34,14 +34,14 @@ namespace Analyzer.BeatmapScanner.Data
         }
 
 
-        public Cube(ColorNoteData note)
+        public Cube(NoteData note)
         {
-            AngleOffset = note.angleOffset;
+            AngleOffset = note.cutDirectionAngleOffset;
             CutDirection = (int)note.cutDirection;
-            Type = (int)note.color;
-            Time = note.beat;
-            Line = note.line;
-            Layer = note.layer;
+            Type = (int)note.colorType;
+            Time = note.time;
+            Line = note.lineIndex;
+            Layer = (int)note.noteLineLayer;
             Direction = (int)note.cutDirection;
         }
     }

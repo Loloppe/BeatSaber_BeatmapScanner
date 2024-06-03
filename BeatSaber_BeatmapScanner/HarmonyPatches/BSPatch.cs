@@ -32,88 +32,63 @@ namespace BeatmapScanner.HarmonyPatches
 
         #endregion
 
-        static async void Postfix(IDifficultyBeatmap ____selectedDifficultyBeatmap, IBeatmapLevel ____level)
+        static async void Postfix(StandardLevelDetailView __instance)
 		{
 			if (Settings.Instance.Enabled)
 			{
 				ResetValues();
-
-				var hasRequirement = SongCore.Collections.RetrieveDifficultyData(____selectedDifficultyBeatmap)?
+				var beatmapLevel = __instance._beatmapLevel;
+				var beatmapKey = __instance.beatmapKey;
+				var hasRequirement = SongCore.Collections.RetrieveDifficultyData(beatmapLevel, beatmapKey)?
 					.additionalDifficultyData?
 					._requirements?.Any(x => x == "Noodle Extensions" || x == "Mapping Extensions") == true;
-
-				if (!hasRequirement && ____selectedDifficultyBeatmap is CustomDifficultyBeatmap beatmap && beatmap.beatmapSaveData.colorNotes.Count > 0 && beatmap.level.beatsPerMinute > 0)
+                if (!hasRequirement && SongDetailsUtil.songDetails != null && beatmapKey.levelId.Contains("custom"))
 				{
-                    var data = Algorithm.BeatmapScanner.Analyzer(beatmap.beatmapSaveData.colorNotes, beatmap.beatmapSaveData.burstSliders, beatmap.beatmapSaveData.bombNotes, beatmap.beatmapSaveData.obstacles, beatmap.level.beatsPerMinute, ____selectedDifficultyBeatmap.noteJumpMovementSpeed);
-					Pass = data[0];
-					Tech = data[1] * 10;
-					Linear = data[3];
-                    Pattern = data[4];
-					Crouch = data[5];
-                    EBPM = data[6];
-
-					if(beatmap.beatmapSaveData.burstSliders.Count > 0 || beatmap.beatmapSaveData.sliders.Count > 0) V3 = 1;
-
-                    if (!SongDetailsUtil.IsAvailable)
-					{
-						SS = 0;
-					}
-					else if (SongDetailsUtil.songDetails != null)
-					{
-						async Task wrapperAsync()
-						{
-							var ch = (SongDetailsCache.Structs.MapCharacteristic)BeatmapsUtil.GetCharacteristicFromDifficulty(____selectedDifficultyBeatmap);
-
-							if (ch != SongDetailsCache.Structs.MapCharacteristic.Standard)
-							{
-								SS = 0;
-							}
-							else
-							{
-								var mh = BeatmapsUtil.GetHashOfPreview(____level);
-								BL = Math.Round(await GetAsyncData(mh, beatmap.difficulty.ToString()), 2);
-								if (BL == 0)
-								{
-									BL = 0;
-								}
-
-								if (mh == null || !SongDetailsUtil.songDetails.instance.songs.FindByHash(mh, out var song) || !song.GetDifficulty(
-										out var diff, (SongDetailsCache.Structs.MapDifficulty)____selectedDifficultyBeatmap.difficulty, ch))
-								{
-									SS = 0;
-								}
-								else if (!diff.ranked)
-								{
-									SS = 0;
-								}
-								else
-								{
-									SS = Math.Round(diff.stars, 2);
-								}
-							}
-						}
-
-						await wrapperAsync();
-					}
-					else if (!SongDetailsUtil.FinishedInitAttempt)
-					{
-						await SongDetailsUtil.TryGet().ContinueWith(
-							x => { if (x.Result != null) GridViewController.Apply(); },
-							CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.FromCurrentSynchronizationContext()
-						);
-					}
-				}
-				else
-				{
-                    Pass = 0;
-                    Tech = 0;
-                    Linear = 0;
-                    Pattern = 0;
-                    Crouch = 0;
-                    EBPM = 0;
-					SS = 0;
-					BL = 0;
-					V3 = 0;
+                    var characteristic = (SongDetailsCache.Structs.MapCharacteristic)BeatmapsUtil.GetCharacteristicFromDifficulty(beatmapKey);
+                    var hash = BeatmapsUtil.GetHashOfLevel(__instance._beatmapLevel);
+                    SongDetailsUtil.songDetails.instance.songs.FindByHash(hash, out var song);
+                    song.GetDifficulty(out var difficulty, (SongDetailsCache.Structs.MapDifficulty)beatmapKey.difficulty, characteristic);
+					var test = beatmapLevel as IBeatmapLevelData;
+					var beatmapData = await __instance._beatmapLevelsModel.LoadBeatmapLevelDataAsync(beatmapLevel.levelID, new());
+                    var beatmap = await __instance._beatmapDataLoader.LoadBeatmapDataAsync(beatmapData.beatmapLevelData, beatmapKey, song.bpm, false, null, __instance._playerData.gameplayModifiers, __instance._playerData.playerSpecificSettings, false);
+                    var colorNotes = beatmap.GetBeatmapDataItems<NoteData>(0).ToList();
+					var sliders = beatmap.GetBeatmapDataItems<SliderData>(0).ToList();
+                    var obstacles = beatmap.GetBeatmapDataItems<ObstacleData>(0).ToList();
+                    if (difficulty.notes > 0 && song.bpm > 0)
+                    {
+                        var basicData = beatmapLevel.GetDifficultyBeatmapData(beatmapKey.beatmapCharacteristic, beatmapKey.difficulty);
+                        var njs = basicData?.noteJumpMovementSpeed ?? 0;
+                        var data = Algorithm.BeatmapScanner.Analyzer(colorNotes, sliders, obstacles, song.bpm, njs);
+                        Pass = data[0];
+                        Tech = data[1] * 10;
+                        Linear = data[3];
+                        Pattern = data[4];
+                        Crouch = data[5];
+                        EBPM = data[6];
+                        if (sliders.Count > 0) V3 = 1;
+                        async Task wrapperAsync()
+                        {
+                            BL = Math.Round(await GetAsyncData(hash, difficulty.difficulty.ToString()), 2);
+                            if (characteristic == SongDetailsCache.Structs.MapCharacteristic.Standard)
+                            {
+                                if (song.rankedStates == SongDetailsCache.Structs.RankedStates.ScoresaberRanked)
+                                {
+                                    SS = Math.Round(difficulty.stars, 2);
+                                }
+                            }
+                        }
+                        await wrapperAsync();
+                    }
+                }
+                else
+                {
+                    if (!SongDetailsUtil.FinishedInitAttempt)
+                    {
+                        await SongDetailsUtil.TryGet().ContinueWith(
+                            x => { if (x.Result != null) GridViewController.Apply(); },
+                            CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.FromCurrentSynchronizationContext()
+                        );
+                    }
                 }
 
                 GridViewController.Apply();

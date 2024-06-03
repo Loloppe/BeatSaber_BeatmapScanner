@@ -1,10 +1,9 @@
 ﻿using Analyzer.BeatmapScanner.Algorithm;
 using Analyzer.BeatmapScanner.Data;
-using BeatmapSaveDataVersion3;
+using beatleader_parser.Timescale;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static BeatmapSaveDataVersion3.BeatmapSaveData;
 
 namespace BeatmapScanner.Algorithm
 {
@@ -16,28 +15,42 @@ namespace BeatmapScanner.Algorithm
 
         #region Analyzer
 
-        public static List<double> Analyzer(List<ColorNoteData> notes, List<BurstSliderData> chains, List<BombNoteData> bombs, List<BeatmapSaveData.ObstacleData> walls, float bpm, float njs)
+        public static List<double> Analyzer(List<NoteData> notes, List<SliderData> sliders, List<ObstacleData> walls, float bpm, float njs)
         {
+            Timescale scale = new(bpm, new(), 0);
             List<double> value = new();
             List<Cube> cubes = new();
 
             foreach (var note in notes)
             {
-                cubes.Add(new Cube(note));
+                if(note.gameplayType == NoteData.GameplayType.Normal || note.gameplayType == NoteData.GameplayType.BurstSliderHead)
+                {
+                    cubes.Add(new Cube(note));
+                }
             }
-
+            
             cubes = cubes.OrderBy(c => c.Time).ToList();
 
-            foreach (var chain in chains)
+            foreach (var chain in sliders)
             {
-                var found = cubes.FirstOrDefault(x => x.Time == chain.beat && x.Type == (int)chain.colorType && x.Line == chain.headLine && x.Layer == chain.headLayer && x.CutDirection == (int)chain.headCutDirection);
-                if (found != null)
+                if (chain.sliderType == SliderData.Type.Burst)
                 {
-                    found.Chain = true;
-                    found.TailLine = chain.tailLine;
-                    found.TailLayer = chain.tailLayer;
-                    found.Squish = chain.squishAmount;
+                    var found = cubes.FirstOrDefault(x => x.Time == chain.time && x.Type == (int)chain.colorType && x.Line == chain.headLineIndex && x.Layer == (int)chain.headLineLayer && x.CutDirection == (int)chain.headCutDirection);
+                    if (found != null)
+                    {
+                        found.Chain = true;
+                        found.TailLine = chain.tailLineIndex;
+                        found.TailLayer = (int)chain.tailLineLayer;
+                        found.Squish = chain.squishAmount;
+                    }
                 }
+            }
+
+            // Gotta convert from seconds to beats now
+            foreach (var cube in cubes)
+            {
+                cube.Time = scale.ToBeatTime(cube.Time);
+                Plugin.Log.Info(cube.Time.ToString());
             }
 
             var red = cubes.Where(c => c.Type == 0).ToList();
@@ -50,9 +63,9 @@ namespace BeatmapScanner.Algorithm
 
             // Find group of walls and list them together
             var crouch = 0;
-            List<List<BeatmapSaveData.ObstacleData>> wallsGroup = new()
+            List<List<ObstacleData>> wallsGroup = new()
             {
-                new List<BeatmapSaveData.ObstacleData>()
+                new List<ObstacleData>()
             };
 
             for (int i = 0; i < walls.Count(); i++)
@@ -61,14 +74,14 @@ namespace BeatmapScanner.Algorithm
 
                 for (int j = i; j < walls.Count() - 1; j++)
                 {
-                    if (walls[j + 1].beat >= walls[j].beat && walls[j + 1].beat <= walls[j].beat + walls[j].duration)
+                    if (walls[j + 1].time >= walls[j].time && walls[j + 1].time <= walls[j].time + walls[j].duration)
                     {
                         wallsGroup.Last().Add(walls[j + 1]);
                     }
                     else
                     {
                         i = j;
-                        wallsGroup.Add(new List<BeatmapSaveData.ObstacleData>());
+                        wallsGroup.Add(new List<ObstacleData>());
                         break;
                     }
                 }
@@ -87,7 +100,7 @@ namespace BeatmapScanner.Algorithm
                 {
                     var wall = group[j];
 
-                    if (found != 0f && wall.beat - found < 1.5) // Skip too close
+                    if (found != 0f && wall.time - found < 1.5) // Skip too close
                     {
                         continue;
                     }
@@ -97,15 +110,15 @@ namespace BeatmapScanner.Algorithm
                     }
 
                     // Individual
-                    if (wall.layer >= 2 && wall.width >= 3)
+                    if ((int)wall.lineLayer >= 2 && wall.width >= 3)
                     {
                         count++;
-                        found = wall.beat + wall.duration;
+                        found = wall.time + wall.duration;
                     }
-                    else if (wall.layer >= 2 && wall.width >= 2 && wall.line == 1)
+                    else if ((int)wall.lineLayer >= 2 && wall.width >= 2 && wall.lineIndex == 1)
                     {
                         count++;
-                        found = wall.beat + wall.duration;
+                        found = wall.time + wall.duration;
                     }
                     else if (group.Count() > 1) // Multiple
                     {
@@ -118,22 +131,22 @@ namespace BeatmapScanner.Algorithm
 
                             var other = group[k];
 
-                            if ((wall.layer >= 2 || other.layer >= 2) && wall.width >= 2 && wall.line == 0 && other.line == 2)
+                            if (((int)wall.lineLayer >= 2 || (int)other.lineLayer >= 2) && wall.width >= 2 && wall.lineIndex == 0 && other.lineIndex == 2)
                             {
                                 count++;
-                                found = wall.beat + wall.duration;
+                                found = wall.time + wall.duration;
                                 break;
                             }
-                            else if ((wall.layer >= 2 || other.layer >= 2) && other.width >= 2 && wall.line == 2 && other.line == 0)
+                            else if (((int)wall.lineLayer >= 2 || (int)other.lineLayer >= 2) && other.width >= 2 && wall.lineIndex == 2 && other.lineIndex == 0)
                             {
                                 count++;
-                                found = wall.beat + wall.duration;
+                                found = wall.time + wall.duration;
                                 break;
                             }
-                            else if ((wall.layer >= 2 || other.layer >= 2) && wall.line == 1 && other.line == 2)
+                            else if (((int)wall.lineLayer >= 2 || (int)other.lineLayer >= 2) && wall.lineIndex == 1 && other.lineIndex == 2)
                             {
                                 count++;
-                                found = wall.beat + wall.duration;
+                                found = wall.time + wall.duration;
                                 break;
                             }
                         }
