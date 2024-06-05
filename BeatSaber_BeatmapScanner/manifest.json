@@ -5,7 +5,7 @@
   "author": "Loloppe",
   "version": "1.5.0",
   "description": "Analyze the difficulty of a beatmap",
-  "gameVersion": "1.36.2",
+  "gameVersion": "1.37.0",
   "dependsOn": {
     "BSIPA": "^4.2.0"
   }
