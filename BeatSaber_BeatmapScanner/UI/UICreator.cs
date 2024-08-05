@@ -1,7 +1,7 @@
 ﻿using BeatSaberMarkupLanguage.FloatingScreen;
 using UnityEngine;
 using HMUI;
-using System.Linq;
+using VRUIControls;
 
 namespace BeatmapScanner.UI
 {
@@ -30,6 +30,7 @@ namespace BeatmapScanner.UI
 			_gridViewController.transform.localScale = Vector3.one;
 			_gridViewController.transform.localEulerAngles = Vector3.zero;
 			_gridViewController.gameObject.SetActive(true);
+			_gridViewController.gameObject.GetComponent<VRGraphicRaycaster>().enabled = false;
 			_floatingScreen.gameObject.SetActive(false);
 		}
 
