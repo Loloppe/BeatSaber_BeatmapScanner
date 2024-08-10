@@ -12,6 +12,7 @@ using SongDetailsCache.Structs;
 using beatleader_analyzer;
 using beatleader_parser;
 using ModestTree;
+using beatleader_analyzer.BeatmapScanner.Data;
 
 namespace BeatmapScanner.HarmonyPatches
 {
@@ -38,8 +39,8 @@ namespace BeatmapScanner.HarmonyPatches
                     var hash = BeatmapsUtil.GetHashOfLevel(__instance._beatmapLevel);
                     SongDetailsUtil.songDetails.instance.songs.FindByHash(hash, out var song);
                     song.GetDifficulty(out var difficulty, (MapDifficulty)beatmapKey.difficulty, characteristic);
-					var beatmapData = await __instance._beatmapLevelsModel.LoadBeatmapLevelDataAsync(beatmapLevel.levelID, BeatmapLevelDataVersion.Original, new());
-                    var beatmap = await __instance._beatmapDataLoader.LoadBeatmapDataAsync(beatmapData.beatmapLevelData, beatmapKey, song.bpm, false, null, BeatmapLevelDataVersion.Original, __instance._playerData.gameplayModifiers, __instance._playerData.playerSpecificSettings, false);
+					var beatmapData = await __instance._beatmapLevelsModel.LoadBeatmapLevelDataAsync(beatmapLevel.levelID, BeatmapLevelDataVersion.Original, new()).ConfigureAwait(false);
+                    var beatmap = await __instance._beatmapDataLoader.LoadBeatmapDataAsync(beatmapData.beatmapLevelData, beatmapKey, song.bpm, false, null, BeatmapLevelDataVersion.Original, __instance._playerData.gameplayModifiers, __instance._playerData.playerSpecificSettings, false).ConfigureAwait(false);
                     var colorNotes = beatmap.GetBeatmapDataItems<NoteData>(0).ToList();
 					var sliders = beatmap.GetBeatmapDataItems<SliderData>(0).ToList();
                     var obstacles = beatmap.GetBeatmapDataItems<ObstacleData>(0).ToList();
@@ -59,35 +60,22 @@ namespace BeatmapScanner.HarmonyPatches
                         }
                         GridViewController.values[1] = ebpm;
                         // BeatLeader-Analyzer pass and tech rating
-                        var folderPath = SongCore.Collections.GetLoadedSaveData(beatmapKey.levelId)?.customLevelFolderInfo.folderPath;
-                        if(folderPath != null)
+                        async Task wrapperAsync()
                         {
-                            if (start)
+                            var ratings = await GetAsyncRating(beatmapKey, beatmapLevel, characteristic.ToString(), song.bpm).ConfigureAwait(false);
+                            if (ratings != null)
                             {
-                                Log.Warn("BeatmapScanner: You can ignore those errors.");
-                                start = false;
-                            }
-                            var singleDiff = parser.TryLoadPath(folderPath, characteristic.ToString(), beatmapKey.difficulty.ToString());
-                            if (singleDiff != null)
-                            {
-                                var njs = beatmapLevel.GetDifficultyBeatmapData(beatmapKey.beatmapCharacteristic, beatmapKey.difficulty)?.noteJumpMovementSpeed ?? 0;
-                                if(njs != 0)
-                                {
-                                    var ratings = analyzer.GetRating(singleDiff.Difficulty.Data, characteristic.ToString(), beatmapKey.difficulty.ToString(), song.bpm, njs);
-                                    if (ratings != null)
-                                    {
-                                        GridViewController.values[3] = ratings.FirstOrDefault().Pass;
-                                        GridViewController.values[4] = ratings.FirstOrDefault().Tech * 10;
-                                    }
-                                }
+                                GridViewController.values[3] = ratings.FirstOrDefault().Pass;
+                                GridViewController.values[4] = ratings.FirstOrDefault().Tech * 10;
                             }
                         }
+                        await wrapperAsync().ConfigureAwait(false);
                         // V3
                         if (sliders.Count == 0) GridViewController.values[0] = 1;
                         // SS and BL star rating
-                        async Task wrapperAsync()
+                        async Task wrapperAsync2()
                         {
-                            GridViewController.values[2] = await GetAsyncData(hash, difficulty.difficulty.ToString(), characteristic);
+                            GridViewController.values[2] = await GetAsyncData(hash, difficulty.difficulty.ToString(), characteristic).ConfigureAwait(false);
                             if (characteristic == MapCharacteristic.Standard)
                             {
                                 if (song.rankedStates == RankedStates.ScoresaberRanked)
@@ -96,7 +84,7 @@ namespace BeatmapScanner.HarmonyPatches
                                 }
                             }
                         }
-                        await wrapperAsync();
+                        await wrapperAsync2().ConfigureAwait(false);
                     }
                 }
                 else if (!SongDetailsUtil.FinishedInitAttempt)
@@ -104,20 +92,44 @@ namespace BeatmapScanner.HarmonyPatches
                     await SongDetailsUtil.TryGet().ContinueWith(
                         x => { if (x.Result != null) GridViewController.Apply(); },
                         CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.FromCurrentSynchronizationContext()
-                    );
+                    ).ConfigureAwait(false);
                 }
 
                 GridViewController.Apply();
 			}
 		}
 
-		public static async Task<double> GetAsyncData(string hash, string difficulty, MapCharacteristic characteristic)
+        public static async Task<List<Ratings>> GetAsyncRating(BeatmapKey beatmapKey, BeatmapLevel beatmapLevel, string characteristic, float bpm)
+        {
+            var folderPath = SongCore.Collections.GetLoadedSaveData(beatmapKey.levelId)?.customLevelFolderInfo.folderPath;
+            if (folderPath != null)
+            {
+                if (start)
+                {
+                    Log.Warn("BeatmapScanner: You can ignore those errors.");
+                    start = false;
+                }
+                var singleDiff = Task.Run(() => parser.TryLoadPath(folderPath, characteristic, beatmapKey.difficulty.ToString())).Result;
+                if (singleDiff != null)
+                {
+                    var njs = beatmapLevel.GetDifficultyBeatmapData(beatmapKey.beatmapCharacteristic, beatmapKey.difficulty)?.noteJumpMovementSpeed ?? 0;
+                    if (njs != 0)
+                    {
+                        return Task.Run(() => analyzer.GetRating(singleDiff.Difficulty.Data, characteristic, beatmapKey.difficulty.ToString(), bpm, njs)).Result;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public static async Task<double> GetAsyncData(string hash, string difficulty, MapCharacteristic characteristic)
 		{
             string api = "https://api.beatleader.xyz/map/modinterface/" + hash;
             using HttpClient client = new();
-            using HttpResponseMessage res = await client.GetAsync(api);
+            using HttpResponseMessage res = await client.GetAsync(api).ConfigureAwait(false);
             using HttpContent content = res.Content;
-            var data = await content.ReadAsStringAsync();
+            var data = await content.ReadAsStringAsync().ConfigureAwait(false);
             if (data != null)
             {
                 List<BLStruct> obj = JsonConvert.DeserializeObject<List<BLStruct>>(data);
