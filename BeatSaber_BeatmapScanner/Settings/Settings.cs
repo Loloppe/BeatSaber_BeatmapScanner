@@ -20,14 +20,8 @@ namespace BeatmapScanner
         public virtual bool ShowTech { get; set; } = true;
         public virtual bool ShowSS { get; set; } = true;
         public virtual bool ShowEBPM { get; set; } = true;
-        public virtual bool ShowPattern { get; set; } = true;
         public virtual bool ShowBL { get; set; } = true;
-        public virtual bool ShowLinear { get; set; } = true;
         public virtual bool ShowV3 { get; set; } = true;
-        public virtual bool ShowCrouch { get; set; } = true;
-        public virtual bool LinearPercent { get; set; } = true;
-        public virtual bool SliderPercent { get; set; } = true;
-        public virtual bool ResetPercent { get; set; } = true;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color TitleColor { get; set; } = Color.white;
         [UseConverter(typeof(ColorConverter))]
@@ -38,13 +32,13 @@ namespace BeatmapScanner
         public virtual Color C { get; set; } = Color.green;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color D { get; set; } = new(1f, 0f, 1f);
-        public virtual float DColorA { get; set; } = 6f;
-        public virtual float DColorB { get; set; } = 9f;
-        public virtual float DColorC { get; set; } = 12f;
+        public virtual float PColorA { get; set; } = 6f;
+        public virtual float PColorB { get; set; } = 9f;
+        public virtual float PColorC { get; set; } = 12f;
         public virtual float TColorA { get; set; } = 5f;
         public virtual float TColorB { get; set; } = 7f;
         public virtual float TColorC { get; set; } = 9f;
-        public virtual Vector3 UIPosition { get; set; } = new(2f, 2.9f, 3.7f);
+        public virtual Vector3 UIPosition { get; set; } = new(1.9f, 2.6f, 3.7f);
         public virtual Quaternion UIRotation { get; set; } = Quaternion.Euler(new Vector3(350, 28, 360));
 
 
@@ -72,7 +66,7 @@ namespace BeatmapScanner
                 if (Enabled)
                 {
                     UICreator._floatingScreen.ShowHandle = ShowHandle;
-                    if(ShowLinear)
+                    if (ShowV3)
                     {
                         GridViewController._tiles[0].rectTransform.gameObject.SetActive(true);
                     }
@@ -80,7 +74,7 @@ namespace BeatmapScanner
                     {
                         GridViewController._tiles[0].rectTransform.gameObject.SetActive(false);
                     }
-                    if (ShowCrouch)
+                    if (ShowEBPM)
                     {
                         GridViewController._tiles[1].rectTransform.gameObject.SetActive(true);
                     }
@@ -88,7 +82,7 @@ namespace BeatmapScanner
                     {
                         GridViewController._tiles[1].rectTransform.gameObject.SetActive(false);
                     }
-                    if (ShowV3)
+                    if (ShowBL)
                     {
                         GridViewController._tiles[2].rectTransform.gameObject.SetActive(true);
                     }
@@ -96,7 +90,7 @@ namespace BeatmapScanner
                     {
                         GridViewController._tiles[2].rectTransform.gameObject.SetActive(false);
                     }
-                    if (ShowPattern)
+                    if (ShowPass)
                     {
                         GridViewController._tiles[3].rectTransform.gameObject.SetActive(true);
                     }
@@ -104,7 +98,7 @@ namespace BeatmapScanner
                     {
                         GridViewController._tiles[3].rectTransform.gameObject.SetActive(false);
                     }
-                    if (ShowEBPM)
+                    if (ShowTech)
                     {
                         GridViewController._tiles[4].rectTransform.gameObject.SetActive(true);
                     }
@@ -112,37 +106,13 @@ namespace BeatmapScanner
                     {
                         GridViewController._tiles[4].rectTransform.gameObject.SetActive(false);
                     }
-                    if (ShowBL)
+                    if (ShowSS)
                     {
                         GridViewController._tiles[5].rectTransform.gameObject.SetActive(true);
                     }
                     else
                     {
                         GridViewController._tiles[5].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowPass)
-                    {
-                        GridViewController._tiles[6].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[6].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowTech)
-                    {
-                        GridViewController._tiles[7].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[7].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowSS)
-                    {
-                        GridViewController._tiles[8].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[8].rectTransform.gameObject.SetActive(false);
                     }
                     GridViewController.Apply(); // Reload text
                     GridViewController.Show(); // Show

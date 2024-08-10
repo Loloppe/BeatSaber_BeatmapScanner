@@ -11,7 +11,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BeatmapScanner</RootNamespace>
     <AssemblyName>BeatmapScanner</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>portable</DebugType>
@@ -46,6 +46,11 @@
       <Private>False</Private>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="Analyzer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Analyzer.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
     <Reference Include="BGLib.UnityExtension, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\BGLib.UnityExtension.dll</HintPath>
@@ -60,6 +65,11 @@
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\GameplayCore.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Parser, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Libs\Parser.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -83,6 +93,7 @@
     <Reference Include="IPA.Loader">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\IPA.Loader.dll</HintPath>
       <Private>False</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Unity.TextMeshPro.dll</HintPath>
@@ -136,9 +147,11 @@
     </Reference>
     <Reference Include="Zenject">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Zenject-usage">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Zenject-usage.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
@@ -146,38 +159,22 @@
     </Reference>
     <Reference Include="SiraUtil">
       <HintPath>$(BeatSaberDir)\Plugins\SiraUtil.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="SongDetailsCache">
       <HintPath>$(BeatSaberDir)\Libs\SongDetailsCache.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Hive.Versioning">
       <HintPath>$(BeatSaberDir)\Libs\Hive.Versioning.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Analyzer\Algorithm\Analyze.cs" />
-    <Compile Include="Analyzer\Algorithm\DiffToPass.cs" />
-    <Compile Include="Analyzer\Algorithm\FlowDetector.cs" />
-    <Compile Include="Analyzer\Algorithm\Linear.cs" />
-    <Compile Include="Analyzer\Algorithm\ParityPredictor.cs" />
-    <Compile Include="Analyzer\Algorithm\PatternSplitter.cs" />
-    <Compile Include="Analyzer\Algorithm\SwingCurve.cs" />
-    <Compile Include="Analyzer\Algorithm\SwingProcesser.cs" />
-    <Compile Include="Analyzer\Data\Cube.cs" />
-    <Compile Include="Analyzer\Data\Ratings.cs" />
-    <Compile Include="Analyzer\Data\SwingData.cs" />
-    <Compile Include="Analyzer\Helper\CalculateBaseEntryExit.cs" />
-    <Compile Include="Analyzer\Helper\Curve.cs" />
-    <Compile Include="Analyzer\Helper\FindAngleViaPosition.cs" />
-    <Compile Include="Analyzer\Helper\HandlePatternOrdering.cs" />
-    <Compile Include="Analyzer\Helper\Helper.cs" />
-    <Compile Include="Analyzer\Helper\IsSameDirection.cs" />
-    <Compile Include="Analyzer\Helper\IsSlider.cs" />
-    <Compile Include="Analyzer\Helper\SwingAngleStrain.cs" />
-    <Compile Include="Analyzer\BeatmapScanner.cs" />
     <Compile Include="HarmonyPatches\ICEPatch.cs" />
     <Compile Include="HarmonyPatches\UIPatch.cs" />
     <Compile Include="Installers\MenuInstaller.cs" />
@@ -186,13 +183,13 @@
     <Compile Include="Utils\BeatmapsUtil.cs" />
     <Compile Include="Utils\BLStruct.cs" />
     <Compile Include="Utils\ColorConverter.cs" />
+    <Compile Include="Utils\EBPM.cs" />
     <Compile Include="Utils\FloatConverter.cs" />
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="HarmonyPatches\BSPatch.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\SongDetailsCache.cs" />
-    <Compile Include="Utils\Timescale.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="manifest.json" />
@@ -208,6 +205,11 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Costura.Fody">
+      <Version>5.7.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="UI\Views\settings.bsml" />
@@ -217,6 +219,15 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Licences\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Libs\Analyzer.dll" />
+    <Content Include="Libs\NVorbis.dll" />
+    <Content Include="Libs\Parser.dll" />
+    <Content Include="Libs\System.Buffers.dll" />
+    <Content Include="Libs\System.Memory.dll" />
+    <Content Include="Libs\System.Numerics.Vectors.dll" />
+    <Content Include="Libs\System.Runtime.CompilerServices.Unsafe.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

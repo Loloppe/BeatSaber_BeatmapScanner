@@ -10,19 +10,16 @@ namespace BeatmapScanner.UI
 		private readonly GridViewController _gridViewController;
 
 		public static FloatingScreen _floatingScreen = null;
-		public UICreator(GridViewController gridViewController)
-		{
-			_gridViewController = gridViewController;
-		}
+        public UICreator(GridViewController gridViewController) => _gridViewController = gridViewController;
 
-		public void CreateFloatingScreen(Vector3 position, Quaternion rotation)
+        public void CreateFloatingScreen(Vector3 position, Quaternion rotation)
 		{
 			_floatingScreen = FloatingScreen.CreateFloatingScreen(new Vector2(50f, 50f), true, position, rotation);
 			_floatingScreen.SetRootViewController(_gridViewController, ViewController.AnimationType.None);
 			_floatingScreen.HandleSide = FloatingScreen.Side.Bottom;
 			_floatingScreen.HighlightHandle = true;
 			_floatingScreen.handle.transform.localScale = Vector3.one * 5.0f;
-			_floatingScreen.handle.transform.localPosition = new Vector3(0.0f, -25f, 0.0f);
+			_floatingScreen.handle.transform.localPosition = new Vector3(0.0f, -12f, 0.0f);
 			_floatingScreen.HandleReleased += OnHandleReleased;
 			_floatingScreen.ShowHandle = Settings.Instance.ShowHandle;
 			_floatingScreen.gameObject.name = "BeatmapScannerScreen";

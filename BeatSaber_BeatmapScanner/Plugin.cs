@@ -1,6 +1,5 @@
 ﻿using BeatSaberMarkupLanguage.GameplaySetup;
 using IPALogger = IPA.Logging.Logger;
-using BeatmapScanner.HarmonyPatches;
 using UnityEngine.SceneManagement;
 using BeatmapScanner.Installers;
 using IPA.Config.Stores;
@@ -8,6 +7,9 @@ using System.Reflection;
 using SiraUtil.Zenject;
 using HarmonyLib;
 using IPA;
+using BeatmapScanner.UI;
+using beatleader_parser;
+using beatleader_analyzer;
 
 namespace BeatmapScanner
 {
@@ -17,30 +19,6 @@ namespace BeatmapScanner
         internal static Plugin Instance;
         internal static IPALogger Log;
         internal static Harmony harmony;
-
-        public static class BsmlWrapper
-        {
-            static readonly bool hasBsml = IPA.Loader.PluginManager.GetPluginFromId("BeatSaberMarkupLanguage") != null;
-
-            public static void EnableUI()
-            {
-                static void wrap() => GameplaySetup.instance.AddTab("BeatmapScanner", "BeatmapScanner.UI.Views.settings.bsml", Settings.Instance, MenuType.All);
-
-                if (hasBsml)
-                {
-                    wrap();
-                }
-            }
-            public static void DisableUI()
-            {
-                static void wrap() => GameplaySetup.instance.RemoveTab("BeatmapScanner");
-
-                if (hasBsml)
-                {
-                    wrap();
-                }
-            }
-        }
 
         [Init]
         public Plugin(IPALogger logger, IPA.Config.Config conf, Zenjector zenject)
@@ -59,12 +37,12 @@ namespace BeatmapScanner
         {
             SceneManager.activeSceneChanged += OnActiveSceneChanged;
             harmony.PatchAll(Assembly.GetExecutingAssembly());
-            BsmlWrapper.EnableUI();
+            GameplaySetup.instance.AddTab("BeatmapScanner", "BeatmapScanner.UI.Views.settings.bsml", Settings.Instance, MenuType.All);
         }
 
         public void OnActiveSceneChanged(Scene prev, Scene next)
         {
-            BSPatch.ResetValues();
+            GridViewController.ResetValues();
         }
 
         [OnDisable]
@@ -72,7 +50,7 @@ namespace BeatmapScanner
         {
             SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             harmony.UnpatchSelf();
-            BsmlWrapper.DisableUI();
+            GameplaySetup.instance.RemoveTab("BeatmapScanner");
         }
     }
 }

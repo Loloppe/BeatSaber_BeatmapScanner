@@ -10,11 +10,8 @@
 		<checkbox-setting apply-on-change="true" value="ShowPass" text="Show Pass"/>
 		<checkbox-setting apply-on-change="true" value="ShowTech" text="Show Tech"/>
 		<checkbox-setting apply-on-change="true" value="ShowSS" text="Show SS *"/>
-		<checkbox-setting apply-on-change="true" value="ShowPattern" text="Show Pattern"/>
-		<checkbox-setting apply-on-change="true" value="ShowEBPM" text="Show EBPM"/>
 		<checkbox-setting apply-on-change="true" value="ShowBL" text="Show BL *"/>
-		<checkbox-setting apply-on-change="true" value="ShowLinear" text="Show Linear"/>
-		<checkbox-setting apply-on-change="true" value="ShowCrouch" text="Show Crouch"/>
+		<checkbox-setting apply-on-change="true" value="ShowEBPM" text="Show EBPM"/>
 		<checkbox-setting apply-on-change="true" value="ShowV3" text="Show V3"/>
 		<horizontal>
 			<text text='Colors' align='Center'/>
@@ -30,11 +27,11 @@
 		<horizontal>
 			<text text='Pass color steps' align='Center'/>
 		</horizontal>
-		<slider-setting apply-on-change="true" value="DColorA" text="Mid value"
+		<slider-setting apply-on-change="true" value="PColorA" text="Mid value"
 						min="0" max="20" increment="0.5"/>
-		<slider-setting apply-on-change="true" value="DColorB" text="High value"
+		<slider-setting apply-on-change="true" value="PColorB" text="High value"
 						min="0" max="20" increment="0.5"/>
-		<slider-setting apply-on-change="true" value="DColorC" text="Extreme value"
+		<slider-setting apply-on-change="true" value="PColorC" text="Extreme value"
 						min="0" max="20" increment="0.5"/>
 		<horizontal>
 			<text text='Tech color steps' align='Center'/>

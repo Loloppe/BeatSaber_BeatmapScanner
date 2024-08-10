@@ -3,10 +3,14 @@
   "id": "BeatmapScanner",
   "name": "BeatmapScanner",
   "author": "Loloppe",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Analyze the difficulty of a beatmap",
-  "gameVersion": "1.37.1",
+  "gameVersion": "1.37.2",
   "dependsOn": {
-    "BSIPA": "^4.2.0"
+    "BSIPA": "^4.3.4",
+    "BeatSaberMarkupLanguage": "^1.11.4",
+    "SiraUtil": "^3.1.11",
+    "SongCore": "^3.14.11",
+    "SongDetailsCache": "^1.2.2"
   }
 }
