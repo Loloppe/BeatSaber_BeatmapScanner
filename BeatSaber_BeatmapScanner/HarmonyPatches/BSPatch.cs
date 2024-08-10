@@ -11,7 +11,6 @@ using System;
 using SongDetailsCache.Structs;
 using beatleader_analyzer;
 using beatleader_parser;
-using ModestTree;
 using beatleader_analyzer.BeatmapScanner.Data;
 
 namespace BeatmapScanner.HarmonyPatches
@@ -21,7 +20,6 @@ namespace BeatmapScanner.HarmonyPatches
 	{
         internal static Parse parser = new();
         internal static Analyze analyzer = new();
-        internal static bool start = true;
 
         static async void Postfix(StandardLevelDetailView __instance)
 		{
@@ -104,11 +102,6 @@ namespace BeatmapScanner.HarmonyPatches
             var folderPath = SongCore.Collections.GetLoadedSaveData(beatmapKey.levelId)?.customLevelFolderInfo.folderPath;
             if (folderPath != null)
             {
-                if (start)
-                {
-                    Log.Warn("BeatmapScanner: You can ignore those errors.");
-                    start = false;
-                }
                 var singleDiff = Task.Run(() => parser.TryLoadPath(folderPath, characteristic, beatmapKey.difficulty.ToString())).Result;
                 if (singleDiff != null)
                 {

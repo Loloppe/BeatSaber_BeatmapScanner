@@ -205,8 +205,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Costura.Fody">
-      <Version>5.7.0</Version>
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task">
+      <Version>2.0.34.1</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -222,12 +222,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Libs\Analyzer.dll" />
-    <Content Include="Libs\NVorbis.dll" />
     <Content Include="Libs\Parser.dll" />
     <Content Include="Libs\System.Buffers.dll" />
     <Content Include="Libs\System.Memory.dll" />
     <Content Include="Libs\System.Numerics.Vectors.dll" />
     <Content Include="Libs\System.Runtime.CompilerServices.Unsafe.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ILRepack.targets" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

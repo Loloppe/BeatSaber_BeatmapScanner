@@ -1,0 +1,21 @@
+﻿<Project>
+  <Target Name="ILRepacker" AfterTargets="Build" BeforeTargets="CopyToArtifact">
+	<PropertyGroup>
+	  <!-- https://github.com/Alexx999/ILRepack.Lib.MSBuild.Task/pull/2 -->
+	  <DoILRepack>false</DoILRepack>
+	</PropertyGroup>
+
+    <ItemGroup>
+      <InputAssemblies Include="$(OutputPath)$(AssemblyName).dll" />
+      <InputAssemblies Include="Libs\*.dll" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <LibraryPath Include="$(BeatSaberDir)\Beat Saber_Data\Managed" />
+      <LibraryPath Include="$(BeatSaberDir)\Libs" />
+      <LibraryPath Include="$(BeatSaberDir)\Plugins" />
+    </ItemGroup>
+	  
+    <ILRepack Parallel="true" Internalize="true" InputAssemblies="@(InputAssemblies)" TargetKind="Dll" OutputFile="$(OutputPath)$(AssemblyName).dll" LibraryPath="@(LibraryPath)" DebugInfo="true" />
+  </Target>
+</Project>
