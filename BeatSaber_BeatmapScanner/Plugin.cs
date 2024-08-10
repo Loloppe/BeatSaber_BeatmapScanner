@@ -8,8 +8,6 @@ using SiraUtil.Zenject;
 using HarmonyLib;
 using IPA;
 using BeatmapScanner.UI;
-using beatleader_parser;
-using beatleader_analyzer;
 
 namespace BeatmapScanner
 {
