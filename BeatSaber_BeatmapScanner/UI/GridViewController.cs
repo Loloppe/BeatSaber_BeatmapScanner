@@ -113,25 +113,10 @@ namespace BeatmapScanner.UI
 			DestroyImmediate(_tile.gameObject);
 		}
 
-		public static void Show()
-		{
-			UICreator._floatingScreen.gameObject.SetActive(true);
-		}
-
-		public static void Hide()
-		{
-			UICreator._floatingScreen.gameObject.SetActive(false);
-		}
-
         public static void ResetValues()
         {
             values = [0, 0, 0, 0, 0, 0];
-
-            if (UICreator._floatingScreen != null)
-            {
-                UICreator._floatingScreen.gameObject.SetActive(true);
-                Apply();
-            }
+            Apply();
         }
 
         public static void Apply()

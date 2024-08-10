@@ -1,13 +1,11 @@
 ﻿using BeatSaberMarkupLanguage.GameplaySetup;
 using IPALogger = IPA.Logging.Logger;
-using UnityEngine.SceneManagement;
 using BeatmapScanner.Installers;
 using IPA.Config.Stores;
 using System.Reflection;
 using SiraUtil.Zenject;
 using HarmonyLib;
 using IPA;
-using BeatmapScanner.UI;
 
 namespace BeatmapScanner
 {
@@ -33,20 +31,13 @@ namespace BeatmapScanner
         [OnEnable]
         public void OnEnable()
         {
-            SceneManager.activeSceneChanged += OnActiveSceneChanged;
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             GameplaySetup.instance.AddTab("BeatmapScanner", "BeatmapScanner.UI.Views.settings.bsml", Settings.Instance, MenuType.All);
-        }
-
-        public void OnActiveSceneChanged(Scene prev, Scene next)
-        {
-            GridViewController.ResetValues();
         }
 
         [OnDisable]
         public void OnDisable()
         {
-            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
             harmony.UnpatchSelf();
             GameplaySetup.instance.RemoveTab("BeatmapScanner");
         }

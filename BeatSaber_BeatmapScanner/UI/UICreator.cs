@@ -2,6 +2,7 @@
 using UnityEngine;
 using HMUI;
 using VRUIControls;
+using Zenject;
 
 namespace BeatmapScanner.UI
 {
@@ -11,6 +12,9 @@ namespace BeatmapScanner.UI
 
 		public static FloatingScreen _floatingScreen = null;
         public UICreator(GridViewController gridViewController) => _gridViewController = gridViewController;
+
+        [Inject]
+        private PlatformLeaderboardViewController _platformLeaderboardViewController;
 
         public void CreateFloatingScreen(Vector3 position, Quaternion rotation)
 		{
@@ -29,9 +33,22 @@ namespace BeatmapScanner.UI
 			_gridViewController.gameObject.SetActive(true);
 			_gridViewController.gameObject.GetComponent<VRGraphicRaycaster>().enabled = false;
 			_floatingScreen.gameObject.SetActive(false);
-		}
 
-		private void OnHandleReleased(object sender, FloatingScreenHandleEventArgs args)
+            this._platformLeaderboardViewController.didActivateEvent += this.OnLeaderboardActivated;
+            this._platformLeaderboardViewController.didDeactivateEvent += this.OnLeaderboardDeactivated;
+        }
+
+        public void OnLeaderboardActivated(bool firstactivation, bool addedtohierarchy, bool screensystemenabling)
+        {
+            _floatingScreen.gameObject.SetActive(true);
+        }
+
+        public void OnLeaderboardDeactivated(bool removedFromHierarchy, bool screenSystemDisabling)
+        {
+            _floatingScreen.gameObject.SetActive(false);
+        }
+
+        private void OnHandleReleased(object sender, FloatingScreenHandleEventArgs args)
 		{
 			if (_floatingScreen.handle.transform.position.y < 0)
 			{

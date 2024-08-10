@@ -133,13 +133,4 @@ namespace BeatmapScanner.HarmonyPatches
             return 0;
         }
 	}
-
-	[HarmonyPatch(typeof(SelectLevelCategoryViewController), nameof(SelectLevelCategoryViewController.LevelFilterCategoryIconSegmentedControlDidSelectCell))]
-	public static class BSPatch2
-	{
-		static void Prefix()
-		{
-            UICreator._floatingScreen?.gameObject.SetActive(false);
-		}
-	}
 }

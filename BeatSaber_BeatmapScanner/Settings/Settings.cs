@@ -115,11 +115,6 @@ namespace BeatmapScanner
                         GridViewController._tiles[5].rectTransform.gameObject.SetActive(false);
                     }
                     GridViewController.Apply(); // Reload text
-                    GridViewController.Show(); // Show
-                }
-                else
-                {
-                    GridViewController.Hide(); // Hide
                 }
             }
         }
