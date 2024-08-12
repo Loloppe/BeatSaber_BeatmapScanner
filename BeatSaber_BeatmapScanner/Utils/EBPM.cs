@@ -71,12 +71,10 @@ namespace BeatmapScanner.Utils
 
             if (effectiveBPM == 10)
             {
-                return bpm;
+                return 0.5f / peakBPM * bpm;
             }
 
-            effectiveBPM = 0.5f / effectiveBPM * bpm;
-
-            return effectiveBPM;
+            return 0.5f / effectiveBPM * bpm;
         }
 
         #region Helper method

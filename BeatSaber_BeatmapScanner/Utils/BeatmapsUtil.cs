@@ -18,21 +18,5 @@
 
             return id.Substring(13, 40);
         }
-
-        public static int GetCharacteristicFromDifficulty(BeatmapKey diff)
-        {
-            var d = diff.beatmapCharacteristic?.sortingOrder;
-
-            if (d == null || d > 4)
-                return 0;
-
-            // 360 and 90 are "flipped" as far as the enum goes
-            if (d == 3)
-                d = 4;
-            else if (d == 4)
-                d = 3;
-
-            return (int)d + 1;
-        }
     }
 }

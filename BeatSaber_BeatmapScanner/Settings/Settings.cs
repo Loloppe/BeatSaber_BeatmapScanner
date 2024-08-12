@@ -116,6 +116,10 @@ namespace BeatmapScanner
                         GridViewController._tiles[5].rectTransform.gameObject.SetActive(false);
                     }
                 }
+                else
+                {
+                    UICreator._floatingScreen.gameObject.SetActive(false);
+                }
             }
         }
 
