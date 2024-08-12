@@ -181,7 +181,6 @@
     <Compile Include="UI\GridViewController.cs" />
     <Compile Include="UI\UICreator.cs" />
     <Compile Include="Utils\BeatmapsUtil.cs" />
-    <Compile Include="Utils\BLStruct.cs" />
     <Compile Include="Utils\ColorConverter.cs" />
     <Compile Include="Utils\EBPM.cs" />
     <Compile Include="Utils\FloatConverter.cs" />

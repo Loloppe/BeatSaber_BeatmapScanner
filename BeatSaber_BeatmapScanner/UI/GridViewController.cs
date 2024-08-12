@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using System;
+using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace BeatmapScanner.UI
 {
@@ -17,7 +19,6 @@ namespace BeatmapScanner.UI
 #pragma warning restore IDE0052 // Remove unread private members
 
         private readonly string[] title = ["V3", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
-		public static List<double> values = [0, 0, 0, 0, 0, 0];
 
         [UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;
@@ -26,10 +27,10 @@ namespace BeatmapScanner.UI
 		[UIComponent("tile")]
 		private readonly ClickableImage _tile;
 
-		public static List<ClickableImage> _tiles = [];
+		public static List<ClickableImage> _tiles = null;
 
 
-		[Inject]
+        [Inject]
 		internal void Construct(DiContainer diContainer)
 		{
 			_diContainer = diContainer;
@@ -110,41 +111,35 @@ namespace BeatmapScanner.UI
 				_tiles[5].rectTransform.gameObject.SetActive(false);
 			}
 
-			DestroyImmediate(_tile.gameObject);
+            DestroyImmediate(_tile.gameObject);
 		}
 
-        public static void ResetValues()
+        public static void Apply(List<double> data)
         {
-            values = [0, 0, 0, 0, 0, 0];
-            Apply();
-        }
-
-        public static void Apply()
-		{
-			for (int i = 0; i < _tiles.Count; i++)
-			{
-				FormattableText[] texts = _tiles[i].transform.GetComponentsInChildren<FormattableText>(true);
-				texts[0].color = Settings.Instance.TitleColor;
-				texts[1].text = Math.Round(values[i], 2).ToString();
-				if (texts[1].text == "0" && i != 0) texts[1].text = "X";
+            for (int i = 0; i < _tiles.Count; i++)
+            {
+                FormattableText[] texts = _tiles[i].transform.GetComponentsInChildren<FormattableText>(true);
+                texts[0].color = Settings.Instance.TitleColor;
+                texts[1].text = Math.Round(data[i], 2).ToString();
+                if (texts[1].text == "0" && i != 0) texts[1].text = "X";
                 switch (i)
-				{
-					case 0: // V3
-						if (values[i] == 1)
-						{
-							texts[1].text = "X";
+                {
+                    case 0: // V3
+                        if (data[i] == 1)
+                        {
+                            texts[1].text = "X";
                         }
                         continue;
                     case 3: // Pass
-                        if (values[i] >= Settings.Instance.PColorC)
+                        if (data[i] >= Settings.Instance.PColorC)
                         {
                             texts[1].color = Settings.Instance.D;
                         }
-                        else if (values[i] >= Settings.Instance.PColorB)
+                        else if (data[i] >= Settings.Instance.PColorB)
                         {
                             texts[1].color = Settings.Instance.C;
                         }
-                        else if (values[i] >= Settings.Instance.PColorA)
+                        else if (data[i] >= Settings.Instance.PColorA)
                         {
                             texts[1].color = Settings.Instance.B;
                         }
@@ -154,15 +149,15 @@ namespace BeatmapScanner.UI
                         }
                         continue;
                     case 4: // Tech
-                        if (values[i] >= Settings.Instance.TColorC)
+                        if (data[i] >= Settings.Instance.TColorC)
                         {
                             texts[1].color = Settings.Instance.D;
                         }
-                        else if (values[i] >= Settings.Instance.TColorB)
+                        else if (data[i] >= Settings.Instance.TColorB)
                         {
                             texts[1].color = Settings.Instance.C;
                         }
-                        else if (values[i] >= Settings.Instance.TColorA)
+                        else if (data[i] >= Settings.Instance.TColorA)
                         {
                             texts[1].color = Settings.Instance.B;
                         }
@@ -172,7 +167,7 @@ namespace BeatmapScanner.UI
                         }
                         continue;
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 }

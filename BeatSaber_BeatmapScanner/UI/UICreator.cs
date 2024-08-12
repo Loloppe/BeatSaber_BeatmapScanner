@@ -40,12 +40,12 @@ namespace BeatmapScanner.UI
 
         public void OnLeaderboardActivated(bool firstactivation, bool addedtohierarchy, bool screensystemenabling)
         {
-            _floatingScreen.gameObject.SetActive(true);
+            if (Settings.Instance.Enabled) _floatingScreen.gameObject.SetActive(true);
         }
 
         public void OnLeaderboardDeactivated(bool removedFromHierarchy, bool screenSystemDisabling)
         {
-            _floatingScreen.gameObject.SetActive(false);
+            if (Settings.Instance.Enabled) _floatingScreen.gameObject.SetActive(false);
         }
 
         private void OnHandleReleased(object sender, FloatingScreenHandleEventArgs args)

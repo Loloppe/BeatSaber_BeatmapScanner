@@ -5,6 +5,7 @@ using BeatmapScanner.Algorithm;
 using IPA.Config.Stores;
 using BeatmapScanner.UI;
 using UnityEngine;
+using BeatSaberMarkupLanguage.FloatingScreen;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
 namespace BeatmapScanner
@@ -114,7 +115,6 @@ namespace BeatmapScanner
                     {
                         GridViewController._tiles[5].rectTransform.gameObject.SetActive(false);
                     }
-                    GridViewController.Apply(); // Reload text
                 }
             }
         }
