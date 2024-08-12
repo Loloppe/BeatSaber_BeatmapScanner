@@ -450,6 +450,7 @@ namespace BeatmapScanner.Utils
                     if (prev.Line == next.Line && prev.Layer == next.Layer && next.CutDirection == 8) return true;
                     if (IsSlid(sim.x, sim.y, next.Line, next.Layer, prev.Direction)) return true;
                 }
+                if ((next.Time - prev.Time) / (bpm / 60) * njs <= 1 && next.CutDirection == 8) return true;
                 return false;
             }
 
