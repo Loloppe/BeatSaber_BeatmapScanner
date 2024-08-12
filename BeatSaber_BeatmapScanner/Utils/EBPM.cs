@@ -296,7 +296,7 @@ namespace BeatmapScanner.Utils
                 else // Is an arrow
                 {
                     cubes[i].Direction = Mod(DirectionToDegree[cubes[i].CutDirection] + cubes[i].AngleOffset, 360);
-                    if ((cubes[i].Time - cubes[i - 1].Time <= 0.125 && SliderCond(cubes[i - 1], cubes[i], lastSimPos, bpm, njs) && IsSameDir(cubes[i - 1].Direction, cubes[i].Direction))
+                    if ((cubes[i].Time - cubes[i - 1].Time <= 0.125 && IsSameDir(cubes[i - 1].Direction, cubes[i].Direction) && SliderCond(cubes[i - 1], cubes[i], lastSimPos, bpm, njs))
                         || cubes[i].Time - cubes[i - 1].Time <= 0.0625)
                     {
                         cubes[i].Pattern = true;
@@ -443,14 +443,13 @@ namespace BeatmapScanner.Utils
         }
         public static bool SliderCond(Cube prev, Cube next, (double x, double y) sim, float bpm, float njs)
         {
-            if (next.CutDirection == 8)
+            if (prev.CutDirection == 8)
             {
                 if (next.Time - prev.Time <= 0.125)
                 {
                     if (prev.Line == next.Line && prev.Layer == next.Layer && next.CutDirection == 8) return true;
                     if (IsSlid(sim.x, sim.y, next.Line, next.Layer, prev.Direction)) return true;
                 }
-                if ((next.Time - prev.Time) / (bpm / 60) * njs <= 0.5 && next.CutDirection == 8) return true;
                 return false;
             }
 
@@ -487,41 +486,41 @@ namespace BeatmapScanner.Utils
                     }
                     break;
                 case double d when d > 112.5 && d <= 157.5:
-                    if (y1 < y2)
+                    if (y1 < y2 && x1 >= x2)
                     {
                         return true;
                     }
-                    if (x1 > x2)
+                    if (x1 > x2 && y1 <= y2)
                     {
                         return true;
                     }
                     break;
                 case double d when d > 22.5 && d <= 67.5:
-                    if (y1 < y2)
+                    if (y1 < y2 && x1 <= x2)
                     {
                         return true;
                     }
-                    if (x1 < x2)
+                    if (x1 < x2 && y1 <= y2)
                     {
                         return true;
                     }
                     break;
                 case double d when d > 202.5 && d <= 247.5:
-                    if (y1 > y2)
+                    if (y1 > y2 && x1 >= x2)
                     {
                         return true;
                     }
-                    if (x1 > x2)
+                    if (x1 > x2 && y1 >= y2)
                     {
                         return true;
                     }
                     break;
                 case double d when d > 292.5 && d <= 337.5:
-                    if (y1 > y2)
+                    if (y1 > y2 && x1 <= x2)
                     {
                         return true;
                     }
-                    if (x1 < x2)
+                    if (x1 < x2 && y1 >= y2)
                     {
                         return true;
                     }
