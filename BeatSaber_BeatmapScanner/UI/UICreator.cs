@@ -22,8 +22,8 @@ namespace BeatmapScanner.UI
 			_floatingScreen.SetRootViewController(_gridViewController, ViewController.AnimationType.None);
 			_floatingScreen.HandleSide = FloatingScreen.Side.Bottom;
 			_floatingScreen.HighlightHandle = true;
-			_floatingScreen.handle.transform.localScale = Vector3.one * 5.0f;
-			_floatingScreen.handle.transform.localPosition = new Vector3(0.0f, -12f, 0.0f);
+			_floatingScreen.Handle.transform.localScale = Vector3.one * 5.0f;
+			_floatingScreen.Handle.transform.localPosition = new Vector3(0.0f, -12f, 0.0f);
 			_floatingScreen.HandleReleased += OnHandleReleased;
 			_floatingScreen.ShowHandle = Settings.Instance.ShowHandle;
 			_floatingScreen.gameObject.name = "BeatmapScannerScreen";
@@ -50,9 +50,9 @@ namespace BeatmapScanner.UI
 
         private void OnHandleReleased(object sender, FloatingScreenHandleEventArgs args)
 		{
-			if (_floatingScreen.handle.transform.position.y < 0)
+			if (_floatingScreen.Handle.transform.position.y < 0)
 			{
-				_floatingScreen.transform.position += new Vector3(0.0f, -_floatingScreen.handle.transform.position.y + 0.1f, 0.0f);
+				_floatingScreen.transform.position += new Vector3(0.0f, -_floatingScreen.Handle.transform.position.y + 0.1f, 0.0f);
 			}
 
 			Settings.Instance.UIPosition = _floatingScreen.transform.position;

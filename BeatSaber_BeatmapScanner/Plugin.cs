@@ -32,14 +32,19 @@ namespace BeatmapScanner
         public void OnEnable()
         {
             harmony.PatchAll(Assembly.GetExecutingAssembly());
-            GameplaySetup.instance.AddTab("BeatmapScanner", "BeatmapScanner.UI.Views.settings.bsml", Settings.Instance, MenuType.All);
+            BeatSaberMarkupLanguage.Util.MainMenuAwaiter.MainMenuInitializing += MainMenuInit;
+        }
+
+        public void MainMenuInit()
+        {
+            GameplaySetup.Instance.AddTab("BeatmapScanner", "BeatmapScanner.UI.Views.settings.bsml", Settings.Instance, MenuType.All);
         }
 
         [OnDisable]
         public void OnDisable()
         {
             harmony.UnpatchSelf();
-            GameplaySetup.instance.RemoveTab("BeatmapScanner");
+            GameplaySetup.Instance.RemoveTab("BeatmapScanner");
         }
     }
 }
