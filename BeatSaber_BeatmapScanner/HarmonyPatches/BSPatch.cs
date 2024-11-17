@@ -33,7 +33,7 @@ namespace BeatmapScanner.HarmonyPatches
                     var hash = BeatmapsUtil.GetHashOfLevel(beatmapLevel);
                     var info = beatmapLevel.GetDifficultyBeatmapData(beatmapKey.beatmapCharacteristic, beatmapKey.difficulty);
                     var beatmapData = await __instance._beatmapLevelsModel.LoadBeatmapLevelDataAsync(beatmapLevel.levelID, BeatmapLevelDataVersion.Original, new());
-                    var beatmap = await __instance._beatmapDataLoader.LoadBeatmapDataAsync(beatmapData.beatmapLevelData, beatmapKey, beatmapLevel.beatsPerMinute, false, null, BeatmapLevelDataVersion.Original, __instance._playerData.gameplayModifiers, __instance._playerData.playerSpecificSettings, false);
+                    var beatmap = await __instance._beatmapDataLoader.LoadBeatmapDataAsync(beatmapData.beatmapLevelData, beatmapKey, beatmapLevel.beatsPerMinute, false, null, null, BeatmapLevelDataVersion.Original, __instance._playerData.gameplayModifiers, __instance._playerData.playerSpecificSettings, false);
                     var colorNotes = beatmap.GetBeatmapDataItems<NoteData>(0).ToList();
                     var sliders = beatmap.GetBeatmapDataItems<SliderData>(0).ToList();
                     // V3
