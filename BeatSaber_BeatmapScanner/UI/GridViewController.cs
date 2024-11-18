@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 using System;
-using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
 
 namespace BeatmapScanner.UI
 {
@@ -18,7 +16,7 @@ namespace BeatmapScanner.UI
 		private DiContainer _diContainer;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        private readonly string[] title = ["V3", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
+        private readonly string[] title = ["Crouch", "", "", "V3", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
 
         [UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;
@@ -47,7 +45,7 @@ namespace BeatmapScanner.UI
 				_tiles.Add(tileInstance);
 			}
 
-			for (int i = 0; i < 1; i++)
+			for (int i = 0; i < 2; i++)
 			{
 				GameObject tileRowInstance = Instantiate(_tileRow, _tileGrid.transform);
 				tileRowInstance.transform.SetAsFirstSibling();
@@ -62,7 +60,7 @@ namespace BeatmapScanner.UI
 				texts[1].text = "";
 			}
 
-			if (Settings.Instance.ShowV3)
+			if (Settings.Instance.ShowCrouch)
 			{
 				_tiles[0].rectTransform.gameObject.SetActive(true);
 			}
@@ -70,23 +68,7 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[0].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowEBPM)
-			{
-				_tiles[1].rectTransform.gameObject.SetActive(true);
-			}
-			else
-			{
-				_tiles[1].rectTransform.gameObject.SetActive(false);
-			}
-			if (Settings.Instance.ShowBL)
-			{
-				_tiles[2].rectTransform.gameObject.SetActive(true);
-			}
-			else
-			{
-				_tiles[2].rectTransform.gameObject.SetActive(false);
-			}
-			if (Settings.Instance.ShowPass)
+			if (Settings.Instance.ShowV3)
 			{
 				_tiles[3].rectTransform.gameObject.SetActive(true);
 			}
@@ -94,7 +76,7 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[3].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowTech)
+			if (Settings.Instance.ShowEBPM)
 			{
 				_tiles[4].rectTransform.gameObject.SetActive(true);
 			}
@@ -102,7 +84,7 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[4].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowSS)
+			if (Settings.Instance.ShowBL)
 			{
 				_tiles[5].rectTransform.gameObject.SetActive(true);
 			}
@@ -110,6 +92,32 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[5].rectTransform.gameObject.SetActive(false);
 			}
+			if (Settings.Instance.ShowPass)
+			{
+				_tiles[6].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				_tiles[6].rectTransform.gameObject.SetActive(false);
+			}
+			if (Settings.Instance.ShowTech)
+			{
+				_tiles[7].rectTransform.gameObject.SetActive(true);
+			}
+			else
+			{
+				_tiles[7].rectTransform.gameObject.SetActive(false);
+			}
+            if (Settings.Instance.ShowSS)
+            {
+                _tiles[8].rectTransform.gameObject.SetActive(true);
+            }
+            else
+            {
+                _tiles[8].rectTransform.gameObject.SetActive(false);
+            }
+            _tiles[1].rectTransform.gameObject.SetActive(false);
+            _tiles[2].rectTransform.gameObject.SetActive(false);
 
             DestroyImmediate(_tile.gameObject);
 		}
@@ -124,13 +132,13 @@ namespace BeatmapScanner.UI
                 if (texts[1].text == "0" && i != 0) texts[1].text = "X";
                 switch (i)
                 {
-                    case 0: // V3
+                    case 3: // V3
                         if (data[i] == 1)
                         {
-                            texts[1].text = "X";
+                            texts[1].text = "✔";
                         }
                         continue;
-                    case 3: // Pass
+                    case 6: // Pass
                         if (data[i] >= Settings.Instance.PColorC)
                         {
                             texts[1].color = Settings.Instance.D;
@@ -148,7 +156,7 @@ namespace BeatmapScanner.UI
                             texts[1].color = Settings.Instance.A;
                         }
                         continue;
-                    case 4: // Tech
+                    case 7: // Tech
                         if (data[i] >= Settings.Instance.TColorC)
                         {
                             texts[1].color = Settings.Instance.D;

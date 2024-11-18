@@ -24,7 +24,7 @@ namespace BeatmapScanner.HarmonyPatches
 		{
             if (Settings.Instance.Enabled)
 			{
-                Data = [0, 0, 0, 0, 0, 0];
+                Data = [0, 0, 0, 0, 0, 0, 0, 0, 0];
                 var beatmapLevel = __instance._beatmapLevel;
 				var beatmapKey = __instance.beatmapKey;
                 if (SongDetailsUtil.songDetails != null && beatmapKey.levelId.Contains("custom"))
@@ -37,7 +37,7 @@ namespace BeatmapScanner.HarmonyPatches
                     var colorNotes = beatmap.GetBeatmapDataItems<NoteData>(0).ToList();
                     var sliders = beatmap.GetBeatmapDataItems<SliderData>(0).ToList();
                     // V3
-                    if (sliders.Count == 0) Data[0] = 1;
+                    if (sliders.Count != 0) Data[3] = 1;
                     if (colorNotes.Count > 0 && beatmapLevel.beatsPerMinute > 0)
                     {
                         if (info.noteJumpMovementSpeed != 0)
@@ -54,7 +54,7 @@ namespace BeatmapScanner.HarmonyPatches
                             {
                                 ebpm = Math.Max(EBPM.GetEBPM(blue, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, true), ebpm);
                             }
-                            Data[1] = Math.Round(ebpm);
+                            Data[4] = Math.Round(ebpm);
                             // BeatLeader-Analyzer pass and tech rating
                             List<Ratings> ratings = null;
                             var folderPath = SongCore.Collections.GetLoadedSaveData(beatmapKey.levelId)?.customLevelFolderInfo.folderPath;
@@ -64,20 +64,24 @@ namespace BeatmapScanner.HarmonyPatches
                                 if (singleDiff != null)
                                 {
                                     ratings = Analyzer.GetRating(singleDiff.Difficulty.Data, characteristic, beatmapKey.difficulty.ToString(), beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed);
+                                    if (singleDiff.Difficulty.Data?.Walls?.Count > 0)
+                                    {
+                                        Data[0] = EBPM.DetectCrouchWalls(singleDiff.Difficulty.Data.Walls);
+                                    }
                                 }
                             }
                             if (ratings != null)
                             {
-                                Data[3] = ratings.FirstOrDefault().Pass;
-                                Data[4] = ratings.FirstOrDefault().Tech * 10;
+                                Data[6] = ratings.FirstOrDefault().Pass;
+                                Data[7] = ratings.FirstOrDefault().Tech * 10;
                             }
                         }
                         // SS and BL star rating
                         var uploaded = SongDetailsUtil.songDetails.instance.songs.FindByHash(hash, out var song);
                         // Doesn't work with OneSaber for some reason
                         song.GetDifficulty(out var difficulty, (MapDifficulty)beatmapKey.difficulty, characteristic);
-                        Data[5] = Math.Round(difficulty.stars, 2);
-                        Data[2] = Math.Round(difficulty.starsBeatleader, 2);
+                        Data[8] = Math.Round(difficulty.stars, 2);
+                        Data[5] = Math.Round(difficulty.starsBeatleader, 2);
                     }
                     GridViewController.Apply(Data);
                 }

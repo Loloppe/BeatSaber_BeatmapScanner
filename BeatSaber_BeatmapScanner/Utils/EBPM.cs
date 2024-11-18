@@ -1,4 +1,5 @@
 ﻿using Analyzer.BeatmapScanner.Data;
+using Parser.Map.Difficulty.V3.Grid;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -582,6 +583,49 @@ namespace BeatmapScanner.Utils
             var simPos = SimSwingPos(cubes[index].Line, cubes[index].Layer, currentAngle);
 
             return (currentAngle, simPos);
+        }
+
+        public static int DetectCrouchWalls(List<Wall> walls)
+        {
+            var crouch = 0;
+            bool x1 = false;
+            float x1end = 0f;
+            bool x2 = false;
+            float x2end = 0f;
+            bool active = false;
+
+            // Need to determine if there's a crouch wall in the middle 2 row at the same time
+            // x <= 1 and x + w - 1 >= 2 | h >= 1 while y >= 2
+            // y above 2 is the same as 2
+            foreach (var wall in walls)
+            {
+                if (wall.Beats > x1end) x1 = false;
+                if (wall.Beats > x2end) x2 = false;
+
+                if (!x1 && !x2) active = false;
+
+                if (wall.y >= 2 && wall.Height >= 1)
+                {
+                    if (wall.x <= 1 && wall.x + wall.Width - 1 >= 1)
+                    {
+                        x1 = true;
+                        x1end = wall.Beats + wall.DurationInBeats;
+                    }
+                    if (wall.x <= 2 && wall.x + wall.Width - 1 >= 2)
+                    {
+                        x2 = true;
+                        x2end = wall.Beats + wall.DurationInBeats;
+                    }
+                }
+
+                if (x1 && x2 && !active)
+                {
+                    crouch++;
+                    active = true;
+                }
+            }
+
+            return crouch;
         }
 
         #endregion
