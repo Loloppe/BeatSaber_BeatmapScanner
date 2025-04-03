@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace BeatmapScanner.Utils
 {
-    internal class EBPM
+    internal class Helper
     {
         public static float GetEBPM(List<NoteData> notes, float bpm, float njs, bool leftOrRight)
         {
@@ -72,10 +72,10 @@ namespace BeatmapScanner.Utils
 
             if (effectiveBPM == 10)
             {
-                return 0.5f / peakBPM * bpm;
+                return (0.5f / peakBPM * bpm);
             }
 
-            return 0.5f / effectiveBPM * bpm;
+            return (0.5f / effectiveBPM * bpm);
         }
 
         #region Helper method
