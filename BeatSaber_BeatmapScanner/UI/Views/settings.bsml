@@ -12,7 +12,7 @@
 		<checkbox-setting apply-on-change="true" value="ShowSS" text="Show SS *"/>
 		<checkbox-setting apply-on-change="true" value="ShowBL" text="Show BL *"/>
 		<checkbox-setting apply-on-change="true" value="ShowEBPM" text="Show EBPM"/>
-		<checkbox-setting apply-on-change="true" value="ShowReset" text="Show Reset"/>
+		<checkbox-setting apply-on-change="true" value="ShowV3" text="Show V3"/>
 	    <checkbox-setting apply-on-change="true" value="ShowCrouch" text="Show Crouch"/>
 		<horizontal>
 			<text text='Colors' align='Center'/>

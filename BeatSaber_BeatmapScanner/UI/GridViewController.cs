@@ -16,7 +16,7 @@ namespace BeatmapScanner.UI
 		private DiContainer _diContainer;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        private readonly string[] title = ["Crouch", "", "", "Reset", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
+        private readonly string[] title = ["Crouch", "", "", "V3", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
 
         [UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;
@@ -68,7 +68,7 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[0].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowReset)
+			if (Settings.Instance.ShowV3)
 			{
 				_tiles[3].rectTransform.gameObject.SetActive(true);
 			}
@@ -132,21 +132,47 @@ namespace BeatmapScanner.UI
                 if (texts[1].text == "0" && i != 0) texts[1].text = "X";
                 switch (i)
                 {
-                    case 3: // Reset
-						if (data[i] > 0) texts[1].color = Color.red;
-						else texts[1].color = texts[0].color;
+                    case 3: // V3
+                        if (data[i] == 1)
+                        {
+                            texts[1].text = "✔";
+                        }
                         continue;
                     case 6: // Pass
-                        if (data[i] >= Settings.Instance.PColorC) texts[1].color = Settings.Instance.D;
-                        else if (data[i] >= Settings.Instance.PColorB) texts[1].color = Settings.Instance.C;
-                        else if (data[i] >= Settings.Instance.PColorA) texts[1].color = Settings.Instance.B;
-                        else texts[1].color = Settings.Instance.A;
+                        if (data[i] >= Settings.Instance.PColorC)
+                        {
+                            texts[1].color = Settings.Instance.D;
+                        }
+                        else if (data[i] >= Settings.Instance.PColorB)
+                        {
+                            texts[1].color = Settings.Instance.C;
+                        }
+                        else if (data[i] >= Settings.Instance.PColorA)
+                        {
+                            texts[1].color = Settings.Instance.B;
+                        }
+                        else
+                        {
+                            texts[1].color = Settings.Instance.A;
+                        }
                         continue;
                     case 7: // Tech
-                        if (data[i] >= Settings.Instance.TColorC) texts[1].color = Settings.Instance.D;
-                        else if (data[i] >= Settings.Instance.TColorB) texts[1].color = Settings.Instance.C;
-                        else if (data[i] >= Settings.Instance.TColorA) texts[1].color = Settings.Instance.B;
-                        else texts[1].color = Settings.Instance.A;
+                        if (data[i] >= Settings.Instance.TColorC)
+                        {
+                            texts[1].color = Settings.Instance.D;
+                        }
+                        else if (data[i] >= Settings.Instance.TColorB)
+                        {
+                            texts[1].color = Settings.Instance.C;
+                        }
+                        else if (data[i] >= Settings.Instance.TColorA)
+                        {
+                            texts[1].color = Settings.Instance.B;
+                        }
+                        else
+                        {
+                            texts[1].color = Settings.Instance.A;
+                        }
                         continue;
                 }
             }

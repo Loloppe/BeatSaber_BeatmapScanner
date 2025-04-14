@@ -70,7 +70,7 @@
       <Private>False</Private>
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\DataModels.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
-      <Publicize>True</Publicize>
+		<Publicize>True</Publicize>
     </Reference>
     <Reference Include="GameplayCore, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <Private>False</Private>
@@ -193,7 +193,7 @@
     <Compile Include="UI\UICreator.cs" />
     <Compile Include="Utils\BeatmapsUtil.cs" />
     <Compile Include="Utils\ColorConverter.cs" />
-    <Compile Include="Utils\Helper.cs" />
+    <Compile Include="Utils\EBPM.cs" />
     <Compile Include="Utils\FloatConverter.cs" />
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="HarmonyPatches\BSPatch.cs" />
