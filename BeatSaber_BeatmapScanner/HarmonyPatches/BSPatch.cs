@@ -86,9 +86,12 @@ namespace BeatmapScanner.HarmonyPatches
                             }
                             // SS and BL star rating
                             var uploaded = SongDetailsUtil.songDetails.instance.songs.FindByHash(hash, out var song);
-                            song.GetDifficulty(out var difficulty, (MapDifficulty)beatmapKey.difficulty, characteristic);
-                            Data[8] = Math.Round(difficulty.stars, 2);
-                            Data[5] = Math.Round(difficulty.starsBeatleader, 2);
+                            if (uploaded)
+                            {
+                                song.GetDifficulty(out var difficulty, (MapDifficulty)beatmapKey.difficulty, characteristic);
+                                Data[8] = Math.Round(difficulty.stars, 2);
+                                Data[5] = Math.Round(difficulty.starsBeatleader, 2);
+                            }
                         }
                         GridViewController.Apply(Data);
                     }
