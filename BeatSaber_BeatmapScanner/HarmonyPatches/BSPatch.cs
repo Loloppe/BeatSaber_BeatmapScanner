@@ -46,17 +46,34 @@ namespace BeatmapScanner.HarmonyPatches
                         {
                             if (info.noteJumpMovementSpeed != 0)
                             {
+                                float timescale;
+                                switch (__instance._playerData.gameplayModifiers.songSpeed)
+                                {
+                                    case GameplayModifiers.SongSpeed.SuperFast:
+                                        timescale = 1.5f;
+                                        break;
+                                    case GameplayModifiers.SongSpeed.Faster:
+                                        timescale = 1.2f;
+                                        break;
+                                    case GameplayModifiers.SongSpeed.Slower:
+                                        timescale = 0.85f;
+                                        break;
+                                    default:
+                                        timescale = 1f;
+                                        break;
+                                }
+
                                 // EBPM
                                 double ebpm = 0;
                                 var red = colorNotes.Where(c => c.colorType == ColorType.ColorA).ToList();
                                 if (red.Count() > 0)
                                 {
-                                    ebpm = EBPM.GetEBPM(red, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, false);
+                                    ebpm = EBPM.GetEBPM(red, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, false) * timescale;
                                 }
                                 var blue = colorNotes.Where(c => c.colorType == ColorType.ColorB).ToList();
                                 if (blue.Count() > 0)
                                 {
-                                    ebpm = Math.Max(EBPM.GetEBPM(blue, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, true), ebpm);
+                                    ebpm = Math.Max(EBPM.GetEBPM(blue, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, true) * timescale, ebpm);
                                 }
                                 Data[4] = Math.Round(ebpm);
                                 // BeatLeader-Analyzer pass and tech rating
@@ -70,7 +87,7 @@ namespace BeatmapScanner.HarmonyPatches
                                         var singleDiff = await Task.Run(() => Parser.TryLoadPath(folderPath, characteristic, beatmapKey.difficulty.ToString()));
                                         if (singleDiff != null)
                                         {
-                                            ratings = await Task.Run(() => Analyzer.GetRating(singleDiff.Difficulty.Data, characteristic, beatmapKey.difficulty.ToString(), beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed));
+                                            ratings = await Task.Run(() => Analyzer.GetRating(singleDiff.Difficulty.Data, characteristic, beatmapKey.difficulty.ToString(), beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, timescale));
                                             if (singleDiff.Difficulty.Data?.Walls?.Count > 0)
                                             {
                                                 Data[0] = EBPM.DetectCrouchWalls(singleDiff.Difficulty.Data.Walls);
