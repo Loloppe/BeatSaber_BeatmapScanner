@@ -6,6 +6,7 @@ This plugin display new values on a mobile UI:
 - ScoreSaber Star rating
 - Peak EBPM (per hand)
 - V3 (Does map contains arc and chain)
+- Crouch Wall count
   
 Configuration include:
 - Turning on/off the UI and the handle
