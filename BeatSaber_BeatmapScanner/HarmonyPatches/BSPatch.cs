@@ -120,6 +120,10 @@ namespace BeatmapScanner.HarmonyPatches
                         );
                     }
                 }
+                catch (Exception ex)
+                {
+                    Plugin.Log.Error("Error during analysis: " + ex.Message);
+                }
                 finally
                 {
                     Processing = false;
