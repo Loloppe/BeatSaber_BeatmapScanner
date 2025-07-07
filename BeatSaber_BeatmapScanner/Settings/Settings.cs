@@ -14,7 +14,6 @@ namespace BeatmapScanner
         public static Settings Instance;
         public virtual bool Enabled { get; set; } = true;
         public virtual bool ShowHandle { get; set; } = false;
-        public virtual bool ImageCoverExpander { get; set; } = false;
         public virtual float EBPM { get; set; } = 4;
         public virtual bool ShowPass { get; set; } = true;
         public virtual bool ShowTech { get; set; } = true;
@@ -57,11 +56,6 @@ namespace BeatmapScanner
         public virtual void Changed() 
         {
             // Do stuff when the config is changed.
-            if (ICEPatch.Instance != null && ((ImageCoverExpander && !ICEPatch.ImageCover) || (!ImageCoverExpander && ICEPatch.ImageCover))) // Reload cover
-            {
-                ICEPatch.Instance.ShowContent((StandardLevelDetailViewController.ContentType)1);
-            }
-
             if (UICreator._floatingScreen != null) 
             {
                 if (Enabled)

@@ -1,7 +1,6 @@
 ﻿<settings-container>
 	    <checkbox-setting apply-on-change="true" value="Enabled" text="Enable"/>
 	    <checkbox-setting apply-on-change="true" value="ShowHandle" text="Show Handle"/>
-		<checkbox-setting apply-on-change="true" value="ImageCoverExpander" text="Use ImageCoverExpander"/>
 		<slider-setting apply-on-change="true" value="EBPM" text="How many notes to consider? (EBPM)"
 						min="1" max="10" increment="1"/>
 		<horizontal>
