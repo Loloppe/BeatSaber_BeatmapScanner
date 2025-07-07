@@ -11,7 +11,6 @@ This plugin display new values on a mobile UI:
 Configuration include:
 - Turning on/off the UI and the handle
 - Turning on/off specific UI element
-- Build-in ImageCoverExpander
 - How many sustained notes for the EBPM
 - Color steps + filters
   
