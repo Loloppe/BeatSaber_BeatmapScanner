@@ -87,7 +87,7 @@ namespace BeatmapScanner.HarmonyPatches
                                         var singleDiff = await Task.Run(() => Parser.TryLoadPath(folderPath, characteristic, beatmapKey.difficulty.ToString()));
                                         if (singleDiff != null)
                                         {
-                                            ratings = await Task.Run(() => Analyzer.GetRating(singleDiff.Difficulty.Data, characteristic, beatmapKey.difficulty.ToString(), beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, timescale));
+                                            ratings = await Task.Run(() => Analyzer.GetRating(singleDiff.Difficulty.Data, characteristic, beatmapKey.difficulty.ToString(), beatmapLevel.beatsPerMinute, timescale));
                                             if (singleDiff.Difficulty.Data?.Walls?.Count > 0)
                                             {
                                                 Data[0] = EBPM.DetectCrouchWalls(singleDiff.Difficulty.Data.Walls);

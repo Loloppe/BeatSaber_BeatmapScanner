@@ -230,12 +230,18 @@
     <Folder Include="Licences\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Libs\System.IO.Pipelines.dll" />
     <Content Include="Libs\Analyzer.dll" />
+    <Content Include="Libs\Microsoft.Bcl.AsyncInterfaces.dll" />
     <Content Include="Libs\Parser.dll" />
     <Content Include="Libs\System.Buffers.dll" />
     <Content Include="Libs\System.Memory.dll" />
     <Content Include="Libs\System.Numerics.Vectors.dll" />
     <Content Include="Libs\System.Runtime.CompilerServices.Unsafe.dll" />
+    <Content Include="Libs\System.Text.Encodings.Web.dll" />
+    <Content Include="Libs\System.Text.Json.dll" />
+    <Content Include="Libs\System.Threading.Tasks.Extensions.dll" />
+    <Content Include="Libs\System.ValueTuple.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ILRepack.targets" />
