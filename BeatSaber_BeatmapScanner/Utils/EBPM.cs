@@ -8,9 +8,9 @@ namespace BeatmapScanner.Utils
 {
     internal class EBPM
     {
-        public static float GetEBPM(List<NoteData> notes, float bpm, float njs, bool leftOrRight)
+        public static float GetEBPM(List<Note> notes, float bpm, float njs, bool leftOrRight)
         {
-            var ordered = notes.OrderBy(x => x.time).ToList();
+            var ordered = notes.OrderBy(x => x.Beats).ToList();
             List<Cube> cubes = [];
             var previous = 0f;
             var effectiveBPM = 10f;
@@ -23,13 +23,13 @@ namespace BeatmapScanner.Utils
             {
                 Cube cube = new()
                 {
-                    AngleOffset = note.cutDirectionAngleOffset,
-                    CutDirection = (int)note.cutDirection,
-                    Type = (int)note.colorType,
-                    Time = bps * note.time,
-                    Line = note.lineIndex,
-                    Layer = (int)note.noteLineLayer,
-                    Direction = DirectionToDegree[(int)note.cutDirection] + note.cutDirectionAngleOffset
+                    AngleOffset = note.AngleOffset,
+                    CutDirection = (int)note.CutDirection,
+                    Type = (int)note.Color,
+                    Time = bps * note.Beats,
+                    Line = note.x,
+                    Layer = (int)note.y,
+                    Direction = DirectionToDegree[(int)note.CutDirection] + note.AngleOffset
                 };
                 cubes.Add(cube);
             }

@@ -1,15 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using BeatmapScanner.Utils;
-using BeatmapScanner.UI;
-using System.Linq;
-using HarmonyLib;
-using System;
-using SongDetailsCache.Structs;
-using beatleader_analyzer;
-using beatleader_parser;
+﻿using beatleader_analyzer;
 using beatleader_analyzer.BeatmapScanner.Data;
+using beatleader_parser;
+using BeatmapScanner.UI;
+using BeatmapScanner.Utils;
+using HarmonyLib;
+using SongDetailsCache.Structs;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BeatmapScanner.HarmonyPatches
 {
@@ -37,12 +37,26 @@ namespace BeatmapScanner.HarmonyPatches
                         var hash = BeatmapsUtil.GetHashOfLevel(beatmapLevel);
                         var info = beatmapLevel.GetDifficultyBeatmapData(beatmapKey.beatmapCharacteristic, beatmapKey.difficulty);
                         var beatmapData = await __instance._beatmapLevelsModel.LoadBeatmapLevelDataAsync(beatmapLevel.levelID, BeatmapLevelDataVersion.Original, new());
-                        var beatmap = await __instance._beatmapDataLoader.LoadBeatmapDataAsync(beatmapData.beatmapLevelData, beatmapKey, beatmapLevel.beatsPerMinute, false, null, null, BeatmapLevelDataVersion.Original, __instance._playerData.gameplayModifiers, __instance._playerData.playerSpecificSettings, false);
-                        var colorNotes = beatmap.GetBeatmapDataItems<NoteData>(0).ToList();
-                        var sliders = beatmap.GetBeatmapDataItems<SliderData>(0).ToList();
+                        // BeatLeader-Parser
+                        var result = SongCore.Loader.CustomLevelLoader._loadedBeatmapSaveData.TryGetValue(beatmapKey.levelId, out var value);
+                        if (!result)
+                        {
+                            Plugin.Log.Error("Error during LoadedSaveData fetch");
+                            return;
+                        }
+                        var infoData = value.customLevelFolderInfo.levelInfoJsonString;
+                        var lightData = await beatmapData.beatmapLevelData.GetLightshowStringAsync(beatmapKey);
+                        var beatData = await beatmapData.beatmapLevelData.GetBeatmapStringAsync(beatmapKey);
+                        var audio = await beatmapData.beatmapLevelData.GetAudioDataStringAsync();
+                        var singleDiff = await Task.Run(() => Parser.TryLoadDifficulty(infoData, beatData, audio, lightData, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed));
+                        if (singleDiff == null)
+                        {
+                            Plugin.Log.Error("Error during Parser data load");
+                            return;
+                        }
                         // V3
-                        if (sliders.Count != 0) Data[3] = 1;
-                        if (colorNotes.Count > 0 && beatmapLevel.beatsPerMinute > 0)
+                        if (singleDiff.Arcs.Count > 0 || singleDiff.Chains.Count > 0) Data[3] = 1;
+                        if (singleDiff.Notes.Count > 0 && beatmapLevel.beatsPerMinute > 0)
                         {
                             if (info.noteJumpMovementSpeed != 0)
                             {
@@ -65,40 +79,27 @@ namespace BeatmapScanner.HarmonyPatches
 
                                 // EBPM
                                 double ebpm = 0;
-                                var red = colorNotes.Where(c => c.colorType == ColorType.ColorA).ToList();
+                                var red = singleDiff.Notes.Where(c => c.Color == (int)ColorType.ColorA).ToList();
                                 if (red.Count() > 0)
                                 {
                                     ebpm = EBPM.GetEBPM(red, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, false) * timescale;
                                 }
-                                var blue = colorNotes.Where(c => c.colorType == ColorType.ColorB).ToList();
+                                var blue = singleDiff.Notes.Where(c => c.Color == (int)ColorType.ColorB).ToList();
                                 if (blue.Count() > 0)
                                 {
                                     ebpm = Math.Max(EBPM.GetEBPM(blue, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, true) * timescale, ebpm);
                                 }
                                 Data[4] = Math.Round(ebpm);
                                 // BeatLeader-Analyzer pass and tech rating
-                                List<Ratings> ratings = null;
-                                var result = SongCore.Loader.CustomLevelLoader._loadedBeatmapSaveData.TryGetValue(beatmapKey.levelId, out var value);
-                                if (result)
+                                List<Ratings> ratings = await Task.Run(() => Analyzer.GetRating(singleDiff, characteristic, beatmapKey.difficulty.ToString(), beatmapLevel.beatsPerMinute, timescale));
+                                if (singleDiff.Walls?.Count > 0)
                                 {
-                                    var folderPath = value.customLevelFolderInfo.folderPath;
-                                    if (folderPath != null)
-                                    {
-                                        var singleDiff = await Task.Run(() => Parser.TryLoadPath(folderPath, characteristic, beatmapKey.difficulty.ToString()));
-                                        if (singleDiff != null)
-                                        {
-                                            ratings = await Task.Run(() => Analyzer.GetRating(singleDiff.Difficulty.Data, characteristic, beatmapKey.difficulty.ToString(), beatmapLevel.beatsPerMinute, timescale));
-                                            if (singleDiff.Difficulty.Data?.Walls?.Count > 0)
-                                            {
-                                                Data[0] = EBPM.DetectCrouchWalls(singleDiff.Difficulty.Data.Walls);
-                                            }
-                                        }
-                                    }
-                                    if (ratings != null)
-                                    {
-                                        Data[6] = ratings.FirstOrDefault().Pass;
-                                        Data[7] = ratings.FirstOrDefault().Tech * 10;
-                                    }
+                                    Data[0] = EBPM.DetectCrouchWalls(singleDiff.Walls);
+                                }
+                                if (ratings != null)
+                                {
+                                    Data[6] = ratings.FirstOrDefault().Pass;
+                                    Data[7] = ratings.FirstOrDefault().Tech * 10;
                                 }
                             }
                             // SS and BL star rating
