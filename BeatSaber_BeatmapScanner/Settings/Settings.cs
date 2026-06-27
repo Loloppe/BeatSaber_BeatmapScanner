@@ -14,13 +14,14 @@ namespace BeatmapScanner
         public static Settings Instance;
         public virtual bool Enabled { get; set; } = true;
         public virtual bool ShowHandle { get; set; } = false;
-        public virtual float EBPM { get; set; } = 4;
         public virtual bool ShowPass { get; set; } = true;
         public virtual bool ShowTech { get; set; } = true;
         public virtual bool ShowSS { get; set; } = true;
         public virtual bool ShowEBPM { get; set; } = true;
         public virtual bool ShowBL { get; set; } = true;
         public virtual bool ShowV3 { get; set; } = true;
+        public virtual bool ShowBomb { get; set; } = true;
+        public virtual bool ShowLinear { get; set; } = true;
         public virtual bool ShowCrouch { get; set; } = true;
         [UseConverter(typeof(ColorConverter))]
         public virtual Color TitleColor { get; set; } = Color.white;
@@ -68,6 +69,22 @@ namespace BeatmapScanner
                     else
                     {
                         GridViewController._tiles[0].rectTransform.gameObject.SetActive(false);
+                    }
+                    if (ShowBomb)
+                    {
+                        GridViewController._tiles[1].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[1].rectTransform.gameObject.SetActive(false);
+                    }
+                    if (ShowLinear)
+                    {
+                        GridViewController._tiles[2].rectTransform.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        GridViewController._tiles[2].rectTransform.gameObject.SetActive(false);
                     }
                     if (ShowV3)
                     {

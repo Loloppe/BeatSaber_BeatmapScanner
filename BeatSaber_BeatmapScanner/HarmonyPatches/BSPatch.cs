@@ -48,7 +48,7 @@ namespace BeatmapScanner.HarmonyPatches
                         var lightData = await beatmapData.beatmapLevelData.GetLightshowStringAsync(beatmapKey);
                         var beatData = await beatmapData.beatmapLevelData.GetBeatmapStringAsync(beatmapKey);
                         var audio = await beatmapData.beatmapLevelData.GetAudioDataStringAsync();
-                        var singleDiff = await Task.Run(() => Parser.TryLoadDifficulty(infoData, beatData, audio, lightData, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed));
+                        var singleDiff = await Task.Run(() => Parser.TryLoadDifficulty(infoData, beatData, audio, lightData, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, characteristic, beatmapKey.difficulty.ToString()).Difficulties[0].Data);
                         if (singleDiff == null)
                         {
                             Plugin.Log.Error("Error during Parser data load");
@@ -76,30 +76,16 @@ namespace BeatmapScanner.HarmonyPatches
                                         timescale = 1f;
                                         break;
                                 }
-
-                                // EBPM
-                                double ebpm = 0;
-                                var red = singleDiff.Notes.Where(c => c.Color == (int)ColorType.ColorA).ToList();
-                                if (red.Count() > 0)
-                                {
-                                    ebpm = EBPM.GetEBPM(red, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, false) * timescale;
-                                }
-                                var blue = singleDiff.Notes.Where(c => c.Color == (int)ColorType.ColorB).ToList();
-                                if (blue.Count() > 0)
-                                {
-                                    ebpm = Math.Max(EBPM.GetEBPM(blue, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, true) * timescale, ebpm);
-                                }
-                                Data[4] = Math.Round(ebpm);
                                 // BeatLeader-Analyzer pass and tech rating
-                                List<Ratings> ratings = await Task.Run(() => Analyzer.GetRating(singleDiff, characteristic, beatmapKey.difficulty.ToString(), beatmapLevel.beatsPerMinute, timescale));
-                                if (singleDiff.Walls?.Count > 0)
-                                {
-                                    Data[0] = EBPM.DetectCrouchWalls(singleDiff.Walls);
-                                }
+                                Ratings ratings = await Task.Run(() => Analyzer.GetRating(singleDiff, characteristic, beatmapKey.difficulty.ToString(), beatmapLevel.beatsPerMinute, timescale));
                                 if (ratings != null)
                                 {
-                                    Data[6] = ratings.FirstOrDefault().Pass;
-                                    Data[7] = ratings.FirstOrDefault().Tech * 10;
+                                    Data[0] = ratings.CrouchWalls.Count();
+                                    Data[1] = ratings.Statistics.BombAvoidances;
+                                    Data[2] = ratings.LinearPercentage;
+                                    Data[4] = ratings.PeakSustainedEBPM;
+                                    Data[6] = ratings.PassRating;
+                                    Data[7] = ratings.TechRating;
                                 }
                             }
                             // SS and BL star rating

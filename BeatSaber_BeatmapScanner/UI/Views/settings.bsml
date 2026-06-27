@@ -1,8 +1,6 @@
 ﻿<settings-container>
 	    <checkbox-setting apply-on-change="true" value="Enabled" text="Enable"/>
 	    <checkbox-setting apply-on-change="true" value="ShowHandle" text="Show Handle"/>
-		<slider-setting apply-on-change="true" value="EBPM" text="How many notes to consider? (EBPM)"
-						min="1" max="10" increment="1"/>
 		<horizontal>
 			<text text='Elements' align='Center'/>
 		</horizontal>
@@ -13,6 +11,8 @@
 		<checkbox-setting apply-on-change="true" value="ShowEBPM" text="Show EBPM"/>
 		<checkbox-setting apply-on-change="true" value="ShowV3" text="Show V3"/>
 	    <checkbox-setting apply-on-change="true" value="ShowCrouch" text="Show Crouch"/>
+		<checkbox-setting apply-on-change="true" value="ShowBomb" text="Show Bomb Avoidance"/>
+		<checkbox-setting apply-on-change="true" value="ShowLinear" text="Show Linear"/>
 		<horizontal>
 			<text text='Colors' align='Center'/>
 		</horizontal>

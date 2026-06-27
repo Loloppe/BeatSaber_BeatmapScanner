@@ -16,7 +16,7 @@ namespace BeatmapScanner.UI
 		private DiContainer _diContainer;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        private readonly string[] title = ["Crouch", "", "", "V3", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
+        private readonly string[] title = ["Crouch", "Bomb Av.", "Linear", "V3", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
 
         [UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;
@@ -68,7 +68,23 @@ namespace BeatmapScanner.UI
 			{
 				_tiles[0].rectTransform.gameObject.SetActive(false);
 			}
-			if (Settings.Instance.ShowV3)
+            if (Settings.Instance.ShowBomb)
+            {
+                _tiles[1].rectTransform.gameObject.SetActive(true);
+            }
+            else
+            {
+                _tiles[1].rectTransform.gameObject.SetActive(false);
+            }
+            if (Settings.Instance.ShowLinear)
+            {
+                _tiles[2].rectTransform.gameObject.SetActive(true);
+            }
+            else
+            {
+                _tiles[2].rectTransform.gameObject.SetActive(false);
+            }
+            if (Settings.Instance.ShowV3)
 			{
 				_tiles[3].rectTransform.gameObject.SetActive(true);
 			}
@@ -116,8 +132,6 @@ namespace BeatmapScanner.UI
             {
                 _tiles[8].rectTransform.gameObject.SetActive(false);
             }
-            _tiles[1].rectTransform.gameObject.SetActive(false);
-            _tiles[2].rectTransform.gameObject.SetActive(false);
 
             DestroyImmediate(_tile.gameObject);
 		}
@@ -129,7 +143,7 @@ namespace BeatmapScanner.UI
                 FormattableText[] texts = _tiles[i].transform.GetComponentsInChildren<FormattableText>(true);
                 texts[0].color = Settings.Instance.TitleColor;
                 texts[1].text = Math.Round(data[i], 2).ToString();
-                if (texts[1].text == "0" && i != 0) texts[1].text = "X";
+                if (texts[1].text == "0" && i != 0 && i != 2) texts[1].text = "X";
                 switch (i)
                 {
                     case 3: // V3

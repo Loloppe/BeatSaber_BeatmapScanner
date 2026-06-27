@@ -49,7 +49,6 @@
     <Reference Include="Analyzer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Analyzer.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="BeatSaber.ViewSystem, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <Private>False</Private>
@@ -80,7 +79,6 @@
     <Reference Include="Parser, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Libs\Parser.dll</HintPath>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -104,7 +102,6 @@
     <Reference Include="IPA.Loader">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\IPA.Loader.dll</HintPath>
       <Private>False</Private>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Unity.TextMeshPro.dll</HintPath>
@@ -192,7 +189,6 @@
     <Compile Include="UI\UICreator.cs" />
     <Compile Include="Utils\BeatmapsUtil.cs" />
     <Compile Include="Utils\ColorConverter.cs" />
-    <Compile Include="Utils\EBPM.cs" />
     <Compile Include="Utils\FloatConverter.cs" />
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="HarmonyPatches\BSPatch.cs" />
