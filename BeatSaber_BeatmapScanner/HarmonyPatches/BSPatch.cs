@@ -29,6 +29,7 @@ namespace BeatmapScanner.HarmonyPatches
                 {
                     Processing = true;
                     Data = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+                    GridViewController.Apply(Data);
                     var beatmapLevel = __instance._beatmapLevel;
                     var beatmapKey = __instance.beatmapKey;
                     if (SongDetailsUtil.songDetails != null && beatmapKey.levelId.Contains("custom"))
