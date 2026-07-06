@@ -7,16 +7,16 @@ This plugin display new values on a mobile UI:
 - Peak EBPM (per hand)
 - V3 (Does map contains arc and chain)
 - Crouch Wall count
+- Bomb Avoidances count
+- Linear Percentage (1 is 100%)
   
 Configuration include:
 - Turning on/off the UI and the handle
 - Turning on/off specific UI element
-- How many sustained notes for the EBPM
 - Color steps + filters
   
 License linked to this project:
 - BetterSongList
-- ImageCoverExpander
 - ppCurve
 - SliceDetails
 - SliceVisualizer
