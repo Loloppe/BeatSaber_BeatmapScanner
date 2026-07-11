@@ -1,6 +1,6 @@
 ﻿<settings-container>
 	    <checkbox-setting apply-on-change="true" value="Enabled" text="Enable"/>
-	    <checkbox-setting apply-on-change="true" value="ShowHandle" text="Show Handle"/>
+		<checkbox-setting apply-on-change="true" value="AllowMoving" text="Allow Moving"/>
 		<horizontal>
 			<text text='Elements' align='Center'/>
 		</horizontal>

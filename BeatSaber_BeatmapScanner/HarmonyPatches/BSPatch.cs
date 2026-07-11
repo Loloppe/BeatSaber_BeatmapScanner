@@ -16,107 +16,119 @@ namespace BeatmapScanner.HarmonyPatches
 	[HarmonyPatch(typeof(StandardLevelDetailView), nameof(StandardLevelDetailView.RefreshContent))]
 	public static class BSPatch
 	{
-        internal static Parse Parser = new();
-        internal static Analyze Analyzer = new();
-        internal static List<double> Data;
-        internal static bool Processing = false;
+		internal static Parse Parser = new();
+		internal static Analyze Analyzer = new();
+		internal static readonly List<double> Data = new(9) { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		private static CancellationTokenSource _cts = new CancellationTokenSource();
 
-        static async void Postfix(StandardLevelDetailView __instance)
+		static async void Postfix(StandardLevelDetailView __instance)
 		{
-            if (Settings.Instance.Enabled && Processing == false)
+			if (!Settings.Instance.Enabled) return;
+
+			// Cancel any in-progress analysis and begin a new one for the latest selection
+			var newCts = new CancellationTokenSource();
+			var oldCts = Interlocked.Exchange(ref _cts, newCts);
+			oldCts.Cancel();
+			oldCts.Dispose();
+			var token = newCts.Token;
+
+			try
 			{
-                try
-                {
-                    Processing = true;
-                    Data = [0, 0, 0, 0, 0, 0, 0, 0, 0];
-                    GridViewController.Apply(Data);
-                    var beatmapLevel = __instance._beatmapLevel;
-                    var beatmapKey = __instance.beatmapKey;
-                    if (SongDetailsUtil.songDetails != null && beatmapKey.levelId.Contains("custom"))
-                    {
-                        var characteristic = beatmapKey.beatmapCharacteristic.serializedName;
-                        var hash = BeatmapsUtil.GetHashOfLevel(beatmapLevel);
-                        var info = beatmapLevel.GetDifficultyBeatmapData(beatmapKey.beatmapCharacteristic, beatmapKey.difficulty);
-                        var beatmapData = await __instance._beatmapLevelsModel.LoadBeatmapLevelDataAsync(beatmapLevel.levelID, BeatmapLevelDataVersion.Original, new());
-                        // BeatLeader-Parser
-                        var result = SongCore.Loader.CustomLevelLoader._loadedBeatmapSaveData.TryGetValue(beatmapKey.levelId, out var value);
-                        if (!result)
-                        {
-                            Plugin.Log.Error("Error during LoadedSaveData fetch");
-                            return;
-                        }
-                        var infoData = value.customLevelFolderInfo.levelInfoJsonString;
-                        var lightData = await beatmapData.beatmapLevelData.GetLightshowStringAsync(beatmapKey);
-                        var beatData = await beatmapData.beatmapLevelData.GetBeatmapStringAsync(beatmapKey);
-                        var audio = await beatmapData.beatmapLevelData.GetAudioDataStringAsync();
-                        var singleDiff = await Task.Run(() => Parser.TryLoadDifficulty(infoData, beatData, audio, lightData, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, characteristic, beatmapKey.difficulty.ToString()).Difficulties[0].Data);
-                        if (singleDiff == null)
-                        {
-                            Plugin.Log.Error("Error during Parser data load");
-                            return;
-                        }
-                        // V3
-                        if (singleDiff.Arcs.Count > 0 || singleDiff.Chains.Count > 0) Data[3] = 1;
-                        if (singleDiff.Notes.Count > 0 && beatmapLevel.beatsPerMinute > 0)
-                        {
-                            if (info.noteJumpMovementSpeed != 0)
-                            {
-                                float timescale;
-                                switch (__instance._playerData.gameplayModifiers.songSpeed)
-                                {
-                                    case GameplayModifiers.SongSpeed.SuperFast:
-                                        timescale = 1.5f;
-                                        break;
-                                    case GameplayModifiers.SongSpeed.Faster:
-                                        timescale = 1.2f;
-                                        break;
-                                    case GameplayModifiers.SongSpeed.Slower:
-                                        timescale = 0.85f;
-                                        break;
-                                    default:
-                                        timescale = 1f;
-                                        break;
-                                }
-                                // BeatLeader-Analyzer pass and tech rating
-                                Ratings ratings = await Task.Run(() => Analyzer.GetRating(singleDiff, characteristic, beatmapKey.difficulty.ToString(), beatmapLevel.beatsPerMinute, timescale));
-                                if (ratings != null)
-                                {
-                                    Data[0] = ratings.CrouchWalls.Count();
-                                    Data[1] = ratings.Statistics.BombAvoidances;
-                                    Data[2] = ratings.LinearPercentage;
-                                    Data[4] = ratings.PeakSustainedEBPM;
-                                    Data[6] = ratings.PassRating;
-                                    Data[7] = ratings.TechRating;
-                                }
-                            }
-                            // SS and BL star rating
-                            var uploaded = SongDetailsUtil.songDetails.instance.songs.FindByHash(hash, out var song);
-                            if (uploaded)
-                            {
-                                song.GetDifficulty(out var difficulty, (MapDifficulty)beatmapKey.difficulty, characteristic);
-                                Data[8] = Math.Round(difficulty.stars, 2);
-                                Data[5] = Math.Round(difficulty.starsBeatleader, 2);
-                            }
-                        }
-                        GridViewController.Apply(Data);
-                    }
-                    else if (!SongDetailsUtil.FinishedInitAttempt)
-                    {
-                        await SongDetailsUtil.TryGet().ContinueWith(
-                            x => { },
-                            CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.FromCurrentSynchronizationContext()
-                        );
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log.Error("Error during analysis: " + ex.Message);
-                }
-                finally
-                {
-                    Processing = false;
-                }
-            }
+				for (int i = 0; i < Data.Count; i++) Data[i] = 0;
+				GridViewController.Apply(Data);
+				var beatmapLevel = __instance._beatmapLevel;
+				var beatmapKey = __instance.beatmapKey;
+				if (SongDetailsUtil.songDetails != null && beatmapKey.levelId.Contains("custom"))
+				{
+					var characteristic = beatmapKey.beatmapCharacteristic.serializedName;
+					var difficultyName = beatmapKey.difficulty.ToString();
+					var hash = BeatmapsUtil.GetHashOfLevel(beatmapLevel);
+					var info = beatmapLevel.GetDifficultyBeatmapData(beatmapKey.beatmapCharacteristic, beatmapKey.difficulty);
+					var beatmapData = await __instance._beatmapLevelsModel.LoadBeatmapLevelDataAsync(beatmapLevel.levelID, BeatmapLevelDataVersion.Original, token);
+					token.ThrowIfCancellationRequested();
+					// BeatLeader-Parser
+					var result = SongCore.Loader.CustomLevelLoader._loadedBeatmapSaveData.TryGetValue(beatmapKey.levelId, out var value);
+                    if (!result)
+					{
+						Plugin.Log.Error("Error during LoadedSaveData fetch");
+						return;
+					}
+					var infoData = value.customLevelFolderInfo.levelInfoJsonString;
+					var lightData = await beatmapData.beatmapLevelData.GetLightshowStringAsync(beatmapKey);
+					token.ThrowIfCancellationRequested();
+					var beatData = await beatmapData.beatmapLevelData.GetBeatmapStringAsync(beatmapKey);
+					token.ThrowIfCancellationRequested();
+					var audio = await beatmapData.beatmapLevelData.GetAudioDataStringAsync();
+					token.ThrowIfCancellationRequested();
+					var singleDiff = await Task.Run(() => Parser.TryLoadDifficulty(infoData, beatData, audio, lightData, beatmapLevel.beatsPerMinute, info.noteJumpMovementSpeed, characteristic, difficultyName).Difficulties[0].Data, token);
+					if (singleDiff == null)
+					{
+						Plugin.Log.Error("Error during Parser data load");
+						return;
+					}
+					token.ThrowIfCancellationRequested();
+					// V3
+					if (singleDiff.Arcs.Count > 0 || singleDiff.Chains.Count > 0) Data[3] = 1;
+					if (singleDiff.Notes.Count > 0 && beatmapLevel.beatsPerMinute > 0)
+					{
+						if (info.noteJumpMovementSpeed != 0)
+						{
+							float timescale;
+							switch (__instance._playerData.gameplayModifiers.songSpeed)
+							{
+								case GameplayModifiers.SongSpeed.SuperFast:
+									timescale = 1.5f;
+									break;
+								case GameplayModifiers.SongSpeed.Faster:
+									timescale = 1.2f;
+									break;
+								case GameplayModifiers.SongSpeed.Slower:
+									timescale = 0.85f;
+									break;
+								default:
+									timescale = 1f;
+									break;
+							}
+							// BeatLeader-Analyzer pass and tech rating
+							Ratings ratings = await Task.Run(() => Analyzer.GetRating(singleDiff, characteristic, difficultyName, beatmapLevel.beatsPerMinute, timescale), token);
+							token.ThrowIfCancellationRequested();
+							if (ratings != null)
+							{
+								Data[0] = ratings.CrouchWalls.Count();
+								Data[1] = ratings.Statistics.BombAvoidances;
+								Data[2] = ratings.LinearPercentage;
+								Data[4] = ratings.PeakSustainedEBPM;
+								Data[6] = ratings.PassRating;
+								Data[7] = ratings.TechRating;
+							}
+						}
+						// SS and BL star rating
+						var uploaded = SongDetailsUtil.songDetails.instance.songs.FindByHash(hash, out var song);
+						if (uploaded)
+						{
+							song.GetDifficulty(out var difficulty, (MapDifficulty)beatmapKey.difficulty, characteristic);
+							Data[8] = Math.Round(difficulty.stars, 2);
+							Data[5] = Math.Round(difficulty.starsBeatleader, 2);
+						}
+					}
+					GridViewController.Apply(Data);
+				}
+				else if (!SongDetailsUtil.FinishedInitAttempt)
+				{
+					await SongDetailsUtil.TryGet().ContinueWith(
+						x => { },
+						CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.FromCurrentSynchronizationContext()
+					);
+				}
+			}
+			catch (OperationCanceledException)
+			{
+				// A newer difficulty was selected; silently discard this result
+			}
+			catch (Exception ex)
+			{
+				Plugin.Log.Error($"Error during analysis: {ex.Message}");
+			}
 		}
 	}
 }

@@ -13,7 +13,7 @@ namespace BeatmapScanner
     {
         public static Settings Instance;
         public virtual bool Enabled { get; set; } = true;
-        public virtual bool ShowHandle { get; set; } = false;
+        public virtual bool AllowMoving { get; set; } = true;
         public virtual bool ShowPass { get; set; } = true;
         public virtual bool ShowTech { get; set; } = true;
         public virtual bool ShowSS { get; set; } = true;
@@ -61,79 +61,8 @@ namespace BeatmapScanner
             {
                 if (Enabled)
                 {
-                    UICreator._floatingScreen.ShowHandle = ShowHandle;
-                    if (ShowCrouch)
-                    {
-                        GridViewController._tiles[0].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[0].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowBomb)
-                    {
-                        GridViewController._tiles[1].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[1].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowLinear)
-                    {
-                        GridViewController._tiles[2].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[2].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowV3)
-                    {
-                        GridViewController._tiles[3].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[3].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowEBPM)
-                    {
-                        GridViewController._tiles[4].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[4].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowBL)
-                    {
-                        GridViewController._tiles[5].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[5].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowPass)
-                    {
-                        GridViewController._tiles[6].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[6].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowTech)
-                    {
-                        GridViewController._tiles[7].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[7].rectTransform.gameObject.SetActive(false);
-                    }
-                    if (ShowSS)
-                    {
-                        GridViewController._tiles[8].rectTransform.gameObject.SetActive(true);
-                    }
-                    else
-                    {
-                        GridViewController._tiles[8].rectTransform.gameObject.SetActive(false);
-                    }
+                    UICreator._floatingScreen.ShowHandle = AllowMoving;
+                    GridViewController.ApplyVisibility();
                 }
                 else
                 {

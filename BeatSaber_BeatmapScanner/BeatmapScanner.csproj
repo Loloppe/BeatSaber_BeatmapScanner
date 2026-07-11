@@ -186,6 +186,7 @@
     <Compile Include="HarmonyPatches\UIPatch.cs" />
     <Compile Include="Installers\MenuInstaller.cs" />
     <Compile Include="UI\GridViewController.cs" />
+    <Compile Include="UI\NonDrawingGraphic.cs" />
     <Compile Include="UI\UICreator.cs" />
     <Compile Include="Utils\BeatmapsUtil.cs" />
     <Compile Include="Utils\ColorConverter.cs" />

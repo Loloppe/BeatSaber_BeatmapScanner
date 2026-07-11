@@ -16,9 +16,9 @@ namespace BeatmapScanner.UI
 		private DiContainer _diContainer;
 #pragma warning restore IDE0052 // Remove unread private members
 
-        private readonly string[] title = ["Crouch", "Bomb Av.", "Linear", "V3", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
+		private readonly string[] title = ["Crouch", "Bomb Av.", "Linear", "V3", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
 
-        [UIObject("tile-grid")]
+		[UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;
 		[UIObject("tile-row")]
 		private readonly GameObject _tileRow;
@@ -26,6 +26,8 @@ namespace BeatmapScanner.UI
 		private readonly ClickableImage _tile;
 
 		public static List<ClickableImage> _tiles = null;
+		// Cached per-tile FormattableText pairs to avoid repeated GetComponentsInChildren calls
+		private static FormattableText[][] _tileTexts = null;
 
 
         [Inject]
@@ -35,112 +37,60 @@ namespace BeatmapScanner.UI
 		}
 
 		[UIAction("#post-parse")]
-		public void PostParse()
-		{
-			_tiles = [];
+			public void PostParse()
+			{
+				_tiles = [];
 
-			for (int i = 0; i < 3; i++)
-			{
-				ClickableImage tileInstance = Instantiate(_tile.gameObject, _tileRow.transform).GetComponent<ClickableImage>();
-				_tiles.Add(tileInstance);
+				for (int i = 0; i < 3; i++)
+				{
+					ClickableImage tileInstance = Instantiate(_tile.gameObject, _tileRow.transform).GetComponent<ClickableImage>();
+					_tiles.Add(tileInstance);
+				}
+
+				for (int i = 0; i < 2; i++)
+				{
+					GameObject tileRowInstance = Instantiate(_tileRow, _tileGrid.transform);
+					tileRowInstance.transform.SetAsFirstSibling();
+					_tiles.AddRange(tileRowInstance.GetComponentsInChildren<ClickableImage>());
+				}
+
+				// Cache FormattableText components once to avoid repeated hierarchy traversals in Apply()
+				_tileTexts = new FormattableText[_tiles.Count][];
+				for (int i = 0; i < _tiles.Count; i++)
+				{
+					_tileTexts[i] = _tiles[i].transform.GetComponentsInChildren<FormattableText>(true);
+					_tileTexts[i][0].text = title[i];
+					_tileTexts[i][1].text = "";
+				}
+
+				ApplyVisibility();
+				DestroyImmediate(_tile.gameObject);
 			}
 
-			for (int i = 0; i < 2; i++)
+			/// <summary>Applies Show* settings to each tile's active state. Call from PostParse and Settings.Changed.</summary>
+			public static void ApplyVisibility()
 			{
-				GameObject tileRowInstance = Instantiate(_tileRow, _tileGrid.transform);
-				tileRowInstance.transform.SetAsFirstSibling();
-				_tiles.AddRange(tileRowInstance.GetComponentsInChildren<ClickableImage>());
+				if (_tiles == null) return;
+				bool[] show = [
+					Settings.Instance.ShowCrouch,
+					Settings.Instance.ShowBomb,
+					Settings.Instance.ShowLinear,
+					Settings.Instance.ShowV3,
+					Settings.Instance.ShowEBPM,
+					Settings.Instance.ShowBL,
+					Settings.Instance.ShowPass,
+					Settings.Instance.ShowTech,
+					Settings.Instance.ShowSS,
+				];
+				for (int i = 0; i < _tiles.Count; i++)
+					_tiles[i].rectTransform.gameObject.SetActive(show[i]);
 			}
-
-			for (int i = 0; i < _tiles.Count; i++)
-			{
-				FormattableText[] texts = _tiles[i].transform.GetComponentsInChildren<FormattableText>(true);
-
-				texts[0].text = title[i];
-				texts[1].text = "";
-			}
-
-			if (Settings.Instance.ShowCrouch)
-			{
-				_tiles[0].rectTransform.gameObject.SetActive(true);
-			}
-			else
-			{
-				_tiles[0].rectTransform.gameObject.SetActive(false);
-			}
-            if (Settings.Instance.ShowBomb)
-            {
-                _tiles[1].rectTransform.gameObject.SetActive(true);
-            }
-            else
-            {
-                _tiles[1].rectTransform.gameObject.SetActive(false);
-            }
-            if (Settings.Instance.ShowLinear)
-            {
-                _tiles[2].rectTransform.gameObject.SetActive(true);
-            }
-            else
-            {
-                _tiles[2].rectTransform.gameObject.SetActive(false);
-            }
-            if (Settings.Instance.ShowV3)
-			{
-				_tiles[3].rectTransform.gameObject.SetActive(true);
-			}
-			else
-			{
-				_tiles[3].rectTransform.gameObject.SetActive(false);
-			}
-			if (Settings.Instance.ShowEBPM)
-			{
-				_tiles[4].rectTransform.gameObject.SetActive(true);
-			}
-			else
-			{
-				_tiles[4].rectTransform.gameObject.SetActive(false);
-			}
-			if (Settings.Instance.ShowBL)
-			{
-				_tiles[5].rectTransform.gameObject.SetActive(true);
-			}
-			else
-			{
-				_tiles[5].rectTransform.gameObject.SetActive(false);
-			}
-			if (Settings.Instance.ShowPass)
-			{
-				_tiles[6].rectTransform.gameObject.SetActive(true);
-			}
-			else
-			{
-				_tiles[6].rectTransform.gameObject.SetActive(false);
-			}
-			if (Settings.Instance.ShowTech)
-			{
-				_tiles[7].rectTransform.gameObject.SetActive(true);
-			}
-			else
-			{
-				_tiles[7].rectTransform.gameObject.SetActive(false);
-			}
-            if (Settings.Instance.ShowSS)
-            {
-                _tiles[8].rectTransform.gameObject.SetActive(true);
-            }
-            else
-            {
-                _tiles[8].rectTransform.gameObject.SetActive(false);
-            }
-
-            DestroyImmediate(_tile.gameObject);
-		}
 
         public static void Apply(List<double> data)
         {
-            for (int i = 0; i < _tiles.Count; i++)
+            for (int i = 0; i < _tileTexts.Length; i++)
             {
-                FormattableText[] texts = _tiles[i].transform.GetComponentsInChildren<FormattableText>(true);
+                FormattableText[] texts = _tileTexts[i];
                 texts[0].color = Settings.Instance.TitleColor;
                 texts[1].text = Math.Round(data[i], 2).ToString();
                 if (texts[1].text == "0" && i != 0 && i != 2) texts[1].text = "X";

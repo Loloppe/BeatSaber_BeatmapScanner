@@ -28,7 +28,8 @@ namespace BeatmapScanner.Utils
 			return v.HVersion >= new Hive.Versioning.Version("1.1.5");
 		}
 
-		public static bool IsAvailable => CheckAvailable();
+		private static bool? _isAvailableCached = null;
+		public static bool IsAvailable => _isAvailableCached ??= CheckAvailable();
 		//public static object instance { get; private set; }
 		public static AntiBox songDetails = null;
 
