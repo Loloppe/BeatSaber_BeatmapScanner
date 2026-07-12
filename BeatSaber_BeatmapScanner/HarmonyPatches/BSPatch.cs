@@ -38,12 +38,10 @@ namespace BeatmapScanner.HarmonyPatches
 				GridViewController.Apply(Data);
 				UICreator.SwingDiffGraph?.ClearGraph();
 				UICreator.SwingTechGraph?.ClearGraph();
-				UICreator.ShowScreens(false);
 				var beatmapLevel = __instance._beatmapLevel;
 				var beatmapKey = __instance.beatmapKey;
 				if (SongDetailsUtil.songDetails != null && beatmapKey.levelId.Contains("custom"))
 				{
-					UICreator.ShowScreens(true);
 					var characteristic = beatmapKey.beatmapCharacteristic.serializedName;
 					var difficultyName = beatmapKey.difficulty.ToString();
 					var hash = BeatmapsUtil.GetHashOfLevel(beatmapLevel);
@@ -55,7 +53,6 @@ namespace BeatmapScanner.HarmonyPatches
                     if (!result)
 					{
 						Plugin.Log.Error("Error during LoadedSaveData fetch");
-                        UICreator.ShowScreens(false);
                         return;
 					}
 					var infoData = value.customLevelFolderInfo.levelInfoJsonString;
@@ -69,7 +66,6 @@ namespace BeatmapScanner.HarmonyPatches
 					if (singleDiff == null)
 					{
 						Plugin.Log.Error("Error during Parser data load");
-                        UICreator.ShowScreens(false);
                         return;
 					}
 					token.ThrowIfCancellationRequested();
@@ -119,7 +115,6 @@ namespace BeatmapScanner.HarmonyPatches
 							else
 							{
                                 Plugin.Log.Error("Error during Analyzer Ratings fetch");
-                                UICreator.ShowScreens(false);
                                 return;
                             }
 						}
@@ -133,14 +128,19 @@ namespace BeatmapScanner.HarmonyPatches
 						}
 					}
 					GridViewController.Apply(Data);
-				}
+                    UICreator.ShowScreens(true);
+                }
 				else if (!SongDetailsUtil.FinishedInitAttempt)
-					{
-						await SongDetailsUtil.TryGet().ContinueWith(
+				{
+					await SongDetailsUtil.TryGet().ContinueWith(
 							x => { Postfix(__instance); }, // Retry after initialization
                             CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.FromCurrentSynchronizationContext()
-						);
-					}
+					);
+				}
+				else // Not custom
+				{
+                    UICreator.ShowScreens(false);
+                }
 			}
 			catch (OperationCanceledException)
 			{
@@ -149,7 +149,6 @@ namespace BeatmapScanner.HarmonyPatches
 			catch (Exception ex)
 			{
 				Plugin.Log.Error($"Error during analysis: {ex.Message}");
-                UICreator.ShowScreens(false);
             }
 		}
 	}
