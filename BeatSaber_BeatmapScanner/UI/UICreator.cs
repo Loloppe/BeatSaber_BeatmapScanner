@@ -1,4 +1,5 @@
 ﻿using BeatSaberMarkupLanguage.FloatingScreen;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using HMUI;
@@ -60,6 +61,7 @@ namespace BeatmapScanner.UI
 			_swingDiffViewController.transform.localEulerAngles = Vector3.zero;
 			_swingDiffViewController.gameObject.SetActive(true);
 			_swingDiffViewController.gameObject.GetComponent<VRGraphicRaycaster>().enabled = false;
+			ApplyNoGlowToScreen(_swingDiffScreen);
 			_swingDiffScreen.gameObject.SetActive(false);
 
 			// Swing tech graph screen
@@ -76,10 +78,25 @@ namespace BeatmapScanner.UI
 			_swingTechViewController.transform.localEulerAngles = Vector3.zero;
 			_swingTechViewController.gameObject.SetActive(true);
 			_swingTechViewController.gameObject.GetComponent<VRGraphicRaycaster>().enabled = false;
+			ApplyNoGlowToScreen(_swingTechScreen);
 			_swingTechScreen.gameObject.SetActive(false);
 
 			this._platformLeaderboardViewController.didActivateEvent += this.OnLeaderboardActivated;
 			this._platformLeaderboardViewController.didDeactivateEvent += this.OnLeaderboardDeactivated;
+		}
+
+		/// <summary>
+		/// Assigns Beat Saber's UINoGlow material to every Image/RawImage on the screen so it is
+		/// not washed out by the Bloom Post Process effect.
+		/// </summary>
+		private static void ApplyNoGlowToScreen(FloatingScreen screen)
+		{
+			var noGlowMat = Resources.FindObjectsOfTypeAll<Material>().FirstOrDefault(m => m.name == "UINoGlow");
+			if (noGlowMat == null) return;
+			foreach (var img in screen.GetComponentsInChildren<Image>(true))
+				img.material = noGlowMat;
+			foreach (var raw in screen.GetComponentsInChildren<RawImage>(true))
+				raw.material = noGlowMat;
 		}
 
 		/// <summary>

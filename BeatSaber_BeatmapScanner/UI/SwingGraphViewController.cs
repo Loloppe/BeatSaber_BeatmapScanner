@@ -1,6 +1,7 @@
 using HMUI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,7 +10,7 @@ namespace BeatmapScanner.UI
 {
     /// <summary>
     /// A pure-code ViewController that renders a smoothed line graph of swing data
-    /// (either SwingDiff or SwingTech over BpmTime) onto a Texture2D displayed via RawImage,
+    /// (either SwingDiff or SwingTech over Seconds) onto a Texture2D displayed via RawImage,
     /// with dynamically-scaled TMPro Y labels and time-based X labels.
     /// </summary>
     internal class SwingGraphViewController : ViewController
@@ -245,7 +246,10 @@ namespace BeatmapScanner.UI
                 filterMode = FilterMode.Bilinear,
                 wrapMode   = TextureWrapMode.Clamp
             };
-            _graphImage.texture = _texture;
+            _graphImage.texture  = _texture;
+            // Use Beat Saber's no-glow material so the RawImage is not affected by the bloom post-process.
+            var noGlowMat = Resources.FindObjectsOfTypeAll<Material>().FirstOrDefault(m => m.name == "UINoGlow");
+            if (noGlowMat != null) _graphImage.material = noGlowMat;
 
             _blankPixels = new Color32[TexWidth * TexHeight];
             for (int i = 0; i < _blankPixels.Length; i++) _blankPixels[i] = BgColor;
