@@ -36,10 +36,14 @@ namespace BeatmapScanner.HarmonyPatches
 			{
 				for (int i = 0; i < Data.Count; i++) Data[i] = 0;
 				GridViewController.Apply(Data);
+				UICreator.SwingDiffGraph?.ClearGraph();
+				UICreator.SwingTechGraph?.ClearGraph();
+				UICreator.ShowScreens(false);
 				var beatmapLevel = __instance._beatmapLevel;
 				var beatmapKey = __instance.beatmapKey;
 				if (SongDetailsUtil.songDetails != null && beatmapKey.levelId.Contains("custom"))
 				{
+					UICreator.ShowScreens(true);
 					var characteristic = beatmapKey.beatmapCharacteristic.serializedName;
 					var difficultyName = beatmapKey.difficulty.ToString();
 					var hash = BeatmapsUtil.GetHashOfLevel(beatmapLevel);
@@ -51,7 +55,8 @@ namespace BeatmapScanner.HarmonyPatches
                     if (!result)
 					{
 						Plugin.Log.Error("Error during LoadedSaveData fetch");
-						return;
+                        UICreator.ShowScreens(false);
+                        return;
 					}
 					var infoData = value.customLevelFolderInfo.levelInfoJsonString;
 					var lightData = await beatmapData.beatmapLevelData.GetLightshowStringAsync(beatmapKey);
@@ -64,7 +69,8 @@ namespace BeatmapScanner.HarmonyPatches
 					if (singleDiff == null)
 					{
 						Plugin.Log.Error("Error during Parser data load");
-						return;
+                        UICreator.ShowScreens(false);
+                        return;
 					}
 					token.ThrowIfCancellationRequested();
 					// V3
@@ -100,7 +106,22 @@ namespace BeatmapScanner.HarmonyPatches
 								Data[4] = ratings.PeakSustainedEBPM;
 								Data[6] = ratings.PassRating;
 								Data[7] = ratings.TechRating;
+								// Swing graphs
+								if (ratings.SwingData != null && ratings.SwingData.Count > 0)
+								{
+									var times = ratings.SwingData.Select(s => (double)s.Cubes[0].Seconds).ToList();
+									var diffs = ratings.SwingData.Select(s => s.SwingDiff).ToList();
+									var techs = ratings.SwingData.Select(s => s.SwingTech * 10).ToList();
+									UICreator.SwingDiffGraph?.SetData(times, diffs);
+									UICreator.SwingTechGraph?.SetData(times, techs);
+								}
 							}
+							else
+							{
+                                Plugin.Log.Error("Error during Analyzer Ratings fetch");
+                                UICreator.ShowScreens(false);
+                                return;
+                            }
 						}
 						// SS and BL star rating
 						var uploaded = SongDetailsUtil.songDetails.instance.songs.FindByHash(hash, out var song);
@@ -114,12 +135,12 @@ namespace BeatmapScanner.HarmonyPatches
 					GridViewController.Apply(Data);
 				}
 				else if (!SongDetailsUtil.FinishedInitAttempt)
-				{
-					await SongDetailsUtil.TryGet().ContinueWith(
-						x => { },
-						CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.FromCurrentSynchronizationContext()
-					);
-				}
+					{
+						await SongDetailsUtil.TryGet().ContinueWith(
+							x => { Postfix(__instance); }, // Retry after initialization
+                            CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, TaskScheduler.FromCurrentSynchronizationContext()
+						);
+					}
 			}
 			catch (OperationCanceledException)
 			{
@@ -128,7 +149,8 @@ namespace BeatmapScanner.HarmonyPatches
 			catch (Exception ex)
 			{
 				Plugin.Log.Error($"Error during analysis: {ex.Message}");
-			}
+                UICreator.ShowScreens(false);
+            }
 		}
 	}
 }

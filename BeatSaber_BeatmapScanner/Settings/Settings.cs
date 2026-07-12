@@ -14,6 +14,9 @@ namespace BeatmapScanner
         public static Settings Instance;
         public virtual bool Enabled { get; set; } = true;
         public virtual bool AllowMoving { get; set; } = true;
+        public virtual bool ShowDataScreen { get; set; } = true;
+        public virtual bool ShowPassGraph { get; set; } = true;
+        public virtual bool ShowTechGraph { get; set; } = true;
         public virtual bool ShowPass { get; set; } = true;
         public virtual bool ShowTech { get; set; } = true;
         public virtual bool ShowSS { get; set; } = true;
@@ -41,6 +44,10 @@ namespace BeatmapScanner
         public virtual float TColorC { get; set; } = 9f;
         public virtual Vector3 UIPosition { get; set; } = new(1.9f, 2.6f, 3.7f);
         public virtual Quaternion UIRotation { get; set; } = Quaternion.Euler(new Vector3(350, 28, 360));
+        public virtual Vector3 SwingDiffGraphPosition { get; set; } = new(-1.2f, 0.2f, 2.0f);
+        public virtual Quaternion SwingDiffGraphRotation { get; set; } = Quaternion.Euler(new Vector3(75, -20, 0));
+        public virtual Vector3 SwingTechGraphPosition { get; set; } = new(1.2f, 0.2f, 2.0f);
+        public virtual Quaternion SwingTechGraphRotation { get; set; } = Quaternion.Euler(new Vector3(75, 20, 0));
 
 
         /// <summary>
@@ -59,16 +66,15 @@ namespace BeatmapScanner
             // Do stuff when the config is changed.
             if (UICreator._floatingScreen != null) 
             {
+                UICreator.ShowScreens(UICreator.CustomLevelActive);
                 if (Enabled)
                 {
-                    UICreator._floatingScreen.ShowHandle = AllowMoving;
-                    GridViewController.ApplyVisibility();
+                    UICreator.ApplyMovingState(UICreator._floatingScreen, AllowMoving);
                 }
-                else
-                {
-                    UICreator._floatingScreen.gameObject.SetActive(false);
-                }
+                // Always sync tile visibility so Show* changes take effect regardless of Enabled state.
+                GridViewController.ApplyVisibility();
             }
+            UICreator.ApplySwingGraphVisibility();
         }
 
         /// <summary>

@@ -4,11 +4,13 @@ using Zenject;
 
 namespace BeatmapScanner.Installers
 {
-    internal class MenuInstaller : Installer<MenuInstaller>
+	internal class MenuInstaller : Installer<MenuInstaller>
 	{
 		public override void InstallBindings()
 		{
 			Container.Bind<GridViewController>().FromNewComponentAsViewController().AsSingle();
+			Container.Bind<SwingGraphViewController>().WithId("SwingDiff").FromNewComponentAsViewController().AsCached();
+			Container.Bind<SwingGraphViewController>().WithId("SwingTech").FromNewComponentAsViewController().AsCached();
 			Container.Bind<UICreator>().AsSingle();
 			Container.BindInterfacesTo<UIPatch>().AsSingle();
 		}

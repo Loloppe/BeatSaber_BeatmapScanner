@@ -1,15 +1,18 @@
 ﻿<settings-container>
 	    <checkbox-setting apply-on-change="true" value="Enabled" text="Enable"/>
 		<checkbox-setting apply-on-change="true" value="AllowMoving" text="Allow Moving"/>
+		<checkbox-setting apply-on-change="true" value="ShowDataScreen" text="Show Data Screen"/>
+		<checkbox-setting apply-on-change="true" value="ShowPassGraph" text="Show Pass Graph"/>
+		<checkbox-setting apply-on-change="true" value="ShowTechGraph" text="Show Tech Graph"/>
 		<horizontal>
 			<text text='Elements' align='Center'/>
 		</horizontal>
 		<checkbox-setting apply-on-change="true" value="ShowPass" text="Show Pass"/>
 		<checkbox-setting apply-on-change="true" value="ShowTech" text="Show Tech"/>
 		<checkbox-setting apply-on-change="true" value="ShowSS" text="Show SS *"/>
-		<checkbox-setting apply-on-change="true" value="ShowBL" text="Show BL *"/>
-		<checkbox-setting apply-on-change="true" value="ShowEBPM" text="Show EBPM"/>
 		<checkbox-setting apply-on-change="true" value="ShowV3" text="Show V3"/>
+		<checkbox-setting apply-on-change="true" value="ShowEBPM" text="Show EBPM"/>
+		<checkbox-setting apply-on-change="true" value="ShowBL" text="Show BL *"/>
 	    <checkbox-setting apply-on-change="true" value="ShowCrouch" text="Show Crouch"/>
 		<checkbox-setting apply-on-change="true" value="ShowBomb" text="Show Bomb Avoidance"/>
 		<checkbox-setting apply-on-change="true" value="ShowLinear" text="Show Linear"/>
