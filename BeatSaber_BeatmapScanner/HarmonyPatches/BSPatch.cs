@@ -42,10 +42,10 @@ namespace BeatmapScanner.HarmonyPatches
 				var beatmapKey = __instance.beatmapKey;
 				if (SongDetailsUtil.songDetails != null && beatmapKey.levelId.Contains("custom"))
 				{
-					var characteristic = beatmapKey.beatmapCharacteristic.serializedName;
+					var characteristic = beatmapKey.characteristic.SerializedName();
 					var difficultyName = beatmapKey.difficulty.ToString();
 					var hash = BeatmapsUtil.GetHashOfLevel(beatmapLevel);
-					var info = beatmapLevel.GetDifficultyBeatmapData(beatmapKey.beatmapCharacteristic, beatmapKey.difficulty);
+					var info = beatmapLevel.GetDifficultyBeatmapData(beatmapKey.characteristic, beatmapKey.difficulty);
 					var beatmapData = await __instance._beatmapLevelsModel.LoadBeatmapLevelDataAsync(beatmapLevel.levelID, BeatmapLevelDataVersion.Original, token);
 					token.ThrowIfCancellationRequested();
 					// BeatLeader-Parser
