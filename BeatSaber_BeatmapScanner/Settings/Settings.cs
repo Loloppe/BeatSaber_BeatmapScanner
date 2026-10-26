@@ -1,9 +1,8 @@
-﻿using BeatmapScanner.HarmonyPatches;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using IPA.Config.Stores.Attributes;
-using BeatmapScanner.Algorithm;
 using IPA.Config.Stores;
 using BeatmapScanner.UI;
+using BeatmapScanner.Utils;
 using UnityEngine;
 
 [assembly: InternalsVisibleTo(GeneratedStore.AssemblyVisibilityTarget)]
@@ -49,40 +48,9 @@ namespace BeatmapScanner
         public virtual Vector3 SwingTechGraphPosition { get; set; } = new(1.2f, 0.2f, 2.0f);
         public virtual Quaternion SwingTechGraphRotation { get; set; } = Quaternion.Euler(new Vector3(75, 20, 0));
 
-
         /// <summary>
-        /// This is called whenever BSIPA reads the config from disk (including when file changes are detected).
+        /// Called by BSIPA whenever a value is changed (including from the settings UI).
         /// </summary>
-        public virtual void OnReload()
-        {
-            // Do stuff after config is read from disk.
-        }
-
-        /// <summary>
-        /// Call this to force BSIPA to update the config file. This is also called by BSIPA if it detects the file was modified.
-        /// </summary>
-        public virtual void Changed() 
-        {
-            // Do stuff when the config is changed.
-            if (UICreator._floatingScreen != null) 
-            {
-                UICreator.ShowScreens(UICreator.CustomLevelActive);
-                if (Enabled)
-                {
-                    UICreator.ApplyMovingState(UICreator._floatingScreen, AllowMoving);
-                }
-                // Always sync tile visibility so Show* changes take effect regardless of Enabled state.
-                GridViewController.ApplyVisibility();
-            }
-            UICreator.ApplySwingGraphVisibility();
-        }
-
-        /// <summary>
-        /// Call this to have BSIPA copy the values from <paramref name="other"/> into this config.
-        /// </summary>
-        public virtual void CopyFrom(Settings other)
-        {
-            // This instance's members populated from other
-        }
+        public virtual void Changed() => UICreator.ApplySettings();
     }
 }

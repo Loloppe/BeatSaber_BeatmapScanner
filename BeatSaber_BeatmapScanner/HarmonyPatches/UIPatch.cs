@@ -6,19 +6,17 @@ namespace BeatmapScanner.HarmonyPatches
 	internal class UIPatch : IAffinity
 	{
 		private readonly UICreator _uiCreator;
-		private bool FirstRun = true;
+		private bool _created;
 
-        public UIPatch(UICreator uiCreator) => _uiCreator = uiCreator;
+		public UIPatch(UICreator uiCreator) => _uiCreator = uiCreator;
 
-        [AffinityPostfix]
+		[AffinityPostfix]
 		[AffinityPatch(typeof(MainMenuViewController), "DidActivate")]
 		internal void Postfix()
 		{
-			if(FirstRun)
-            {
-                _uiCreator.CreateFloatingScreen(Settings.Instance.UIPosition, Settings.Instance.UIRotation);
-                FirstRun = false;
-			}
+			if (_created) return;
+			_uiCreator.CreateFloatingScreen(Settings.Instance.UIPosition, Settings.Instance.UIRotation);
+			_created = true;
 		}
 	}
 }

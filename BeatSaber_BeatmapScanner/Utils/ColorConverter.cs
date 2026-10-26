@@ -3,7 +3,7 @@ using IPA.Config.Stores;
 using System.Linq;
 using UnityEngine;
 
-namespace BeatmapScanner.Algorithm
+namespace BeatmapScanner.Utils
 {
 	internal class ColorConverter : ValueConverter<Color>
 	{

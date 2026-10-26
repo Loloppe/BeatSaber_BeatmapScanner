@@ -189,6 +189,7 @@
     <Compile Include="UI\NonDrawingGraphic.cs" />
     <Compile Include="UI\SwingGraphViewController.cs" />
     <Compile Include="UI\UICreator.cs" />
+    <Compile Include="Utils\AnalysisCache.cs" />
     <Compile Include="Utils\BeatmapsUtil.cs" />
     <Compile Include="Utils\ColorConverter.cs" />
     <Compile Include="Utils\FloatConverter.cs" />
@@ -248,4 +249,19 @@
     <None Include="ILRepack.targets" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- Stamps a fingerprint of the bundled Analyzer and Parser into the assembly so AnalysisCache can discard results from older versions -->
+  <Target Name="GenerateAnalyzerHash" BeforeTargets="CoreCompile">
+    <GetFileHash Files="Libs\Analyzer.dll;Libs\Parser.dll">
+      <Output TaskParameter="Items" ItemName="_AnalyzerLibHash" />
+    </GetFileHash>
+    <PropertyGroup>
+      <_AnalyzerHashFile>$(IntermediateOutputPath)AnalyzerHash.g.cs</_AnalyzerHashFile>
+      <_AnalyzerHash>@(_AnalyzerLibHash->'%(FileHash)', '-')</_AnalyzerHash>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_AnalyzerHashFile)" Lines="[assembly: System.Reflection.AssemblyMetadata(&quot;AnalyzerHash&quot;, &quot;$(_AnalyzerHash)&quot;)]" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_AnalyzerHashFile)" />
+      <FileWrites Include="$(_AnalyzerHashFile)" />
+    </ItemGroup>
+  </Target>
 </Project>

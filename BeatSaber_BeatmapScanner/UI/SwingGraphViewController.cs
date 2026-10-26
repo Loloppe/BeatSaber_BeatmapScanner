@@ -1,7 +1,6 @@
 using HMUI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -30,6 +29,7 @@ namespace BeatmapScanner.UI
 
         private static readonly Color32 BgColor  = new Color32(18, 18, 22, 220);
         private static readonly Color32 GridColor = new Color32(55, 55, 65, 255);
+        private static readonly Color32 PeakColor = new Color32(220, 60, 60, 255);
 
         // Per-instance colors (set via Initialize)
         private Color32 _lineColor = new Color32(100, 220, 130, 255);
@@ -39,6 +39,7 @@ namespace BeatmapScanner.UI
         private Texture2D       _texture;
         private TextMeshProUGUI _overlayTitle;
         private Color32[]       _blankPixels;
+        private Color32[]       _pixels;
 
         private string _graphTitle = "";
 
@@ -69,15 +70,22 @@ namespace BeatmapScanner.UI
             _texture.SetPixels32(_blankPixels);
             _texture.Apply();
             if (_overlayTitle != null) _overlayTitle.gameObject.SetActive(true);
+            if (_yLabelTexts != null)
+                foreach (var lbl in _yLabelTexts)
+                    if (lbl != null) lbl.gameObject.SetActive(false);
             if (_xLabelTexts != null)
                 foreach (var lbl in _xLabelTexts)
                     if (lbl != null) lbl.text = "";
         }
 
         /// <summary>Draws a smoothed line graph from the given time/value pairs with a dynamic Y scale.</summary>
-        public void SetData(List<double> times, List<double> values)
+        public void SetData(IReadOnlyList<float> times, IReadOnlyList<float> values)
         {
-            if (_texture == null || times == null || values == null || times.Count < 2) return;
+            if (_texture == null || times == null || values == null || times.Count < 2 || times.Count != values.Count) return;
+            double tMin     = times[0];
+            double tMax     = times[times.Count - 1];
+            double duration = tMax - tMin;
+            if (duration <= 0) return;
             if (_overlayTitle != null) _overlayTitle.gameObject.SetActive(false);
 
             // ── Smooth (O(n) sliding-window sum instead of O(n×W)) ────────────
@@ -136,9 +144,6 @@ namespace BeatmapScanner.UI
             }
 
             // ── X axis labels ─────────────────────────────────────────────────
-            double tMin     = times[0];
-            double tMax     = times[times.Count - 1];
-            double duration = tMax - tMin;
             if (_xLabelTexts != null)
                 for (int i = 0; i < _xLabelTexts.Length; i++)
                     if (_xLabelTexts[i] != null)
@@ -153,16 +158,16 @@ namespace BeatmapScanner.UI
             int dH = TexHeight - mT - mB;
 
             // Precompute pixel X for each sample once (used in fill + line loops)
-            double tRange = tMax - tMin;
             var pixelXs = new int[n];
             for (int i = 0; i < n; i++)
-                pixelXs[i] = mL + (int)((times[i] - tMin) / tRange * (dW - 1));
+                pixelXs[i] = mL + (int)((times[i] - tMin) / duration * (dW - 1));
 
             int ToPixelY(double v) =>
                 mB + (int)(Mathf.Clamp01((float)(v / _yMax)) * (dH - 1));
 
             // Reset pixel buffer
-            var pixels = (Color32[])_blankPixels.Clone();
+            var pixels = _pixels;
+            Array.Copy(_blankPixels, pixels, pixels.Length);
 
             // ── Dashed Y grid lines at each non-zero tick ─────────────────────
             for (int i = 1; i < tickCount; i++)
@@ -185,14 +190,13 @@ namespace BeatmapScanner.UI
             {
                 int x0 = pixelXs[i],               x1 = pixelXs[i + 1];
                 int y0 = ToPixelY(smoothed[i]),     y1 = ToPixelY(smoothed[i + 1]);
-                int xS = Mathf.Min(x0, x1),         xE = Mathf.Max(x0, x1);
+                int xS = Mathf.Max(Mathf.Min(x0, x1), 0), xE = Mathf.Min(Mathf.Max(x0, x1), TexWidth - 1);
                 for (int px = xS; px <= xE; px++)
                 {
                     float ft   = (xE == xS) ? 0f : (float)(px - xS) / (xE - xS);
-                    int   yTop = Mathf.RoundToInt(Mathf.Lerp(y0, y1, ft));
+                    int   yTop = Mathf.Min(Mathf.RoundToInt(Mathf.Lerp(y0, y1, ft)), TexHeight - 1);
                     for (int py = mB; py <= yTop; py++)
                     {
-                        if (px < 0 || px >= TexWidth || py < 0 || py >= TexHeight) continue;
                         int   idx = py * TexWidth + px;
                         Color32 dst = pixels[idx];
                         pixels[idx] = new Color32(
@@ -208,11 +212,10 @@ namespace BeatmapScanner.UI
             int peakIdx = 0;
             for (int i = 1; i < smoothed.Length; i++)
                 if (smoothed[i] > smoothed[peakIdx]) peakIdx = i;
-            int peakX     = pixelXs[peakIdx];
-            var peakColor = new Color32(220, 60, 60, 255);
+            int peakX = pixelXs[peakIdx];
             for (int py = mB; py < TexHeight - mT; py++)
                 if ((py / 4) % 2 == 0)
-                    SetPixel(pixels, peakX, py, peakColor);
+                    SetPixel(pixels, peakX, py, PeakColor);
 
             // ── Data line ─────────────────────────────────────────────────────
             for (int i = 0; i < smoothed.Length - 1; i++)
@@ -248,11 +251,12 @@ namespace BeatmapScanner.UI
             };
             _graphImage.texture  = _texture;
             // Use Beat Saber's no-glow material so the RawImage is not affected by the bloom post-process.
-            var noGlowMat = Resources.FindObjectsOfTypeAll<Material>().FirstOrDefault(m => m.name == "UINoGlow");
+            var noGlowMat = UICreator.NoGlowMaterial;
             if (noGlowMat != null) _graphImage.material = noGlowMat;
 
             _blankPixels = new Color32[TexWidth * TexHeight];
             for (int i = 0; i < _blankPixels.Length; i++) _blankPixels[i] = BgColor;
+            _pixels = new Color32[_blankPixels.Length];
 
             // Centered overlay title (shown when no data)
             var overlayGo   = new GameObject("OverlayTitle");
@@ -299,14 +303,12 @@ namespace BeatmapScanner.UI
                 float rawMax = screenX + halfW;
                 if (rawMax > rightEdge) { float shift = rawMax - rightEdge; rawMax -= shift; rawMin -= shift; }
                 if (rawMin < LeftFrac)  rawMin = LeftFrac;
-                float minX = rawMin;
-                float maxX = rawMax;
 
                 var go  = new GameObject("XLabel_" + i);
                 go.transform.SetParent(transform, false);
                 var rt  = go.AddComponent<RectTransform>();
-                rt.anchorMin = new Vector2(minX, 0f);
-                rt.anchorMax = new Vector2(maxX, BottomFrac - 0.01f);
+                rt.anchorMin = new Vector2(rawMin, 0f);
+                rt.anchorMax = new Vector2(rawMax, BottomFrac - 0.01f);
                 rt.offsetMin = rt.offsetMax = Vector2.zero;
 
                 var tmp = go.AddComponent<TextMeshProUGUI>();
@@ -347,16 +349,6 @@ namespace BeatmapScanner.UI
             int m = (int)(seconds / 60);
             int s = (int)(seconds % 60);
             return m + ":" + s.ToString("D2");
-        }
-
-        private static Color32 Blend(Color32 dst, Color32 src)
-        {
-            float a = src.a / 255f;
-            return new Color32(
-                (byte)(src.r * a + dst.r * (1f - a)),
-                (byte)(src.g * a + dst.g * (1f - a)),
-                (byte)(src.b * a + dst.b * (1f - a)),
-                255);
         }
 
         private static void DrawLine(Color32[] pixels, int x0, int y0, int x1, int y1, Color32 color)

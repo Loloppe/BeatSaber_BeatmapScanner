@@ -16,7 +16,6 @@ namespace BeatmapScanner.Utils
 		}
 
 		public static bool FinishedInitAttempt { get; private set; } = false;
-		public static bool AttemptedToInit { get; private set; } = false;
 
 		static bool CheckAvailable()
 		{
@@ -30,14 +29,12 @@ namespace BeatmapScanner.Utils
 
 		private static bool? _isAvailableCached = null;
 		public static bool IsAvailable => _isAvailableCached ??= CheckAvailable();
-		//public static object instance { get; private set; }
 		public static AntiBox songDetails = null;
 
 		public static async Task<AntiBox> TryGet()
 		{
 			if (!FinishedInitAttempt)
 			{
-				AttemptedToInit = true;
 				try
 				{
 					if (IsAvailable)

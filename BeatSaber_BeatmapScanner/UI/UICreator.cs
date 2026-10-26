@@ -1,4 +1,5 @@
 ﻿using BeatSaberMarkupLanguage.FloatingScreen;
+using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,85 +14,89 @@ namespace BeatmapScanner.UI
 		private readonly GridViewController _gridViewController;
 		private readonly SwingGraphViewController _swingDiffViewController;
 		private readonly SwingGraphViewController _swingTechViewController;
+		private readonly PlatformLeaderboardViewController _platformLeaderboardViewController;
 
 		public static FloatingScreen _floatingScreen = null;
-			public static FloatingScreen _swingDiffScreen = null;
-			public static FloatingScreen _swingTechScreen = null;
-			public static SwingGraphViewController SwingDiffGraph = null;
-			public static SwingGraphViewController SwingTechGraph = null;
+		public static FloatingScreen _swingDiffScreen = null;
+		public static FloatingScreen _swingTechScreen = null;
+		public static SwingGraphViewController SwingDiffGraph = null;
+		public static SwingGraphViewController SwingTechGraph = null;
 
-			/// <summary>True only while a custom level is selected and screens should be visible.</summary>
-			public static bool CustomLevelActive = false;
+		/// <summary>True only while a custom level is selected and screens should be visible.</summary>
+		public static bool CustomLevelActive = false;
 
-		public UICreator(GridViewController gridViewController, [Inject(Id = "SwingDiff")] SwingGraphViewController swingDiffViewController, [Inject(Id = "SwingTech")] SwingGraphViewController swingTechViewController)
+		private static Material _noGlowMaterial;
+		/// <summary>Beat Saber's UINoGlow material, which is not washed out by the Bloom Post Process effect.</summary>
+		public static Material NoGlowMaterial
+		{
+			get
+			{
+				if (_noGlowMaterial == null)
+					_noGlowMaterial = Resources.FindObjectsOfTypeAll<Material>().FirstOrDefault(m => m.name == "UINoGlow");
+				return _noGlowMaterial;
+			}
+		}
+
+		public UICreator(GridViewController gridViewController, [Inject(Id = "SwingDiff")] SwingGraphViewController swingDiffViewController, [Inject(Id = "SwingTech")] SwingGraphViewController swingTechViewController, PlatformLeaderboardViewController platformLeaderboardViewController)
 		{
 			_gridViewController = gridViewController;
 			_swingDiffViewController = swingDiffViewController;
 			_swingTechViewController = swingTechViewController;
+			_platformLeaderboardViewController = platformLeaderboardViewController;
 		}
-
-		[Inject]
-		private PlatformLeaderboardViewController _platformLeaderboardViewController;
 
 		public void CreateFloatingScreen(Vector3 position, Quaternion rotation)
 		{
-			_floatingScreen = FloatingScreen.CreateFloatingScreen(new Vector2(50f, 50f), true, position, rotation);
-				_floatingScreen.SetRootViewController(_gridViewController, ViewController.AnimationType.None);
-				SetupHandle(_floatingScreen, Settings.Instance.AllowMoving);
-				_floatingScreen.HandleReleased += OnHandleReleased;
-			_floatingScreen.gameObject.name = "BeatmapScannerScreen";
+			_floatingScreen = CreateScreen(new Vector2(50f, 50f), position, rotation, _gridViewController, "BeatmapScannerScreen",
+				(pos, rot) => { Settings.Instance.UIPosition = pos; Settings.Instance.UIRotation = rot; });
 
-			_gridViewController.transform.localScale = Vector3.one;
-			_gridViewController.transform.localEulerAngles = Vector3.zero;
-			_gridViewController.gameObject.SetActive(true);
-			_gridViewController.gameObject.GetComponent<VRGraphicRaycaster>().enabled = false;
-			_floatingScreen.gameObject.SetActive(false);
-
-			// Swing diff graph screen
-			_swingDiffScreen = FloatingScreen.CreateFloatingScreen(new Vector2(80f, 50f), true, Settings.Instance.SwingDiffGraphPosition, Settings.Instance.SwingDiffGraphRotation);
-			_swingDiffScreen.SetRootViewController(_swingDiffViewController, ViewController.AnimationType.None);
-			SetupHandle(_swingDiffScreen, Settings.Instance.AllowMoving);
-			_swingDiffScreen.HandleReleased += OnSwingDiffHandleReleased;
-			_swingDiffScreen.gameObject.name = "SwingDiffGraphScreen";
-			_swingDiffViewController.Initialize("Swing Diff",
-				new UnityEngine.Color32(100, 220, 130, 255),
-				new UnityEngine.Color32(60, 160, 90, 60));
-			SwingDiffGraph = _swingDiffViewController;
-			_swingDiffViewController.transform.localScale = Vector3.one;
-			_swingDiffViewController.transform.localEulerAngles = Vector3.zero;
-			_swingDiffViewController.gameObject.SetActive(true);
-			_swingDiffViewController.gameObject.GetComponent<VRGraphicRaycaster>().enabled = false;
+			_swingDiffViewController.Initialize("Swing Diff", new Color32(100, 220, 130, 255), new Color32(60, 160, 90, 60));
+			_swingDiffScreen = CreateScreen(new Vector2(80f, 50f), Settings.Instance.SwingDiffGraphPosition, Settings.Instance.SwingDiffGraphRotation, _swingDiffViewController, "SwingDiffGraphScreen",
+				(pos, rot) => { Settings.Instance.SwingDiffGraphPosition = pos; Settings.Instance.SwingDiffGraphRotation = rot; });
 			ApplyNoGlowToScreen(_swingDiffScreen);
-			_swingDiffScreen.gameObject.SetActive(false);
+			SwingDiffGraph = _swingDiffViewController;
 
-			// Swing tech graph screen
-			_swingTechScreen = FloatingScreen.CreateFloatingScreen(new Vector2(80f, 50f), true, Settings.Instance.SwingTechGraphPosition, Settings.Instance.SwingTechGraphRotation);
-			_swingTechScreen.SetRootViewController(_swingTechViewController, ViewController.AnimationType.None);
-			SetupHandle(_swingTechScreen, Settings.Instance.AllowMoving);
-			_swingTechScreen.HandleReleased += OnSwingTechHandleReleased;
-			_swingTechScreen.gameObject.name = "SwingTechGraphScreen";
-			_swingTechViewController.Initialize("Swing Tech",
-				new UnityEngine.Color32(255, 180, 60, 255),
-				new UnityEngine.Color32(180, 110, 30, 60));
-			SwingTechGraph = _swingTechViewController;
-			_swingTechViewController.transform.localScale = Vector3.one;
-			_swingTechViewController.transform.localEulerAngles = Vector3.zero;
-			_swingTechViewController.gameObject.SetActive(true);
-			_swingTechViewController.gameObject.GetComponent<VRGraphicRaycaster>().enabled = false;
+			_swingTechViewController.Initialize("Swing Tech", new Color32(255, 180, 60, 255), new Color32(180, 110, 30, 60));
+			_swingTechScreen = CreateScreen(new Vector2(80f, 50f), Settings.Instance.SwingTechGraphPosition, Settings.Instance.SwingTechGraphRotation, _swingTechViewController, "SwingTechGraphScreen",
+				(pos, rot) => { Settings.Instance.SwingTechGraphPosition = pos; Settings.Instance.SwingTechGraphRotation = rot; });
 			ApplyNoGlowToScreen(_swingTechScreen);
-			_swingTechScreen.gameObject.SetActive(false);
+			SwingTechGraph = _swingTechViewController;
 
-			this._platformLeaderboardViewController.didActivateEvent += this.OnLeaderboardActivated;
-			this._platformLeaderboardViewController.didDeactivateEvent += this.OnLeaderboardDeactivated;
+			_platformLeaderboardViewController.didActivateEvent += OnLeaderboardActivated;
+			_platformLeaderboardViewController.didDeactivateEvent += OnLeaderboardDeactivated;
 		}
 
 		/// <summary>
-		/// Assigns Beat Saber's UINoGlow material to every Image/RawImage on the screen so it is
-		/// not washed out by the Bloom Post Process effect.
+		/// Creates a hidden, draggable floating screen hosting <paramref name="viewController"/>.
+		/// <paramref name="savePose"/> is called with the screen's position and rotation whenever it is dropped.
 		/// </summary>
+		private static FloatingScreen CreateScreen(Vector2 size, Vector3 position, Quaternion rotation, ViewController viewController, string name, Action<Vector3, Quaternion> savePose)
+		{
+			var screen = FloatingScreen.CreateFloatingScreen(size, true, position, rotation);
+			screen.SetRootViewController(viewController, ViewController.AnimationType.None);
+			SetupHandle(screen, Settings.Instance.AllowMoving);
+			screen.HandleReleased += (sender, args) =>
+			{
+				// Keep the screen above the floor
+				float handleY = screen.Handle.transform.position.y;
+				if (handleY < 0)
+					screen.transform.position += new Vector3(0f, -handleY + 0.1f, 0f);
+				savePose(screen.transform.position, screen.transform.rotation);
+			};
+			screen.gameObject.name = name;
+
+			viewController.transform.localScale = Vector3.one;
+			viewController.transform.localEulerAngles = Vector3.zero;
+			viewController.gameObject.SetActive(true);
+			viewController.gameObject.GetComponent<VRGraphicRaycaster>().enabled = false;
+			screen.gameObject.SetActive(false);
+			return screen;
+		}
+
+		/// <summary>Assigns <see cref="NoGlowMaterial"/> to every Image/RawImage on the screen.</summary>
 		private static void ApplyNoGlowToScreen(FloatingScreen screen)
 		{
-			var noGlowMat = Resources.FindObjectsOfTypeAll<Material>().FirstOrDefault(m => m.name == "UINoGlow");
+			var noGlowMat = NoGlowMaterial;
 			if (noGlowMat == null) return;
 			foreach (var img in screen.GetComponentsInChildren<Image>(true))
 				img.material = noGlowMat;
@@ -136,11 +141,11 @@ namespace BeatmapScanner.UI
 			overlayRect.offsetMin = Vector2.zero;
 			overlayRect.offsetMax = Vector2.zero;
 			var overlay = overlayGo.AddComponent<NonDrawingGraphic>();
-			overlay.raycastTarget = true;
+			overlay.raycastTarget = allowMoving;
 		}
 
 		/// <summary>Toggles a floating screen's handle visibility and its drag-overlay raycast target together.</summary>
-		public static void ApplyMovingState(FloatingScreen screen, bool allowMoving)
+		private static void ApplyMovingState(FloatingScreen screen, bool allowMoving)
 		{
 			if (screen == null) return;
 			screen.ShowHandle = allowMoving;
@@ -148,76 +153,42 @@ namespace BeatmapScanner.UI
 			if (overlay != null) overlay.raycastTarget = allowMoving;
 		}
 
-		/// <summary>Shows or hides the swing graph screens according to current settings.</summary>
-		public static void ApplySwingGraphVisibility()
+		/// <summary>Re-applies visibility and moving state to all screens. Called whenever the settings change.</summary>
+		public static void ApplySettings()
 		{
-			if (Settings.Instance == null) return;
-			// Only force-hide; showing is handled by ShowScreens when data is available.
-			if (!Settings.Instance.Enabled || !Settings.Instance.ShowPassGraph)
-				if (_swingDiffScreen != null) _swingDiffScreen.gameObject.SetActive(false);
-			if (!Settings.Instance.Enabled || !Settings.Instance.ShowTechGraph)
-				if (_swingTechScreen != null) _swingTechScreen.gameObject.SetActive(false);
+			if (_floatingScreen == null) return;
+			ShowScreens(CustomLevelActive);
+			ApplyMovingState(_floatingScreen, Settings.Instance.AllowMoving);
 			ApplyMovingState(_swingDiffScreen, Settings.Instance.AllowMoving);
 			ApplyMovingState(_swingTechScreen, Settings.Instance.AllowMoving);
+			GridViewController.ApplyVisibility();
 		}
 
 		/// <summary>Shows or hides the floating screens according to the per-screen settings and the Enabled flag.</summary>
 		public static void ShowScreens(bool visible)
 		{
 			CustomLevelActive = visible;
-			if (_floatingScreen != null)
-				_floatingScreen.gameObject.SetActive(visible && Settings.Instance.Enabled && Settings.Instance.ShowDataScreen);
-			if (_swingDiffScreen != null)
-				_swingDiffScreen.gameObject.SetActive(visible && Settings.Instance.Enabled && Settings.Instance.ShowPassGraph);
-			if (_swingTechScreen != null)
-				_swingTechScreen.gameObject.SetActive(visible && Settings.Instance.Enabled && Settings.Instance.ShowTechGraph);
+			bool show = visible && Settings.Instance.Enabled;
+			SetScreenActive(_floatingScreen, show && Settings.Instance.ShowDataScreen);
+			SetScreenActive(_swingDiffScreen, show && Settings.Instance.ShowPassGraph);
+			SetScreenActive(_swingTechScreen, show && Settings.Instance.ShowTechGraph);
 		}
 
-		public void OnLeaderboardActivated(bool firstactivation, bool addedtohierarchy, bool screensystemenabling)
+		private static void SetScreenActive(FloatingScreen screen, bool active)
 		{
-			if (!CustomLevelActive) return;
-			if (Settings.Instance.Enabled && Settings.Instance.ShowDataScreen)
-				_floatingScreen?.gameObject.SetActive(true);
-			if (Settings.Instance.Enabled && Settings.Instance.ShowPassGraph)
-				_swingDiffScreen?.gameObject.SetActive(true);
-			if (Settings.Instance.Enabled && Settings.Instance.ShowTechGraph)
-				_swingTechScreen?.gameObject.SetActive(true);
+			if (screen != null) screen.gameObject.SetActive(active);
 		}
 
-		public void OnLeaderboardDeactivated(bool removedFromHierarchy, bool screenSystemDisabling)
+		private void OnLeaderboardActivated(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
 		{
-			_floatingScreen.gameObject.SetActive(false);
-			if (_swingDiffScreen != null) _swingDiffScreen.gameObject.SetActive(false);
-			if (_swingTechScreen != null) _swingTechScreen.gameObject.SetActive(false);
+			if (CustomLevelActive) ShowScreens(true);
 		}
 
-		private void OnHandleReleased(object sender, FloatingScreenHandleEventArgs args)
+		private void OnLeaderboardDeactivated(bool removedFromHierarchy, bool screenSystemDisabling)
 		{
-			if (_floatingScreen.Handle.transform.position.y < 0)
-			{
-				_floatingScreen.transform.position += new Vector3(0.0f, -_floatingScreen.Handle.transform.position.y + 0.1f, 0.0f);
-			}
-
-			Settings.Instance.UIPosition = _floatingScreen.transform.position;
-			Settings.Instance.UIRotation = _floatingScreen.transform.rotation;
-		}
-
-		private void OnSwingDiffHandleReleased(object sender, FloatingScreenHandleEventArgs args)
-		{
-			if (_swingDiffScreen.Handle.transform.position.y < 0)
-				_swingDiffScreen.transform.position += new Vector3(0f, -_swingDiffScreen.Handle.transform.position.y + 0.1f, 0f);
-
-			Settings.Instance.SwingDiffGraphPosition = _swingDiffScreen.transform.position;
-			Settings.Instance.SwingDiffGraphRotation = _swingDiffScreen.transform.rotation;
-		}
-
-		private void OnSwingTechHandleReleased(object sender, FloatingScreenHandleEventArgs args)
-		{
-			if (_swingTechScreen.Handle.transform.position.y < 0)
-				_swingTechScreen.transform.position += new Vector3(0f, -_swingTechScreen.Handle.transform.position.y + 0.1f, 0f);
-
-			Settings.Instance.SwingTechGraphPosition = _swingTechScreen.transform.position;
-			Settings.Instance.SwingTechGraphRotation = _swingTechScreen.transform.rotation;
+			SetScreenActive(_floatingScreen, false);
+			SetScreenActive(_swingDiffScreen, false);
+			SetScreenActive(_swingTechScreen, false);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using BeatSaberMarkupLanguage.GameplaySetup;
 using IPALogger = IPA.Logging.Logger;
 using BeatmapScanner.Installers;
+using BeatmapScanner.Utils;
 using IPA.Config.Stores;
 using System.Reflection;
 using SiraUtil.Zenject;
@@ -12,17 +13,16 @@ namespace BeatmapScanner
     [Plugin(RuntimeOptions.DynamicInit)]
     public class Plugin
     {
-        internal static Plugin Instance;
         internal static IPALogger Log;
-        internal static Harmony harmony;
+        private static Harmony _harmony;
 
         [Init]
         public Plugin(IPALogger logger, IPA.Config.Config conf, Zenjector zenject)
         {
-            Instance = this;
             Log = logger;
             Settings.Instance = conf.Generated<Settings>();
-            harmony = new Harmony("Loloppe.BeatSaber.BeatmapScanner");
+            AnalysisCache.Initialize();
+            _harmony = new Harmony("Loloppe.BeatSaber.BeatmapScanner");
 
             zenject.UseLogger(logger);
             zenject.Install<MenuInstaller>(Location.Menu);
@@ -31,7 +31,7 @@ namespace BeatmapScanner
         [OnEnable]
         public void OnEnable()
         {
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            _harmony.PatchAll(Assembly.GetExecutingAssembly());
             BeatSaberMarkupLanguage.Util.MainMenuAwaiter.MainMenuInitializing += MainMenuInit;
         }
 
@@ -43,7 +43,8 @@ namespace BeatmapScanner
         [OnDisable]
         public void OnDisable()
         {
-            harmony.UnpatchSelf();
+            _harmony.UnpatchSelf();
+            BeatSaberMarkupLanguage.Util.MainMenuAwaiter.MainMenuInitializing -= MainMenuInit;
             GameplaySetup.Instance.RemoveTab("BeatmapScanner");
         }
     }

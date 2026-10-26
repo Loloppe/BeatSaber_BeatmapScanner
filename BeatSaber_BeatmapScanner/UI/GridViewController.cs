@@ -3,7 +3,6 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using System.Collections.Generic;
 using UnityEngine;
-using Zenject;
 using System;
 
 namespace BeatmapScanner.UI
@@ -12,134 +11,113 @@ namespace BeatmapScanner.UI
 	[ViewDefinition("BeatmapScanner.UI.Views.gridView.bsml")]
 	internal class GridViewController : BSMLAutomaticViewController
 	{
-#pragma warning disable IDE0052 // Remove unread private members
-		private DiContainer _diContainer;
-#pragma warning restore IDE0052 // Remove unread private members
+		// Tile indices, shared with the data array filled by BSPatch
+		public const int Crouch = 0, Bomb = 1, Linear = 2, V3 = 3, EBPM = 4, BL = 5, Pass = 6, Tech = 7, SS = 8;
+		public const int TileCount = 9;
 
-		private readonly string[] title = ["Crouch", "Bomb Av.", "Linear", "V3", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
+		private static readonly string[] Titles = ["Crouch", "Bomb Av.", "Linear", "V3", "EBPM", "BL ⭐", "Pass", "Tech", "SS ⭐"];
 
+#pragma warning disable CS0649 // Assigned by BSML
 		[UIObject("tile-grid")]
 		private readonly GameObject _tileGrid;
 		[UIObject("tile-row")]
 		private readonly GameObject _tileRow;
 		[UIComponent("tile")]
 		private readonly ClickableImage _tile;
+#pragma warning restore CS0649
 
-		public static List<ClickableImage> _tiles = null;
-		// Cached per-tile FormattableText pairs to avoid repeated GetComponentsInChildren calls
+		private static List<ClickableImage> _tiles = null;
+		// Cached per-tile [title, value] texts to avoid repeated GetComponentsInChildren calls
 		private static FormattableText[][] _tileTexts = null;
 
-
-        [Inject]
-		internal void Construct(DiContainer diContainer)
+		[UIAction("#post-parse")]
+		public void PostParse()
 		{
-			_diContainer = diContainer;
+			_tiles = [];
+
+			for (int i = 0; i < 3; i++)
+			{
+				ClickableImage tileInstance = Instantiate(_tile.gameObject, _tileRow.transform).GetComponent<ClickableImage>();
+				_tiles.Add(tileInstance);
+			}
+
+			for (int i = 0; i < 2; i++)
+			{
+				GameObject tileRowInstance = Instantiate(_tileRow, _tileGrid.transform);
+				tileRowInstance.transform.SetAsFirstSibling();
+				_tiles.AddRange(tileRowInstance.GetComponentsInChildren<ClickableImage>());
+			}
+
+			_tileTexts = new FormattableText[_tiles.Count][];
+			for (int i = 0; i < _tiles.Count; i++)
+			{
+				_tileTexts[i] = _tiles[i].transform.GetComponentsInChildren<FormattableText>(true);
+				_tileTexts[i][0].text = Titles[i];
+				_tileTexts[i][1].text = "";
+			}
+
+			ApplyVisibility();
+			DestroyImmediate(_tile.gameObject);
 		}
 
-		[UIAction("#post-parse")]
-			public void PostParse()
+		/// <summary>Applies Show* settings to each tile's active state. Call from PostParse and Settings.Changed.</summary>
+		public static void ApplyVisibility()
+		{
+			if (_tiles == null) return;
+			var settings = Settings.Instance;
+			for (int i = 0; i < _tiles.Count; i++)
 			{
-				_tiles = [];
-
-				for (int i = 0; i < 3; i++)
+				bool show = i switch
 				{
-					ClickableImage tileInstance = Instantiate(_tile.gameObject, _tileRow.transform).GetComponent<ClickableImage>();
-					_tiles.Add(tileInstance);
-				}
-
-				for (int i = 0; i < 2; i++)
-				{
-					GameObject tileRowInstance = Instantiate(_tileRow, _tileGrid.transform);
-					tileRowInstance.transform.SetAsFirstSibling();
-					_tiles.AddRange(tileRowInstance.GetComponentsInChildren<ClickableImage>());
-				}
-
-				// Cache FormattableText components once to avoid repeated hierarchy traversals in Apply()
-				_tileTexts = new FormattableText[_tiles.Count][];
-				for (int i = 0; i < _tiles.Count; i++)
-				{
-					_tileTexts[i] = _tiles[i].transform.GetComponentsInChildren<FormattableText>(true);
-					_tileTexts[i][0].text = title[i];
-					_tileTexts[i][1].text = "";
-				}
-
-				ApplyVisibility();
-				DestroyImmediate(_tile.gameObject);
+					Crouch => settings.ShowCrouch,
+					Bomb => settings.ShowBomb,
+					Linear => settings.ShowLinear,
+					V3 => settings.ShowV3,
+					EBPM => settings.ShowEBPM,
+					BL => settings.ShowBL,
+					Pass => settings.ShowPass,
+					Tech => settings.ShowTech,
+					SS => settings.ShowSS,
+					_ => true,
+				};
+				_tiles[i].gameObject.SetActive(show);
 			}
+		}
 
-			/// <summary>Applies Show* settings to each tile's active state. Call from PostParse and Settings.Changed.</summary>
-			public static void ApplyVisibility()
+		public static void Apply(double[] data)
+		{
+			if (_tileTexts == null) return;
+			var settings = Settings.Instance;
+			for (int i = 0; i < _tileTexts.Length; i++)
 			{
-				if (_tiles == null) return;
-				bool[] show = [
-					Settings.Instance.ShowCrouch,
-					Settings.Instance.ShowBomb,
-					Settings.Instance.ShowLinear,
-					Settings.Instance.ShowV3,
-					Settings.Instance.ShowEBPM,
-					Settings.Instance.ShowBL,
-					Settings.Instance.ShowPass,
-					Settings.Instance.ShowTech,
-					Settings.Instance.ShowSS,
-				];
-				for (int i = 0; i < _tiles.Count; i++)
-					_tiles[i].rectTransform.gameObject.SetActive(show[i]);
+				FormattableText title = _tileTexts[i][0];
+				FormattableText value = _tileTexts[i][1];
+				double v = data[i];
+				title.color = settings.TitleColor;
+				value.text = Math.Round(v, 2).ToString();
+				if (value.text == "0" && i != Crouch && i != Linear) value.text = "X";
+				switch (i)
+				{
+					case V3:
+						if (v == 1) value.text = "✔";
+						break;
+					case Pass:
+						value.color = GetStepColor(v, settings.PColorA, settings.PColorB, settings.PColorC);
+						break;
+					case Tech:
+						value.color = GetStepColor(v, settings.TColorA, settings.TColorB, settings.TColorC);
+						break;
+				}
 			}
+		}
 
-        public static void Apply(List<double> data)
-        {
-            for (int i = 0; i < _tileTexts.Length; i++)
-            {
-                FormattableText[] texts = _tileTexts[i];
-                texts[0].color = Settings.Instance.TitleColor;
-                texts[1].text = Math.Round(data[i], 2).ToString();
-                if (texts[1].text == "0" && i != 0 && i != 2) texts[1].text = "X";
-                switch (i)
-                {
-                    case 3: // V3
-                        if (data[i] == 1)
-                        {
-                            texts[1].text = "✔";
-                        }
-                        continue;
-                    case 6: // Pass
-                        if (data[i] >= Settings.Instance.PColorC)
-                        {
-                            texts[1].color = Settings.Instance.D;
-                        }
-                        else if (data[i] >= Settings.Instance.PColorB)
-                        {
-                            texts[1].color = Settings.Instance.C;
-                        }
-                        else if (data[i] >= Settings.Instance.PColorA)
-                        {
-                            texts[1].color = Settings.Instance.B;
-                        }
-                        else
-                        {
-                            texts[1].color = Settings.Instance.A;
-                        }
-                        continue;
-                    case 7: // Tech
-                        if (data[i] >= Settings.Instance.TColorC)
-                        {
-                            texts[1].color = Settings.Instance.D;
-                        }
-                        else if (data[i] >= Settings.Instance.TColorB)
-                        {
-                            texts[1].color = Settings.Instance.C;
-                        }
-                        else if (data[i] >= Settings.Instance.TColorA)
-                        {
-                            texts[1].color = Settings.Instance.B;
-                        }
-                        else
-                        {
-                            texts[1].color = Settings.Instance.A;
-                        }
-                        continue;
-                }
-            }
-        }
-    }
+		private static Color GetStepColor(double value, float mid, float high, float extreme)
+		{
+			var settings = Settings.Instance;
+			if (value >= extreme) return settings.D;
+			if (value >= high) return settings.C;
+			if (value >= mid) return settings.B;
+			return settings.A;
+		}
+	}
 }

@@ -1,8 +1,8 @@
 ﻿using IPA.Config.Data;
 
-namespace BeatmapScanner.Algorithm
+namespace BeatmapScanner.Utils
 {
-	internal class FloatConverter
+	internal static class FloatConverter
 	{
 		public static float ValueToFloat(Value val)
 		{
